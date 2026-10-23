@@ -71,6 +71,8 @@ def create(out, index, budget=300_000):
         arm_scale=arm_scale(arm),
         w=w,
         seed=seed,
+        # Read by horizon_supply.evaluate; same mapping as scale_control.create (v2.1 fix).
+        condition="lambda7" if arm == "A" else "curvature",
         reference=REFERENCE,
         checkpoints=[budget],
         total_budget=budget,
