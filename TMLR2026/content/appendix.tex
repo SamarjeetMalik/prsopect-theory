@@ -2,151 +2,131 @@
 \section{Experimental Configuration}
 \label{app:configuration}
 
-\paragraph{Environment and learner.}
-The primary environment is the six-node \texttt{NetworkManagement-v1} inventory network. Node 1 is
-scripted; nodes 2--6 are controlled by one parameter-shared PPO policy. The padded joint observation
-is visible to the actor, while each vector lane supplies the action for one trainable node. Unless a
-specific experiment states otherwise, PPO uses the Stable-Baselines3 defaults with
-\texttt{n\_steps}$=128$, minibatch size 256, ten optimization epochs, learning rate
-$3\times10^{-4}$, discount $.99$, GAE coefficient $.95$, policy clip $.2$, value-loss coefficient
-$.5$, zero entropy coefficient, normalized minibatch advantages, and global gradient max-norm $.5$.
-Training is CPU-only and uses a single explicit simulator random stream per environment.
+\paragraph{Supply-chain environment and learner.}
+The six-node \texttt{NetworkManagement-v1} network has 30-period episodes. Node 1 is scripted to order
+20 units per period, split equally across its action entries; nodes 2--6 are controlled by one
+parameter-shared PPO policy whose actor sees the padded joint observation, with one vector lane per
+trainable node. PPO uses Stable-Baselines3 2.8.0 with \texttt{n\_steps} $=128$, minibatch size 256, ten
+optimization epochs, learning rate $3\times10^{-4}$, discount $0.99$, GAE coefficient $0.95$, policy
+clip $0.2$, value-loss coefficient $0.5$, zero entropy coefficient, normalized minibatch advantages,
+separate actor and critic MLPs of width 64, one Adam optimizer with SB3's implicit $\epsilon=10^{-5}$,
+and global gradient max-norm $0.5$. Training is CPU-only and single-threaded, with an explicit simulator
+random stream per environment.
 
-\paragraph{Reward and label.}
-Each agent receives $x_i(w)=(1-w)r_i^{\mathrm{local}}+wr^{\mathrm{global}}$ before any transform.
-The supply-chain collapse label is
-$\mathbf{1}[\bar S<10\wedge\bar\pi\le-127.1]$, where $\bar S$ is the mean deterministic base-stock
-action across the five trained nodes and $\bar\pi$ is their ten-episode mean total profit. The label
-is evaluated independently of the transformed training reward. Its profit clause is a redundancy
-check because collapsed policies concentrate at the deterministic lazy-policy floor near $-128$.
-Evaluation seed blocks are $10s,\ldots,10s+9$ for training seed $s$.
+\paragraph{Budget arithmetic.}
+Budgets count requested agent transitions. Five lanes and 128-step rollouts add 640 transitions per
+rollout, and training stops at the first completed rollout at or beyond the request: 300k requested
+transitions execute 300,160 (469 rollouts), and each 150k checkpoint is evaluated at the first rollout
+boundary after it. One agent transition is one node's step, so 300,160 transitions are 60,032 joint
+environment periods (about 2,001 episodes).
 
-\paragraph{Transform conditions.}
-The linear condition uses $v(x)=x$. Curvature-only uses
-$\phi(x)=\operatorname{sign}(x)|x|^{.88}$. The loss-multiplier condition uses
-$v_\lambda(x)=\phi(x)$ for $x\ge0$ and $\lambda\phi(x)$ for $x<0$. The independent direct control
-uses the fixed reference $z_0=-2.6281398333$, estimated before confirmation from 60,000 equally
-weighted blend samples produced by 40 untreated calibration policies. With $u=x-z_0$, its arms are
-$B=\phi(u)$, $A=v_7(u)$, and $S=7\phi(u)$.
+\paragraph{Reward, reference point and controls.}
+Each agent receives $x_i(w)=(1-w)r_i^{\mathrm{local}}+wr^{\mathrm{global}}$ before any transform. The
+linear condition uses $v(x)=x$; curvature-only uses $\phi(x)=\operatorname{sign}(x)|x|^{.88}$; the
+loss-multiplier condition uses $v_\lambda(x)=\phi(x)$ for $x\ge0$ and $\lambda\phi(x)$ for $x<0$. E1 and
+E2 use the reference $z_0=-2.6281398333$, fixed before any of their runs as the pooled mean of raw
+blended rewards from 40 untreated curvature-only calibration policies, with 7,500 samples at each of
+the eight E1 mixture cells (60,000 samples). With $u=x-z_0$ and
+$s_{\mathrm{in}}=1$, the arms are B$=\phi(u)$ ($s_{\mathrm{out}}=1$), A$=v_7(u)$ ($s_{\mathrm{out}}=1$),
+S$=7\phi(u)$ ($s_{\mathrm{out}}=1/7$) and R$=3.451\,\phi(u)$ ($s_{\mathrm{out}}=1/3.451$, where 3.451 is
+A's pooled transformed-reward RMS divided by B's in the earlier direct control). E3 uses reference zero.
+
+\paragraph{Optimizer interventions.}
+\texttt{separate\_no\_clip} builds two Adam optimizers with the default settings, one over the actor
+parameters (policy MLP, action head, log-standard-deviation) and one over the critic parameters (value
+MLP and head), applies the unchanged PPO loss, and skips gradient clipping; execution aborts if any
+trainable parameter is shared. \texttt{VecNormalize} divides rewards by the running standard deviation of
+discounted returns ($\gamma=0.99$, $\epsilon=10^{-8}$, reward clip 10, no observation normalization). E2
+passes \texttt{optimizer\_kwargs=\{eps: 1e-8\}}. Every run logs per-minibatch actor, critic and total
+gradient norms before and after the clipping step.
+
+\paragraph{Labels.}
+The supply-chain label is $\mathbf{1}[\bar S<10\wedge\bar\pi\le-127.1]$, with $\bar S$ the mean over
+nodes 2--6 of the deterministic base-stock target $250(a_1+1)$ at the reset of evaluation seed $10s$,
+and $\bar\pi$ the ten-episode mean total profit on seeds $10s,\ldots,10s+9$. The LBF label is native
+team return below 0.626 over ten deterministic episodes on seeds $10s,\ldots,10s+9$; the native return
+excludes the effort cost.
+
+\paragraph{LBF learner.}
+MAPPO uses SB3 PPO with a centralized-critic policy: the actor's features come from the agent's own
+observation and the critic's from the concatenated global state (feature width 128; actor heads
+$[64,64]$, critic heads $[128,128]$), eight parallel environment copies, \texttt{n\_steps} $=256$,
+minibatch 512, entropy coefficient 0.01, and \texttt{lbforaging} 2.0.0. In a check at 100k timesteps
+on one cell and seed, the global-clip runner reproduced the legacy LBF runner's team return exactly.
 
 \section{Boundary Estimation and Diagnostics}
 \label{app:estimation}
 
-For each fixed configuration we fit
-$P(Y=1\mid w)=\sigma(b_0+b_1w)$ by Firth logistic regression and report
-$w_{50}=-b_0/b_1$. A point estimate is reported only with a nonzero identified slope; observed
-probabilities are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use
-2,000 percentile-bootstrap draws of complete training-seed blocks. The same multiplicity vector is
-used across conditions in paired contrasts. Fits outside $[0,1]$ and nonconverged or unidentified
-draws are retained and counted rather than clipped or silently replaced.
+For each fixed configuration we fit $P(Y=1\mid w)=\sigma(b_0+b_1w)$ by Firth logistic regression and
+report $w_{50}=-b_0/b_1$. A point estimate is reported only with an identified nonzero slope; observed
+proportions are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use 2,000
+percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
+random seed 20261015 for E1--E4). The same weight vector is used for every condition in an experiment,
+so differences are seed-paired. Fits outside the grid and non-converged draws are retained and counted.
+Intervals are pointwise; no simultaneous statement across checkpoints or cells is made.
 
-Logistic, probit, and decreasing isotonic fits are sensitivity estimators. The primary supply-PPO
-point-estimator spread is at most .018. The independent confirmation was also reproduced with a
-separate numerical optimizer to within $4\times10^{-9}$ at all fifteen primary budget/condition
-points. Confidence intervals are pointwise; no simultaneous statement across checkpoints is made.
+Logistic, probit and decreasing isotonic fits are sensitivity estimators on the same rows. The isotonic
+fit is weighted pool-adjacent-violators; its crossing is linear interpolation between the last cell with
+fitted probability at least $.5$ and the first below it, and a plateau at exactly $.5$ is reported as an
+interval with its midpoint used for comparison. The maximum spread among the three point estimators on
+the legacy supply-chain sweep is 0.018.
 
 \input{generated/supply_cells}
 \input{generated/lambda_table}
 \FloatBarrier
 
-\section{Independent Longitudinal Confirmation}
-\label{app:confirmation}
+\section{Pre-registration and Deviations}
+\label{app:prereg}
 
-Pilot seeds 100--104 selected a common five-cell grid. The subsequent confirmation was frozen before
-execution and uses disjoint seeds 42--51, three reward conditions, and
-$w\in\{.2,.4,.6,.85,1\}$. All 150 trajectories start from initialization, run to 3.6M requested
-agent transitions, and are evaluated every 150k transitions. Pilot outcomes do not enter the
-confirmation estimates. Every scheduled evaluation, configuration, transition counter, evaluation
-seed, source hash, and collapse label was checked before analysis.
+E1--E4 were declared in a pre-registration written before any of their outcomes existed. Source,
+design and protocol hashes were frozen before E1 launched, and the E4 runner's hash before E4 launched,
+after a timing check. Launch scripts refused to run on any hash mismatch. The record shows three
+departures, none changing a design:
+(i)~the frozen E1 runner omitted a protocol field read at evaluation, so every run crashed after training
+and before producing a label; the field was added with the mapping used by the earlier direct control,
+before any outcome existed;
+(ii--iii)~two analysis-code errors (floating-point grid keys; the condition name ``null'' read as missing)
+raised exceptions before any fit was computed.
+The pre-declared predictions that failed are reported in the main text: the Adam-$\epsilon$ route (E2)
+and two of three LBF predictions (E4). An equality gate run before E1 reproduced the earlier platform's
+labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
-\input{generated/confirmation/horizon_table}
-\input{generated/confirmation/horizon_cells}
+\section{Refined Horizon Cohort}
+\label{app:horizon}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.92\textwidth]{generated/confirmation/horizon_all_checkpoints.pdf}
-\caption{All independent-confirmation checkpoints with untruncated pointwise seed-block intervals.
-Open rings mark zero-width bootstrap intervals caused by identical seed-label patterns on the coarse
-grid; they do not imply exact localization.}
-\label{fig:confirmed_checkpoints}
-\end{figure}
-
-\subsection{Recovery, relapse, and evaluation sensitivity}
-
-Recovery and relapse are descriptive within-policy outcomes conditional on the 300k label. Sustained
-recovery is the first occurrence of three consecutive noncollapsed checkpoints after 300k and may be
-followed by relapse. These proportions describe the five fixed mixture cells rather than a task-level
-population distribution.
-
-\input{generated/confirmation/recovery_table}
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=.9\textwidth]{generated/confirmation/recovery_trajectories.pdf}
-\caption{Observed recovery and relapse fractions conditional on the 300k label. Curves show current
-checkpoint state and do not establish an absorbing transition or convergence.}
-\label{fig:confirmed_recovery}
-\end{figure}
-
-The fifty-episode sensitivity evaluation shares its first ten episodes with the primary evaluation and
-preserves training random state. Only one of 450 trajectory/checkpoint labels changes; the 1.8M and
-3.6M contrasts are unchanged.
-
-\input{generated/confirmation/evaluation_table}
+\input{generated/v4/horizon_cells}
 \FloatBarrier
 
-\section{Direct Asymmetric-versus-Symmetric Control}
-\label{app:direct_control}
+\section{Optimizer Factorial Details}
+\label{app:factorial}
 
-The control cohort contains $3\times8\times10=240$ independently trained policies at 300k requested
-transitions. All arms use the same empirical-mean reference, mixture cells, training seeds, evaluation
-seeds, learner, and optimizer. Four of 2,000 symmetric-arm bootstrap crossings fall outside the
-sampled grid and remain in the interval calculation.
+\input{generated/v4/factorial_interactions}
+\input{generated/v4/factorial_diagnostics}
+\input{generated/v4/factorial_cells}
+\FloatBarrier
 
-\input{generated/confirmation/control_table}
+\section{Level-Based Foraging Cells}
+\label{app:lbf}
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=.95\textwidth]{generated/confirmation/control_observations.pdf}
-\caption{Observed collapse proportions for the three direct-control arms. Each point represents ten
-training seeds; bars are 95\% Wilson intervals and curves are Firth fits over the sampled grid.}
-\label{fig:confirmed_controls}
-\end{figure}
-
-The paired differences are $A-B=+.261$ $[.203,.329]$, $S-B=+.323$ $[.241,.427]$, and
-$A-S=-.062$ $[-.157,.028]$. Thus both multipliers shift the crossing, whereas their direct difference
-establishes neither an asymmetry-specific effect nor practical equivalence.
-
-Near the empirical crossing brackets, loss fractions are 33.966\%, 31.096\%, and 20.393\% for B, A,
-and S. Across all cells, transformed-reward RMS values are 8.796, 30.359, and 57.673; raw rollout
-advantage standard deviations are 35.045, 135.948, and 300.400. Normalized optimizer-advantage
-standard deviation is .997653 in every arm. Nevertheless, every control minibatch triggers global
-gradient clipping. Mean pre-clip critic norms are 1,305, 3,622, and 12,267, compared with actor norms
-2.04, 1.73, and 1.50. These diagnostics identify a critic-dominated scaling pathway but are not a
-causal intervention.
+\input{generated/v4/lbf_cells}
 \FloatBarrier
 
 \section{Computational Accounting}
 \label{app:compute}
 
-Scheduler accounting sums completed worker CPU consumption and excludes array-parent records.
-Elapsed span is the interval from the first worker start to the last worker finish; concurrent spans
-are not added. Memory is the largest scheduler-reported per-worker peak, not cluster-wide peak memory.
+E1--E4 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+(Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
+the earlier confirmation cohorts were run separately on another platform and are not included.
 
-\input{generated/confirmation/compute_table}
-
-The confirmation cohorts consumed 591.95 CPU-hours. Including corrected pilots, calibration, source
-gates, smoke tests, and diagnostic auditing, the captured new work consumed 1,005.89 CPU-hours. A
-superseded pilot consumed another 39.59 CPU-hours and is excluded from scientific cohorts. These are
-measured revision costs, not lifetime project costs.
+\input{generated/v4/compute_table}
 \FloatBarrier
 
 \section{Reproducibility Artifact}
 \label{app:artifact}
 
-The anonymized supplementary archive contains the exact manuscript source, immutable executed-source
-snapshots and hashes for the new confirmation cohorts, their frozen designs and raw outputs, calibration
-records, analysis scripts, bootstrap inputs, generated tables and figures, and rebuild commands. The
-older primary sweep is accompanied by its audited per-run records, but no claim is made that its original
-execution environment was preserved. Exploratory settings that cannot be tied to an immutable executed
-configuration are excluded from the paper's confirmatory claims.
+The anonymized archive contains the manuscript source; the frozen designs, pre-registration, hashes and
+deviation log; the executed source for E1--E4; per-run tables for every E1--E4 trajectory (protocol,
+label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
+renderer that produces every v4 table, figure and number. Raw per-minibatch diagnostics and checkpoints
+(about 45\,GB) are available on request. The legacy sweeps are accompanied by their per-run records,
+without a preserved execution environment.

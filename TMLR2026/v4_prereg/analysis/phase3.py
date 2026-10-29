@@ -157,6 +157,9 @@ for p in sorted((ART / "AAMAS2027/new_runs/deadline_confirmation_v1/horizon").gl
         ah.append(dict(condition=pr["condition"], w=round(pr["w"], 4), seed=pr["seed"], checkpoint=ck, arch=int(ev["summary"]["collapsed"])))
 ah = pd.DataFrame(ah); mh = e3.assign(w=e3.w.round(4)).merge(ah, on=["condition", "w", "seed", "checkpoint"]); assert len(mh) == 150 * 24
 h_agree = int((mh.collapsed == mh.arch).sum())
+pd.DataFrame([dict(comparison="E1 default cell B/A/S vs archived direct control", agree=agree, bit_identical_profit=exact, total=240),
+              dict(comparison="E3 vs archived horizon cohort (5 common cells, all checkpoints)", agree=h_agree, bit_identical_profit=np.nan, total=len(mh))]
+             ).to_csv(OUT / "crossplatform.csv", index=False)
 
 # ------------------------------------------------------------------ report
 def fmt(x): return "nan" if not np.isfinite(x) else f"{x:+.3f}"

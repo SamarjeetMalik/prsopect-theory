@@ -1,0 +1,15 @@
+\begin{table}[t]
+\caption{MAPPO on Level-Based Foraging (E4): crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. $^{\dagger}$: point estimate outside the sampled grid (linear and curvature rarely collapse, so their crossings are not localized). $^{\ast}$: interval excludes zero.}
+\label{tab:lbf}
+\centering\scriptsize
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+Optimizer & Linear & Curvature & A & S & A$-$S & A$-$linear \\
+\midrule
+Global clip & $-0.289$ $[-1.333,\,-0.001]$$^{\dagger}$ & $-0.370$ $[-2.288,\,0.009]$$^{\dagger}$ & $0.525$ $[0.188,\,0.719]$ & $0.107$ $[-0.065,\,0.225]$ & $+0.418$$^{\ast}$ $[+0.218,\,+0.553]$ & $+0.814$$^{\ast}$ $[+0.422,\,+1.725]$ \\
+Separate, no clip & $0.003$ $[-0.179,\,0.068]$ & $0.077$ $[-0.087,\,0.196]$ & $0.557$ $[0.250,\,0.724]$ & $0.077$ $[-0.126,\,0.237]$ & $+0.479$$^{\ast}$ $[+0.289,\,+0.613]$ & $+0.554$$^{\ast}$ $[+0.310,\,+0.718]$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
