@@ -99,3 +99,56 @@ removed by VecNormalize, and only partly by separate optimizers. It did not act 
 - `null` was read as a string, not NaN.
 
 Both bugs raised errors before any fit was computed.
+
+---
+
+# E4 result: MAPPO on LBF (2026-10-30)
+
+Analysis: `analysis/phase3_e4.py`; output in `results/phase3_e4_report.txt` and `results/E4_*.csv`.
+800/800 trajectories completed and validated. Same estimator, same bootstrap seed.
+
+## Crossings (w50 [95% CI])
+
+| Arm | global_clip | separate_no_clip |
+|---|---|---|
+| linear | −0.289 [−1.333, −0.001], out of grid | 0.003 [−0.179, 0.068] |
+| curvature | −0.370 [−2.288, 0.009], out of grid | 0.077 [−0.087, 0.196] |
+| A (λ = 4) | **0.525 [0.188, 0.719]** | **0.557 [0.250, 0.724]** |
+| S (both branches ×4) | 0.107 [−0.065, 0.225] | 0.077 [−0.126, 0.237] |
+
+The linear and curvature arms rarely collapse at all (overall collapse rate 5–16%, almost entirely at w ≤ 0.1),
+so their crossings sit at or below the grid edge and are effectively unidentified.
+
+## Contrasts
+- **A − S (asymmetry): +0.418 [+0.218, +0.553] (global_clip); +0.479 [+0.289, +0.613] (separate_no_clip).**
+  The difference between optimizers is +0.061 [−0.137, +0.249], not significant.
+- **A − linear: +0.814 [+0.422, +1.725] (global, inflated by the out-of-grid linear fit); +0.554
+  [+0.310, +0.718] (separate).**
+- S − curvature: +0.476 [−0.005, +2.529] (global, unidentified); +0.001 [−0.167, +0.185] (separate).
+- Curvature − linear: −0.080 [−1.621, +0.673] (global, unidentified); +0.073 [−0.029, +0.163] (separate).
+
+## Pre-declared predictions
+- **P1 (global_clip curvature − linear > 0): NOT MET.** The legacy +0.177 does not reproduce: under this rerun
+  neither arm has an interior crossing.
+- **P2 (A − linear > 0): MET** under both optimizers.
+- **P3 (separate_no_clip shrinks curvature − linear and S − curvature): NOT MET.** Both interactions are
+  unidentified (CIs span ±1 or more).
+
+## Why P1/P3 failed, and what E4 does show
+P1 and P3 rested on the scale/clipping pathway found in the supply chain. The LBF diagnostics show that pathway
+is absent here:
+- the critic gradient norm is ≈0.07, against an actor norm of ≈1.1;
+- the actor carries 98% of the gradient energy;
+- clipping, where it fires, trims the actor itself.
+
+With no critic domination there is no scale throttle for curvature or symmetric scaling to act through. That is
+consistent with the E1 mechanism, but it was not what P1/P3 predicted.
+
+What E4 does show is the same qualitative result as E1 under decoupling, now in a second environment and under
+both optimizer modes: **the loss-only multiplier moves the crossing (+0.42 to +0.48 relative to symmetric
+scaling), while symmetric scaling does not.**
+
+Mechanistically, λ multiplies only LBF's −0.02(1−w) LOAD cost. S scales food rewards and cost together, leaving
+their ratio unchanged. The training-reward loss fraction under A falls to 3%, against 14% under linear: agents stop
+attempting loads. So in LBF the asymmetric effect is an incentive change on the costly cooperative action. It is a
+genuine reward-design effect, but not evidence of a loss-aversion "psychology".

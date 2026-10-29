@@ -1,0 +1,47 @@
+E4: 800 runs complete, unique, >= 2M transitions, 10 evaluation episodes each
+
+== E4 crossings (w50 [95% CI], collapsed k/10 per cell)
+global_clip       linear    -0.289 [-1.333, -0.001] usable 1951 ok OUT-OF-GRID  0:2 0.1:1 0.2:1 0.3:1 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+global_clip       curvature -0.370 [-2.288, 0.009] usable 2000 ok OUT-OF-GRID  0:3 0.1:1 0.2:1 0.3:1 0.5:1 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
+global_clip       A         0.525 [0.188, 0.719] usable 2000 ok  0:7 0.1:8 0.2:7 0.3:7 0.5:6 0.65:6 0.75:6 0.85:2 0.9:1 0.95:0
+global_clip       S         0.107 [-0.065, 0.225] usable 2000 ok  0:5 0.1:6 0.2:5 0.3:2 0.5:1 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  linear    0.003 [-0.179, 0.068] usable 1998 ok  0:5 0.1:2 0.2:0 0.3:0 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  curvature 0.077 [-0.087, 0.196] usable 2000 ok  0:5 0.1:5 0.2:5 0.3:1 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  A         0.557 [0.250, 0.724] usable 2000 ok  0:6 0.1:9 0.2:6 0.3:8 0.5:7 0.65:8 0.75:7 0.85:0 0.9:1 0.95:0
+separate_no_clip  S         0.077 [-0.126, 0.237] usable 2000 ok  0:5 0.1:5 0.2:3 0.3:4 0.5:1 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+
+== E4 contrasts (paired seed-block)
+global_clip       curvature-linear  -0.080 [-1.621, +0.673]
+global_clip       A-linear          +0.814 [+0.422, +1.725]  *
+global_clip       A-curvature       +0.894 [+0.358, +2.915]  *
+global_clip       S-curvature       +0.476 [-0.005, +2.529]
+global_clip       A-S               +0.418 [+0.218, +0.553]  *
+separate_no_clip  curvature-linear  +0.073 [-0.029, +0.163]
+separate_no_clip  A-linear          +0.554 [+0.310, +0.718]  *
+separate_no_clip  A-curvature       +0.480 [+0.209, +0.697]  *
+separate_no_clip  S-curvature       +0.001 [-0.167, +0.185]
+separate_no_clip  A-S               +0.479 [+0.289, +0.613]  *
+
+== Change separate_no_clip minus global_clip (paired)
+curvature-linear  +0.154 [-0.627, +1.651]
+A-linear          -0.260 [-1.207, +0.013]
+A-curvature       -0.414 [-2.426, +0.031]
+S-curvature       -0.475 [-2.534, +0.058]
+A-S               +0.061 [-0.137, +0.249]
+
+== E4 diagnostics (mean per run)
+                            mb_actor_grad_norm  mb_critic_grad_norm  mb_post_actor_grad_norm  mb_actor_grad_energy_share  mb_clip_freq  reward_blend_rms  reward_blend_neg  reward_transformed_rms  reward_transformed_neg   elapsed
+optimizer_mode   arm                                                                                                                                                                                                                
+global_clip      linear                 1.1202               0.0657                   0.4901                      0.9835        0.9548            0.1941            0.1451                  0.1941                  0.1451  664.8099
+                 curvature              1.1369               0.0678                   0.4895                      0.9825        0.9498            0.1785            0.1007                  0.1922                  0.1007  654.7342
+                 A                      0.9584               0.0669                   0.4713                      0.9768        0.8203            0.1075            0.0326                  0.1160                  0.0326  612.2966
+                 S                      1.0391               0.4135                   0.4453                      0.8321        0.9729            0.1715            0.0954                  0.7373                  0.0954  650.1671
+separate_no_clip linear                 1.0438               0.0627                   1.0438                      0.9847        0.9469            0.1923            0.1394                  0.1923                  0.1394  658.4890
+                 curvature              1.0537               0.0645                   1.0537                      0.9840        0.9399            0.1780            0.0958                  0.1916                  0.0958  647.7765
+                 A                      0.8164               0.0602                   0.8164                      0.9777        0.7593            0.1006            0.0279                  0.1086                  0.0279  601.6799
+                 S                      0.9946               0.3681                   0.9946                      0.8449        0.9609            0.1726            0.0905                  0.7421                  0.0905  645.3634
+
+== Pre-declared predictions
+P1 global_clip curvature-linear > 0: -0.080 [-1.621, +0.673] -> NOT MET
+P2 A-linear > 0: global +0.814 [+0.422, +1.725], separate +0.554 [+0.310, +0.718] -> MET (both)
+P3 separate shrinks curvature-linear: change +0.154 [-0.627, +1.651] -> NOT MET; shrinks S-curvature: change -0.475 [-2.534, +0.058] -> NOT MET
