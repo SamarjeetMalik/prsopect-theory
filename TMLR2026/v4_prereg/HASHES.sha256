@@ -25,3 +25,7 @@ c99eb8e1fa55fbfb6b35f0eca626a43f9957ea2e229f5e83613fe5d6883aa9d2  AAMAS2027/opti
 # E5 freeze, 2026-10-30T06:29:21Z, after the pre-launch gate (job 3212: smoke passed; 300k equality with E1 idx 1080 bit-identical, summary and 10 episodes) and before any E5 launch
 d96b74002f5196e6e659f294ffd8db120ab343c9db6dd30f24e0dd662dd3cecb  TMLR2026/v4_prereg/PREREGISTRATION_E5.md
 2d84f80d295c48e0833009f1148f891988485dd3020be45d161e76b05e7915d4  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e5_decoupled_horizon.py
+
+# E6 freeze, 2026-10-30T12:06:21Z, before any E6 run; the gate (index 120 vs E1 120, 600 vs E1 760, groupwise smoke 360) runs after E5 and blocks the main array on failure
+379b3c6f2ce8ddc6e1e881b4b880bd54d4923ba80570a56ff83514602dfcfeda  TMLR2026/v4_prereg/PREREGISTRATION_E6.md
+61178b58ddd48c528ffbcf359e66c74f81c340e49c5b47d497bdc34235d0237f  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e6_clip_isolation.py
