@@ -21,3 +21,7 @@ d7d85ddbc77c8d7084d2b37e89022c9b360a0f51a7547fe3293a2d9dc059b31c  AAMAS2027/opti
 3d56fd63065e17f88dc838d037cbdb1f9c9bc2428a44abca1aae388e808b6a49  AAMAS2027/optimizer_factorial_source_v2/env/global_state_wrapper.py
 4890119c56199700149875ea288b22511233b616e03057baea4bd697f0f70596  AAMAS2027/optimizer_factorial_source_v2/agents/mappo_policy.py
 c99eb8e1fa55fbfb6b35f0eca626a43f9957ea2e229f5e83613fe5d6883aa9d2  AAMAS2027/optimizer_factorial_source_v2/agents/cpt_wrapper.py
+
+# E5 freeze, 2026-10-30T06:29:21Z, after the pre-launch gate (job 3212: smoke passed; 300k equality with E1 idx 1080 bit-identical, summary and 10 episodes) and before any E5 launch
+d96b74002f5196e6e659f294ffd8db120ab343c9db6dd30f24e0dd662dd3cecb  TMLR2026/v4_prereg/PREREGISTRATION_E5.md
+2d84f80d295c48e0833009f1148f891988485dd3020be45d161e76b05e7915d4  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e5_decoupled_horizon.py
