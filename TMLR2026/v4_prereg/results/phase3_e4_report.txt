@@ -1,33 +1,34 @@
 E4: 800 runs complete, unique, >= 2M transitions, 10 evaluation episodes each
+Deviation D4: stored labels equal team_return < 0.5 for all 800 runs; primary analysis relabels at theta = 0.626
 
 == E4 crossings (w50 [95% CI], collapsed k/10 per cell)
-global_clip       linear    -0.289 [-1.333, -0.001] usable 1951 ok OUT-OF-GRID  0:2 0.1:1 0.2:1 0.3:1 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
-global_clip       curvature -0.370 [-2.288, 0.009] usable 2000 ok OUT-OF-GRID  0:3 0.1:1 0.2:1 0.3:1 0.5:1 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
-global_clip       A         0.525 [0.188, 0.719] usable 2000 ok  0:7 0.1:8 0.2:7 0.3:7 0.5:6 0.65:6 0.75:6 0.85:2 0.9:1 0.95:0
-global_clip       S         0.107 [-0.065, 0.225] usable 2000 ok  0:5 0.1:6 0.2:5 0.3:2 0.5:1 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
-separate_no_clip  linear    0.003 [-0.179, 0.068] usable 1998 ok  0:5 0.1:2 0.2:0 0.3:0 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
-separate_no_clip  curvature 0.077 [-0.087, 0.196] usable 2000 ok  0:5 0.1:5 0.2:5 0.3:1 0.5:0 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
-separate_no_clip  A         0.557 [0.250, 0.724] usable 2000 ok  0:6 0.1:9 0.2:6 0.3:8 0.5:7 0.65:8 0.75:7 0.85:0 0.9:1 0.95:0
-separate_no_clip  S         0.077 [-0.126, 0.237] usable 2000 ok  0:5 0.1:5 0.2:3 0.3:4 0.5:1 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+global_clip       linear    -0.210 [-0.809, 0.031] usable 1997 ok OUT-OF-GRID  0:4 0.1:1 0.2:1 0.3:3 0.5:0 0.65:0 0.75:1 0.85:0 0.9:0 0.95:0
+global_clip       curvature 0.228 [0.133, 0.334] usable 2000 ok  0:9 0.1:9 0.2:3 0.3:2 0.5:2 0.65:2 0.75:0 0.85:0 0.9:0 0.95:0
+global_clip       A         0.771 [0.584, 0.876] usable 2000 ok  0:9 0.1:9 0.2:9 0.3:9 0.5:9 0.65:8 0.75:9 0.85:4 0.9:2 0.95:0
+global_clip       S         0.324 [0.179, 0.451] usable 2000 ok  0:9 0.1:8 0.2:7 0.3:4 0.5:5 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  linear    0.082 [-0.045, 0.169] usable 2000 ok  0:7 0.1:6 0.2:0 0.3:2 0.5:1 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  curvature 0.226 [0.117, 0.326] usable 2000 ok  0:6 0.1:9 0.2:7 0.3:2 0.5:2 0.65:1 0.75:0 0.85:0 0.9:0 0.95:0
+separate_no_clip  A         0.843 [0.623, 0.918] usable 2000 ok  0:9 0.1:9 0.2:9 0.3:9 0.5:9 0.65:9 0.75:9 0.85:4 0.9:5 0.95:0
+separate_no_clip  S         0.353 [0.224, 0.468] usable 2000 ok  0:9 0.1:8 0.2:8 0.3:5 0.5:6 0.65:0 0.75:0 0.85:0 0.9:0 0.95:0
 
 == E4 contrasts (paired seed-block)
-global_clip       curvature-linear  -0.080 [-1.621, +0.673]
-global_clip       A-linear          +0.814 [+0.422, +1.725]  *
-global_clip       A-curvature       +0.894 [+0.358, +2.915]  *
-global_clip       S-curvature       +0.476 [-0.005, +2.529]
-global_clip       A-S               +0.418 [+0.218, +0.553]  *
-separate_no_clip  curvature-linear  +0.073 [-0.029, +0.163]
-separate_no_clip  A-linear          +0.554 [+0.310, +0.718]  *
-separate_no_clip  A-curvature       +0.480 [+0.209, +0.697]  *
-separate_no_clip  S-curvature       +0.001 [-0.167, +0.185]
-separate_no_clip  A-S               +0.479 [+0.289, +0.613]  *
+global_clip       curvature-linear  +0.439 [+0.250, +0.970]  *
+global_clip       A-linear          +0.982 [+0.790, +1.499]  *
+global_clip       A-curvature       +0.543 [+0.404, +0.638]  *
+global_clip       S-curvature       +0.096 [+0.006, +0.173]  *
+global_clip       A-S               +0.447 [+0.312, +0.559]  *
+separate_no_clip  curvature-linear  +0.145 [+0.016, +0.291]  *
+separate_no_clip  A-linear          +0.761 [+0.593, +0.883]  *
+separate_no_clip  A-curvature       +0.617 [+0.394, +0.767]  *
+separate_no_clip  S-curvature       +0.126 [-0.017, +0.287]
+separate_no_clip  A-S               +0.490 [+0.315, +0.619]  *
 
 == Change separate_no_clip minus global_clip (paired)
-curvature-linear  +0.154 [-0.627, +1.651]
-A-linear          -0.260 [-1.207, +0.013]
-A-curvature       -0.414 [-2.426, +0.031]
-S-curvature       -0.475 [-2.534, +0.058]
-A-S               +0.061 [-0.137, +0.249]
+curvature-linear  -0.294 [-0.845, -0.067]  *
+A-linear          -0.220 [-0.779, +0.021]
+A-curvature       +0.074 [-0.090, +0.194]
+S-curvature       +0.031 [-0.129, +0.188]
+A-S               +0.043 [-0.152, +0.188]
 
 == E4 diagnostics (mean per run)
                             mb_actor_grad_norm  mb_critic_grad_norm  mb_post_actor_grad_norm  mb_actor_grad_energy_share  mb_clip_freq  reward_blend_rms  reward_blend_neg  reward_transformed_rms  reward_transformed_neg   elapsed
@@ -41,7 +42,20 @@ separate_no_clip linear                 1.0438               0.0627             
                  A                      0.8164               0.0602                   0.8164                      0.9777        0.7593            0.1006            0.0279                  0.1086                  0.0279  601.6799
                  S                      0.9946               0.3681                   0.9946                      0.8449        0.9609            0.1726            0.0905                  0.7421                  0.0905  645.3634
 
-== Pre-declared predictions
-P1 global_clip curvature-linear > 0: -0.080 [-1.621, +0.673] -> NOT MET
-P2 A-linear > 0: global +0.814 [+0.422, +1.725], separate +0.554 [+0.310, +0.718] -> MET (both)
-P3 separate shrinks curvature-linear: change +0.154 [-0.627, +1.651] -> NOT MET; shrinks S-curvature: change -0.475 [-2.534, +0.058] -> NOT MET
+== Pre-declared predictions (theta = 0.626; a contrast is identified only if both crossings lie inside the grid)
+P1 global_clip curvature-linear > 0: +0.439 [+0.250, +0.970] -> MET -- NOT IDENTIFIED (an endpoint lies outside the grid)
+P2 A-linear > 0: global +0.982 [+0.790, +1.499] -> MET -- NOT IDENTIFIED (an endpoint lies outside the grid); separate +0.761 [+0.593, +0.883] -> MET
+P3a separate shrinks curvature-linear: change -0.294 [-0.845, -0.067] -> MET -- NOT IDENTIFIED (an endpoint lies outside the grid)
+P3b separate shrinks S-curvature: change +0.031 [-0.129, +0.188] -> NOT MET
+
+== E4 fraction of training rewards below zero, by w
+w                            0.00   0.10   0.20   0.30   0.50   0.65   0.75   0.85   0.90   0.95
+optimizer_mode   arm                                                                            
+global_clip      A          0.012  0.014  0.013  0.014  0.018  0.020  0.021  0.042  0.059  0.112
+                 S          0.039  0.035  0.045  0.055  0.094  0.117  0.134  0.128  0.149  0.158
+                 curvature  0.045  0.051  0.069  0.085  0.086  0.115  0.133  0.138  0.131  0.153
+                 linear     0.089  0.100  0.105  0.141  0.165  0.176  0.169  0.166  0.165  0.176
+separate_no_clip A          0.012  0.012  0.012  0.012  0.013  0.015  0.017  0.040  0.046  0.100
+                 S          0.034  0.039  0.042  0.054  0.070  0.120  0.130  0.123  0.133  0.160
+                 curvature  0.042  0.042  0.054  0.075  0.096  0.108  0.122  0.132  0.143  0.143
+                 linear     0.066  0.076  0.118  0.137  0.161  0.172  0.169  0.162  0.157  0.175

@@ -11,10 +11,14 @@ import pandas as pd
 CSV, ART, OUT = map(Path, sys.argv[1:4]); OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ART / "AAMAS2027/analysis"))
 from boundary import firth  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from isotonic import isotonic_crossing  # noqa: E402
 
 SEEDS = list(range(42, 52)); GRID = [0.0, 0.1, 0.2, 0.3, 0.5, 0.65, 0.75, 0.85, 0.9, 0.95]
 ARMS = ["linear", "curvature", "A", "S"]; OPTS = ["global_clip", "separate_no_clip"]
 WEIGHTS = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)
+THETA = 0.626            # pre-declared label (PREREGISTRATION_v4, E4); deviation D4: the runs' stored labels used 0.5
+THETAS = [0.5, 0.626, 0.75]
 log = []
 def say(s=""): print(s); log.append(s)
 def ci(z):
@@ -26,15 +30,38 @@ assert len(f) == 800 and f.complete.all() and (f.n_eps == 10).all() and (f.actua
 assert not f.duplicated(["optimizer_mode", "arm", "w", "seed"]).any()
 assert set(f.design) == {"e4-lbf-v4"} and set(f.seed) == set(SEEDS) and set(f.w) == set(round(x, 4) for x in GRID)
 say("E4: 800 runs complete, unique, >= 2M transitions, 10 evaluation episodes each")
+stored = f.collapsed.astype(int)
+assert (stored == (f.team_return < 0.5).astype(int)).all(), "stored labels are not the 0.5-threshold labels"
+say(f"Deviation D4: stored labels equal team_return < 0.5 for all 800 runs; primary analysis relabels at theta = {THETA}")
 
-fits = {}
-for opt in OPTS:
-    for arm in ARMS:
-        g = f[(f.optimizer_mode == opt) & (f.arm == arm)]
-        k = g.pivot(index="seed", columns="w", values="collapsed").reindex(index=SEEDS, columns=[round(x, 4) for x in GRID]).to_numpy(float)
-        assert not np.isnan(k).any(); n = np.ones_like(k); w = np.array(GRID)
-        p = firth(w, k.sum(0), n.sum(0)); b = firth(w, WEIGHTS @ k, WEIGHTS @ n)
-        fits[(opt, arm)] = dict(w50=p["wcrit"][0], status=p["status"][0], in_grid=bool(p["in_grid"][0]), boot=b["wcrit"], cells=k.sum(0).astype(int))
+
+def fit_all(theta):
+    out = {}
+    lab = (f.team_return < theta).astype(int)
+    for opt in OPTS:
+        for arm in ARMS:
+            g = f[(f.optimizer_mode == opt) & (f.arm == arm)].assign(c=lab)
+            k = g.pivot(index="seed", columns="w", values="c").reindex(index=SEEDS, columns=[round(x, 4) for x in GRID]).to_numpy(float)
+            assert not np.isnan(k).any(); n = np.ones_like(k); w = np.array(GRID)
+            p = firth(w, k.sum(0), n.sum(0)); b = firth(w, WEIGHTS @ k, WEIGHTS @ n)
+            out[(opt, arm)] = dict(w50=p["wcrit"][0], status=p["status"][0], in_grid=bool(p["in_grid"][0]), boot=b["wcrit"],
+                                   cells=k.sum(0).astype(int), iso=isotonic_crossing(w, k.sum(0), n.sum(0)))
+    return out
+
+
+sens = []
+for th in THETAS:
+    ft = fit_all(th)
+    for opt in OPTS:
+        for arm in ARMS:
+            x = ft[(opt, arm)]; lo, hi, u = ci(x["boot"])
+            sens.append(dict(theta=th, optimizer=opt, quantity=arm, estimate=x["w50"], ci_low=lo, ci_high=hi, usable=u, in_grid=x["in_grid"], isotonic=x["iso"]))
+        d = ft[(opt, "A")]["boot"] - ft[(opt, "S")]["boot"]; lo, hi, u = ci(d)
+        sens.append(dict(theta=th, optimizer=opt, quantity="A-S", estimate=ft[(opt, "A")]["w50"] - ft[(opt, "S")]["w50"], ci_low=lo, ci_high=hi, usable=u,
+                         in_grid=ft[(opt, "A")]["in_grid"] and ft[(opt, "S")]["in_grid"], isotonic=ft[(opt, "A")]["iso"] - ft[(opt, "S")]["iso"]))
+pd.DataFrame(sens).to_csv(OUT / "E4_theta_sensitivity.csv", index=False)
+
+fits = fit_all(THETA)
 
 rows = []
 say("\n== E4 crossings (w50 [95% CI], collapsed k/10 per cell)")
@@ -42,7 +69,7 @@ for opt in OPTS:
     for arm in ARMS:
         x = fits[(opt, arm)]; lo, hi, u = ci(x["boot"])
         cells = " ".join(f"{w:g}:{c}" for w, c in zip(GRID, x["cells"]))
-        rows.append(dict(optimizer=opt, arm=arm, w50=x["w50"], ci_low=lo, ci_high=hi, usable=u, status=x["status"], in_grid=x["in_grid"], cells=cells))
+        rows.append(dict(optimizer=opt, arm=arm, w50=x["w50"], ci_low=lo, ci_high=hi, usable=u, status=x["status"], in_grid=x["in_grid"], cells=cells, isotonic=x["iso"]))
         say(f"{opt:17s} {arm:9s} {x['w50']:.3f} [{lo:.3f}, {hi:.3f}] usable {u} {x['status']}{'' if x['in_grid'] else ' OUT-OF-GRID'}  {cells}")
 pd.DataFrame(rows).to_csv(OUT / "E4_crossings.csv", index=False)
 
@@ -52,7 +79,8 @@ rows = []; say("\n== E4 contrasts (paired seed-block)")
 for opt in OPTS:
     for name, a, b in CON:
         d = fits[(opt, a)]["boot"] - fits[(opt, b)]["boot"]; lo, hi, u = ci(d); pt = fits[(opt, a)]["w50"] - fits[(opt, b)]["w50"]
-        rows.append(dict(optimizer=opt, contrast=name, difference=pt, ci_low=lo, ci_high=hi, usable=u, excludes_zero=bool(lo > 0 or hi < 0)))
+        ident = fits[(opt, a)]["in_grid"] and fits[(opt, b)]["in_grid"]
+        rows.append(dict(optimizer=opt, contrast=name, difference=pt, ci_low=lo, ci_high=hi, usable=u, excludes_zero=bool(lo > 0 or hi < 0), identified=ident))
         say(f"{opt:17s} {name:17s} {pt:+.3f} [{lo:+.3f}, {hi:+.3f}]{'  *' if lo > 0 or hi < 0 else ''}")
 con = pd.DataFrame(rows); con.to_csv(OUT / "E4_contrasts.csv", index=False)
 
@@ -74,10 +102,15 @@ def get(opt, name): return con[(con.optimizer == opt) & (con.contrast == name)].
 def getI(name): return inter[inter.contrast == name].iloc[0]
 p1 = get("global_clip", "curvature-linear"); p2g = get("global_clip", "A-linear"); p2s = get("separate_no_clip", "A-linear")
 i_c = getI("curvature-linear"); i_s = getI("S-curvature")
-say("\n== Pre-declared predictions")
-say(f"P1 global_clip curvature-linear > 0: {p1.difference:+.3f} [{p1.ci_low:+.3f}, {p1.ci_high:+.3f}] -> {'MET' if p1.ci_low > 0 else 'NOT MET'}")
-say(f"P2 A-linear > 0: global {p2g.difference:+.3f} [{p2g.ci_low:+.3f}, {p2g.ci_high:+.3f}], separate {p2s.difference:+.3f} [{p2s.ci_low:+.3f}, {p2s.ci_high:+.3f}] -> "
-    f"{'MET (both)' if p2g.ci_low > 0 and p2s.ci_low > 0 else ('MET (global only)' if p2g.ci_low > 0 else 'NOT MET')}")
-say(f"P3 separate shrinks curvature-linear: change {i_c.change:+.3f} [{i_c.ci_low:+.3f}, {i_c.ci_high:+.3f}] -> {'MET' if i_c.ci_high < 0 else 'NOT MET'}; "
-    f"shrinks S-curvature: change {i_s.change:+.3f} [{i_s.ci_low:+.3f}, {i_s.ci_high:+.3f}] -> {'MET' if i_s.ci_high < 0 else 'NOT MET'}")
+say(f"\n== Pre-declared predictions (theta = {THETA}; a contrast is identified only if both crossings lie inside the grid)")
+def verdict(ok, ident): return ("MET" if ok else "NOT MET") + ("" if ident else " -- NOT IDENTIFIED (an endpoint lies outside the grid)")
+say(f"P1 global_clip curvature-linear > 0: {p1.difference:+.3f} [{p1.ci_low:+.3f}, {p1.ci_high:+.3f}] -> {verdict(p1.ci_low > 0, p1.identified)}")
+say(f"P2 A-linear > 0: global {p2g.difference:+.3f} [{p2g.ci_low:+.3f}, {p2g.ci_high:+.3f}] -> {verdict(p2g.ci_low > 0, p2g.identified)}; "
+    f"separate {p2s.difference:+.3f} [{p2s.ci_low:+.3f}, {p2s.ci_high:+.3f}] -> {verdict(p2s.ci_low > 0, p2s.identified)}")
+ident_ic = bool(get("global_clip", "curvature-linear").identified and get("separate_no_clip", "curvature-linear").identified)
+ident_is = bool(get("global_clip", "S-curvature").identified and get("separate_no_clip", "S-curvature").identified)
+say(f"P3a separate shrinks curvature-linear: change {i_c.change:+.3f} [{i_c.ci_low:+.3f}, {i_c.ci_high:+.3f}] -> {verdict(i_c.ci_high < 0, ident_ic)}")
+say(f"P3b separate shrinks S-curvature: change {i_s.change:+.3f} [{i_s.ci_low:+.3f}, {i_s.ci_high:+.3f}] -> {verdict(i_s.ci_high < 0, ident_is)}")
+occ = f.assign(w=f.w.round(4)).pivot_table(index=["optimizer_mode", "arm"], columns="w", values="reward_blend_neg", aggfunc="mean")
+occ.to_csv(OUT / "E4_loss_occupancy.csv"); say("\n== E4 fraction of training rewards below zero, by w\n" + occ.round(3).to_string())
 (OUT / "phase3_e4_report.txt").write_text("\n".join(log) + "\n")

@@ -12,3 +12,12 @@ affects nothing but the evaluation environment's construction, exactly as in the
 
 **Effect.** The source hash of `optimizer_factorial.py` changes. The design (arms, grid, seeds, reference, budget,
 analysis) is unchanged.
+
+## D4 (found 2026-10-30, after E4 analysis): E4 labels used the placeholder threshold
+`env/lbf_wrapper.is_collapsed_lbf()` loads θ from `docs/exp_lbf/lbf_collapse_threshold.json`. That file is absent from
+the frozen source, so it silently fell back to its placeholder `_DEFAULT_THRESHOLD = 0.5`. All 800 E4 `collapsed`
+labels therefore use θ = 0.5, not the pre-declared θ = 0.626.
+
+**Fix.** Every run stores its team return, so labels are recomputed at θ = 0.626 from `E4_runs.csv` (no rerun). The
+θ = 0.5 analysis is kept as a sensitivity result. At θ = 0.626, A − S is +0.447 [+0.312, +0.559] (global clip) and
++0.490 [+0.315, +0.619] (separate); at θ = 0.5 it is +0.418 and +0.479; at θ = 0.75 it is +0.370 and +0.447.

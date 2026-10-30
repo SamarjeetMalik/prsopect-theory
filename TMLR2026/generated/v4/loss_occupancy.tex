@@ -1,0 +1,17 @@
+\begin{table}[H]
+\caption{Fraction of training rewards on the loss branch ($x-z_0<0$, $z_0=-2.628$), by mixture weight, for the default and the fully decoupled E1 cells. The fraction depends on $w$ and on the learned policy; near the crossings both branches are active.}
+\label{tab:loss_occupancy}
+\centering\scriptsize
+\begin{tabular}{@{}llrrrrrrrr@{}}
+\toprule
+Cell & Arm & $w{=}0$ & $w{=}0.2$ & $w{=}0.4$ & $w{=}0.5$ & $w{=}0.6$ & $w{=}0.7$ & $w{=}0.85$ & $w{=}1$ \\
+\midrule
+Global clip, raw (default) & B & 0.59 & 0.63 & 0.50 & 0.37 & 0.26 & 0.18 & 0.10 & 0.08 \\
+ & A & 0.59 & 0.65 & 0.58 & 0.57 & 0.55 & 0.49 & 0.13 & 0.07 \\
+ & S & 0.59 & 0.64 & 0.57 & 0.54 & 0.48 & 0.37 & 0.17 & 0.08 \\
+Separate optimizers, normalized & B & 0.58 & 0.58 & 0.32 & 0.18 & 0.14 & 0.10 & 0.08 & 0.07 \\
+ & A & 0.58 & 0.62 & 0.51 & 0.38 & 0.24 & 0.17 & 0.09 & 0.08 \\
+ & S & 0.58 & 0.52 & 0.24 & 0.19 & 0.14 & 0.11 & 0.09 & 0.07 \\
+\bottomrule
+\end{tabular}
+\end{table}

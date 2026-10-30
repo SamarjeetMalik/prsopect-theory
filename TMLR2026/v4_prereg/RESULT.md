@@ -152,3 +152,28 @@ Mechanistically, λ multiplies only LBF's −0.02(1−w) LOAD cost. S scales foo
 their ratio unchanged. The training-reward loss fraction under A falls to 3%, against 14% under linear: agents stop
 attempting loads. So in LBF the asymmetric effect is an incentive change on the costly cooperative action. It is a
 genuine reward-design effect, but not evidence of a loss-aversion "psychology".
+
+## E4 addendum: relabel at the pre-declared θ = 0.626 (deviation D4, 2026-10-30)
+The stored E4 labels used a placeholder θ = 0.5. Recomputed at θ = 0.626 from stored team returns
+(`results/phase3_e4_report.txt`, `results/E4_theta_sensitivity.csv`):
+
+| Contrast | Global clip | Separate, no clip |
+|---|---|---|
+| A − S | +0.447 [+0.312, +0.559]* | +0.490 [+0.315, +0.619]* |
+| A − curvature (identified) | +0.543 [+0.404, +0.638]* | +0.617 [+0.394, +0.767]* |
+
+- Curvature now has an interior crossing (0.23). The linear crossing under the global clip remains below the grid.
+- **Predictions:**
+  - P1 is positive but NOT IDENTIFIED.
+  - P2 is MET; it is identified under separate optimizers.
+  - P3a is positive but NOT IDENTIFIED.
+  - P3b is NOT MET.
+- **A − S holds** for θ ∈ {0.5, 0.626, 0.75} and under the isotonic estimator.
+- **Loss occupancy:** under A, 1–2% of training rewards are below zero at w ≤ .75 (agents stop LOAD attempts).
+
+## Stage I diagnostics (existing data)
+- **Isotonic vs Firth:** they agree within 0.055 (E1/E2) and 0.047 (E3); E4 differs by up to 0.161.
+- **Critic explained variance:**
+  - separate_no_clip/raw: B 0.685, S 0.300;
+  - VecNormalize: B 0.668, S 0.664.
+- **Loss-branch occupancy under fixed z₀:** about 0.58 at w = 0, falling to about 0.07 at w = 1, and policy-dependent.

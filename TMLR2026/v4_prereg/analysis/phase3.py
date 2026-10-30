@@ -19,6 +19,8 @@ EXT, ART, OUT = map(Path, sys.argv[1:4])
 OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ART / "AAMAS2027/analysis"))
 from boundary import firth  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from isotonic import isotonic_crossing  # noqa: E402
 
 SEEDS = list(range(42, 52))
 GRID = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
@@ -40,7 +42,7 @@ def fit(frame, grid, value="collapsed"):
     k = k.to_numpy(float); n = np.ones_like(k); w = np.array(grid)
     point = firth(w, k.sum(0), n.sum(0)); boot = firth(w, WEIGHTS @ k, WEIGHTS @ n)
     return dict(w50=point["wcrit"][0], status=point["status"][0], in_grid=bool(point["in_grid"][0]),
-                slope=point["b1"][0], boot=boot["wcrit"], cells=k.sum(0).astype(int))
+                slope=point["b1"][0], boot=boot["wcrit"], cells=k.sum(0).astype(int), iso=isotonic_crossing(w, k.sum(0), n.sum(0)))
 
 
 def ci(z):
@@ -51,7 +53,7 @@ def ci(z):
 
 def summarize_fit(name, f):
     lo, hi, u = ci(f["boot"])
-    return dict(condition=name, w50=f["w50"], ci_low=lo, ci_high=hi, usable=u, status=f["status"], in_grid=f["in_grid"],
+    return dict(condition=name, w50=f["w50"], isotonic=f["iso"], ci_low=lo, ci_high=hi, usable=u, status=f["status"], in_grid=f["in_grid"],
                 zero_width=bool(np.isfinite(lo) and abs(hi - lo) < 1e-12), cells=" ".join(f"{w:g}:{c}/10" for w, c in zip(f.get("grid", GRID), f["cells"])))
 
 
@@ -106,6 +108,10 @@ dcols = [c for c in ["mb_actor_grad_norm", "mb_critic_grad_norm", "mb_post_actor
 rcols = [c for c in both.columns if c.startswith("reward_") and c.endswith("_rms")]
 diag = both.groupby(["cell", "arm"])[dcols + rcols].mean().reindex([(c, a) for c in CELLS for a in ARMS])
 diag.to_csv(OUT / "E1E2_diagnostics.csv")
+occ = both.assign(w=both.w.round(4)).pivot_table(index=["cell", "arm"], columns="w", values="reward_centered_neg", aggfunc="mean")
+occ = occ.reindex([(c, a) for c in CELLS for a in ARMS]); occ.to_csv(OUT / "E1E2_loss_occupancy.csv")
+ev = both.groupby(["cell", "arm"]).explained_variance_last.mean().reindex([(c, a) for c in CELLS for a in ARMS])
+ev.to_csv(OUT / "E1E2_explained_variance.csv")
 
 # Cross-platform agreement: E1 global_clip/raw B/A/S vs archived direct control (authors' cluster).
 arch = []

@@ -147,18 +147,62 @@ fig.tight_layout(); fig.savefig(OUT / "horizon_curves.pdf"); plt.close(fig)
 c4 = pd.read_csv(RES / "E4_crossings.csv"); k4 = pd.read_csv(RES / "E4_contrasts.csv"); d4 = pd.read_csv(RES / "E4_diagnostics.csv")
 OPT_TEX = {"global_clip": "Global clip", "separate_no_clip": "Separate, no clip"}
 ARM4 = {"linear": "Linear", "curvature": "Curvature", "A": r"A ($\lambda{=}4$)", "S": r"S ($\times4$)"}
+def star_id(x):
+    """Star only identified contrasts that exclude zero; mark contrasts with an out-of-grid endpoint with a dagger."""
+    if not x.identified:
+        return r"$^{\dagger}$"
+    return star(x)
+
+
 rows = []
 for opt in ["global_clip", "separate_no_clip"]:
     r = [OPT_TEX[opt]]
     for a in ["linear", "curvature", "A", "S"]:
         x = c4[(c4.optimizer == opt) & (c4.arm == a)].iloc[0]
-        r.append(f"${num(x.w50)}$ ${iv(x.ci_low, x.ci_high)}$" + ("$^{\\dagger}$" if not x.in_grid else ""))
-    for name in ["A-S", "A-linear"]:
-        x = k4[(k4.optimizer == opt) & (k4.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
+        r.append(f"${num(x.w50)}$" + ("$^{\\dagger}$" if not x.in_grid else "") + f" ${iv(x.ci_low, x.ci_high)}$")
+    for name in ["A-S", "A-curvature"]:
+        x = k4[(k4.optimizer == opt) & (k4.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star_id(x)} ${iv(x.ci_low, x.ci_high, True)}$")
     rows.append(r)
 table(OUT / "lbf_table.tex",
-      r"MAPPO on Level-Based Foraging (E4): crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. $^{\dagger}$: point estimate outside the sampled grid (linear and curvature rarely collapse, so their crossings are not localized). $^{\ast}$: interval excludes zero.",
-      "tab:lbf", "@{}lcccccc@{}", r"Optimizer & Linear & Curvature & A & S & A$-$S & A$-$linear", rows, size=r"\footnotesize")
+      r"MAPPO on Level-Based Foraging (E4) at the pre-declared label $\theta=0.626$: crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. A$-$S compares the gain-to-loss ratio at matched loss scale; A$-$curvature isolates the loss-branch multiplier. $^{\dagger}$: point estimate outside the sampled grid (the linear crossing under the global clip), so contrasts that use it are not identified. $^{\ast}$: identified contrast whose interval excludes zero. Threshold sensitivity is in Table~\ref{tab:lbf_theta}.",
+      "tab:lbf", "@{}lcccccc@{}", r"Optimizer & Linear & Curvature & A & S & A$-$S & A$-$curvature", rows, size=r"\footnotesize")
+
+ts = pd.read_csv(RES / "E4_theta_sensitivity.csv")
+rows = []
+for th in sorted(ts.theta.unique()):
+    for opt in ["global_clip", "separate_no_clip"]:
+        r = [f"{th:.3f}" if opt == "global_clip" else "", OPT_TEX[opt]]
+        for q in ["A", "S", "A-S"]:
+            x = ts[(ts.theta == th) & (ts.optimizer == opt) & (ts.quantity == q)].iloc[0]
+            r.append(f"${num(x.estimate, q == 'A-S')}$ ${iv(x.ci_low, x.ci_high, q == 'A-S')}$")
+        x = ts[(ts.theta == th) & (ts.optimizer == opt) & (ts.quantity == "A-S")].iloc[0]; r.append(f"${num(x.isotonic, True)}$")
+        rows.append(r)
+table(OUT / "lbf_theta.tex",
+      r"E4 sensitivity to the collapse threshold $\theta$ (native team return) and to the estimator. The stored run labels used $\theta=0.5$ (deviation D4); the pre-declared $\theta=0.626$ is primary. Last column: difference of decreasing-isotonic crossings.",
+      "tab:lbf_theta", "@{}llcccc@{}", r"$\theta$ & Optimizer & A & S & A$-$S (Firth) & A$-$S (isotonic)", rows, size=r"\footnotesize", pos="H")
+
+oc1 = pd.read_csv(RES / "E1E2_loss_occupancy.csv"); oc4 = pd.read_csv(RES / "E4_loss_occupancy.csv")
+wcols1 = [c for c in oc1.columns if c not in ("cell", "arm")]
+rows = [[CELL_TEX[r.cell] if r.arm == "B" else "", r.arm] + [f"{getattr(r, '_' + str(i + 3)):.2f}" for i in range(len(wcols1))]
+        for r in oc1[oc1.cell.isin(["global_clip/raw", "separate_no_clip/vecnormalize"]) & oc1.arm.isin(["B", "A", "S"])].itertuples()]
+table(OUT / "loss_occupancy.tex",
+      r"Fraction of training rewards on the loss branch ($x-z_0<0$, $z_0=-2.628$), by mixture weight, for the default and the fully decoupled E1 cells. The fraction depends on $w$ and on the learned policy; near the crossings both branches are active.",
+      "tab:loss_occupancy", "@{}ll" + "r" * len(wcols1) + "@{}", "Cell & Arm & " + " & ".join(f"$w{{=}}{float(x):g}$" for x in wcols1), rows, size=r"\scriptsize", pos="H")
+wcols4 = [c for c in oc4.columns if c not in ("optimizer_mode", "arm")]
+rows = [[OPT_TEX[r.optimizer_mode] if r.arm == "A" else "", ARM4[r.arm]] + [f"{getattr(r, '_' + str(i + 3)):.3f}" for i in range(len(wcols4))]
+        for r in oc4.itertuples()]
+table(OUT / "lbf_occupancy.tex",
+      r"E4 fraction of training rewards below zero (reached through the LOAD effort cost), by mixture weight. Under A, agents largely stop attempting loads.",
+      "tab:lbf_occupancy", "@{}ll" + "r" * len(wcols4) + "@{}", "Optimizer & Arm & " + " & ".join(f"$w{{=}}{float(x):g}$" for x in wcols4), rows, size=r"\scriptsize", pos="H")
+
+iso_rows = []
+c1 = cr.assign(gap=(cr.w50 - cr.isotonic).abs()); iso_rows.append(["E1/E2 (20 fits)", f"{c1[c1.in_grid].gap.max():.3f}", f"{c1[c1.in_grid].gap.median():.3f}"])
+h3 = h.assign(gap=(h.w50 - h.isotonic).abs()); iso_rows.append(["E3 (72 fits)", f"{h3.gap.max():.3f}", f"{h3.gap.median():.3f}"])
+c4i = c4[c4.in_grid & np.isfinite(c4.isotonic)].assign(gap=lambda d: (d.w50 - d.isotonic).abs())
+iso_rows.append([f"E4, $\\theta=0.626$ ({len(c4i)} in-grid fits)", f"{c4i.gap.max():.3f}", f"{c4i.gap.median():.3f}"])
+table(OUT / "isotonic_agreement.tex",
+      r"Agreement between Firth and decreasing-isotonic crossings for every in-grid fit. LBF collapse proportions are far from the logistic shape for some arms, which is why E4 shows the largest gaps; E4's A$-$S conclusion holds under both estimators (Table~\ref{tab:lbf_theta}).",
+      "tab:isotonic", "@{}lrr@{}", r"Experiment & Max $|$Firth$-$isotonic$|$ & Median", iso_rows, pos="H")
 
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
@@ -224,5 +268,11 @@ table(OUT / "compute_table.tex",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
       + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
+evd = pd.read_csv(RES / "E1E2_explained_variance.csv").set_index(["cell", "arm"]).explained_variance_last
+m += mac("VfourEVSepRawB", f"{evd[('separate_no_clip/raw', 'B')]:.2f}"); m += mac("VfourEVSepRawS", f"{evd[('separate_no_clip/raw', 'S')]:.2f}")
+m += mac("VfourEVNormB", f"{evd[('separate_no_clip/vecnormalize', 'B')]:.2f}"); m += mac("VfourEVNormS", f"{evd[('separate_no_clip/vecnormalize', 'S')]:.2f}")
+m += mac("VfourLBFLossOnly", cv(k4, optimizer="separate_no_clip", contrast="A-curvature"))
+m += mac("VfourLBFLossOnlyGlobal", cv(k4, optimizer="global_clip", contrast="A-curvature"))
+m += mac("VfourIsoMaxSupply", f"{max(c1[c1.in_grid].gap.max(), h3.gap.max()):.3f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

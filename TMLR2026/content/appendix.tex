@@ -69,7 +69,10 @@ Logistic, probit and decreasing isotonic fits are sensitivity estimators on the 
 fit is weighted pool-adjacent-violators; its crossing is linear interpolation between the last cell with
 fitted probability at least $.5$ and the first below it, and a plateau at exactly $.5$ is reported as an
 interval with its midpoint used for comparison. The maximum spread among the three point estimators on
-the legacy supply-chain sweep is 0.018.
+the legacy supply-chain sweep is 0.018. Table~\ref{tab:isotonic} compares Firth and isotonic crossings for
+every in-grid E1--E4 fit.
+
+\input{generated/v4/isotonic_agreement}
 
 \input{generated/supply_cells}
 \input{generated/lambda_table}
@@ -80,13 +83,17 @@ the legacy supply-chain sweep is 0.018.
 
 E1--E4 were declared in a pre-registration written before any of their outcomes existed. Source,
 design and protocol hashes were frozen before E1 launched, and the E4 runner's hash before E4 launched,
-after a timing check. Launch scripts refused to run on any hash mismatch. The record shows three
+after a timing check. Launch scripts refused to run on any hash mismatch. The record shows four
 departures, none changing a design:
 (i)~the frozen E1 runner omitted a protocol field read at evaluation, so every run crashed after training
 and before producing a label; the field was added with the mapping used by the earlier direct control,
 before any outcome existed;
 (ii--iii)~two analysis-code errors (floating-point grid keys; the condition name ``null'' read as missing)
-raised exceptions before any fit was computed.
+raised exceptions before any fit was computed;
+(iv)~found after the E4 analysis: the LBF label function reads its threshold from a calibration file that was
+absent from the frozen source and silently fell back to a placeholder of 0.5, so the stored E4 labels use
+$\theta=0.5$ rather than the declared 0.626. Because every run stores its team return, all E4 results are
+recomputed at $\theta=0.626$; the 0.5 analysis is kept as a sensitivity result (Table~\ref{tab:lbf_theta}).
 The pre-declared predictions that failed are reported in the main text: the Adam-$\epsilon$ route (E2)
 and two of three LBF predictions (E4). An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
@@ -103,12 +110,15 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \input{generated/v4/factorial_interactions}
 \input{generated/v4/factorial_diagnostics}
 \input{generated/v4/factorial_cells}
+\input{generated/v4/loss_occupancy}
 \FloatBarrier
 
-\section{Level-Based Foraging Cells}
+\section{Level-Based Foraging Details}
 \label{app:lbf}
 
 \input{generated/v4/lbf_cells}
+\input{generated/v4/lbf_theta}
+\input{generated/v4/lbf_occupancy}
 \FloatBarrier
 
 \section{Computational Accounting}
@@ -124,7 +134,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 \section{Reproducibility Artifact}
 \label{app:artifact}
 
-The anonymized archive contains the manuscript source; the frozen designs, pre-registration, hashes and
+The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
 deviation log; the executed source for E1--E4; per-run tables for every E1--E4 trajectory (protocol,
 label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Raw per-minibatch diagnostics and checkpoints
