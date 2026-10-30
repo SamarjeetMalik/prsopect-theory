@@ -1,18 +1,16 @@
-\begin{table}[t]
+\begin{table}[!htbp]
 \caption{Optimizer $\times$ reward-normalization factorial (E1) and Adam-$\epsilon$ addendum (E2): crossings $w_{50}$ at 300k with 95\% seed-block intervals. B: curvature only; A: losses $\times7$; S: both branches $\times7$; R: both branches $\times3.451$ (A's pooled RMS ratio). Ten seeds per cell, eight mixture cells, one platform.}
 \label{tab:factorial_crossings}
-\centering\scriptsize
-\resizebox{\linewidth}{!}{%
+\centering\footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Optimizer / reward & B & A & S & R \\
 \midrule
-Global clip, raw (default) & $0.538$ $[0.461,\,0.624]$ & $0.821$ $[0.775,\,0.864]$ & $0.895$ $[0.835,\,0.957]$ & $0.794$ $[0.775,\,0.821]$ \\
-Global clip, normalized reward & $0.306$ $[0.201,\,0.413]$ & $0.593$ $[0.527,\,0.655]$ & $0.356$ $[0.272,\,0.436]$ & $0.367$ $[0.324,\,0.414]$ \\
-Separate optimizers, raw & $0.326$ $[0.256,\,0.392]$ & $0.661$ $[0.628,\,0.696]$ & $0.487$ $[0.412,\,0.569]$ & $0.353$ $[0.270,\,0.442]$ \\
-Separate optimizers, normalized & $0.414$ $[0.351,\,0.506]$ & $0.602$ $[0.560,\,0.641]$ & $0.365$ $[0.282,\,0.439]$ & $0.350$ $[0.252,\,0.438]$ \\
-Global clip, raw, Adam $\epsilon{=}10^{-8}$ & $0.450$ $[0.387,\,0.534]$ & $0.757$ $[0.729,\,0.775]$ & $0.708$ $[0.649,\,0.770]$ & $0.615$ $[0.559,\,0.683]$ \\
+Global clip, raw (default) & \begin{tabular}[t]{@{}c@{}}$0.538$\\[-1pt]{\scriptsize $[0.461,\,0.624]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.821$\\[-1pt]{\scriptsize $[0.775,\,0.864]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.895$\\[-1pt]{\scriptsize $[0.835,\,0.957]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.794$\\[-1pt]{\scriptsize $[0.775,\,0.821]$}\end{tabular} \\
+Global clip, normalized reward & \begin{tabular}[t]{@{}c@{}}$0.306$\\[-1pt]{\scriptsize $[0.201,\,0.413]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.593$\\[-1pt]{\scriptsize $[0.527,\,0.655]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.356$\\[-1pt]{\scriptsize $[0.272,\,0.436]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.367$\\[-1pt]{\scriptsize $[0.324,\,0.414]$}\end{tabular} \\
+Separate optimizers, raw & \begin{tabular}[t]{@{}c@{}}$0.326$\\[-1pt]{\scriptsize $[0.256,\,0.392]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.661$\\[-1pt]{\scriptsize $[0.628,\,0.696]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.487$\\[-1pt]{\scriptsize $[0.412,\,0.569]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.353$\\[-1pt]{\scriptsize $[0.270,\,0.442]$}\end{tabular} \\
+Separate optimizers, normalized & \begin{tabular}[t]{@{}c@{}}$0.414$\\[-1pt]{\scriptsize $[0.351,\,0.506]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.602$\\[-1pt]{\scriptsize $[0.560,\,0.641]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.365$\\[-1pt]{\scriptsize $[0.282,\,0.439]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.350$\\[-1pt]{\scriptsize $[0.252,\,0.438]$}\end{tabular} \\
+Global clip, raw, Adam $\epsilon{=}10^{-8}$ & \begin{tabular}[t]{@{}c@{}}$0.450$\\[-1pt]{\scriptsize $[0.387,\,0.534]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.757$\\[-1pt]{\scriptsize $[0.729,\,0.775]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.708$\\[-1pt]{\scriptsize $[0.649,\,0.770]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.615$\\[-1pt]{\scriptsize $[0.559,\,0.683]$}\end{tabular} \\
 \bottomrule
 \end{tabular}
-}
 \end{table}

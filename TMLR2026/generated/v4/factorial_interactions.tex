@@ -1,17 +1,15 @@
-\begin{table}[t]
+\begin{table}[H]
 \caption{Change in each contrast relative to the default cell (global clip, raw reward), paired by seed. $^{\ast}$: interval excludes zero.}
 \label{tab:factorial_interactions}
-\centering\scriptsize
-\resizebox{\linewidth}{!}{%
+\centering\footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Intervention & $\Delta$(A$-$S) & $\Delta$(A$-$B) & $\Delta$(S$-$B) & $\Delta$(R$-$B) \\
 \midrule
-Global clip, normalized reward & $+0.311$$^{\ast}$ $[+0.220,\,+0.402]$ & $+0.003$ $[-0.130,\,+0.146]$ & $-0.308$$^{\ast}$ $[-0.443,\,-0.158]$ & $-0.195$$^{\ast}$ $[-0.349,\,-0.046]$ \\
-Separate optimizers, raw & $+0.248$$^{\ast}$ $[+0.136,\,+0.373]$ & $+0.051$ $[-0.071,\,+0.161]$ & $-0.197$$^{\ast}$ $[-0.366,\,-0.021]$ & $-0.229$$^{\ast}$ $[-0.350,\,-0.104]$ \\
-Separate optimizers, normalized & $+0.311$$^{\ast}$ $[+0.209,\,+0.396]$ & $-0.096$ $[-0.239,\,+0.034]$ & $-0.407$$^{\ast}$ $[-0.565,\,-0.258]$ & $-0.320$$^{\ast}$ $[-0.480,\,-0.174]$ \\
-Global clip, raw, Adam $\epsilon{=}10^{-8}$ & $+0.122$$^{\ast}$ $[+0.008,\,+0.253]$ & $+0.023$ $[-0.087,\,+0.132]$ & $-0.099$ $[-0.243,\,+0.033]$ & $-0.090$ $[-0.201,\,+0.036]$ \\
+Global clip, normalized reward & \begin{tabular}[t]{@{}c@{}}$+0.311$$^{\ast}$\\[-1pt]{\scriptsize $[+0.220,\,+0.402]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.003$\\[-1pt]{\scriptsize $[-0.130,\,+0.146]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.308$$^{\ast}$\\[-1pt]{\scriptsize $[-0.443,\,-0.158]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.195$$^{\ast}$\\[-1pt]{\scriptsize $[-0.349,\,-0.046]$}\end{tabular} \\
+Separate optimizers, raw & \begin{tabular}[t]{@{}c@{}}$+0.248$$^{\ast}$\\[-1pt]{\scriptsize $[+0.136,\,+0.373]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.051$\\[-1pt]{\scriptsize $[-0.071,\,+0.161]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.197$$^{\ast}$\\[-1pt]{\scriptsize $[-0.366,\,-0.021]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.229$$^{\ast}$\\[-1pt]{\scriptsize $[-0.350,\,-0.104]$}\end{tabular} \\
+Separate optimizers, normalized & \begin{tabular}[t]{@{}c@{}}$+0.311$$^{\ast}$\\[-1pt]{\scriptsize $[+0.209,\,+0.396]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.096$\\[-1pt]{\scriptsize $[-0.239,\,+0.034]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.407$$^{\ast}$\\[-1pt]{\scriptsize $[-0.565,\,-0.258]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.320$$^{\ast}$\\[-1pt]{\scriptsize $[-0.480,\,-0.174]$}\end{tabular} \\
+Global clip, raw, Adam $\epsilon{=}10^{-8}$ & \begin{tabular}[t]{@{}c@{}}$+0.122$$^{\ast}$\\[-1pt]{\scriptsize $[+0.008,\,+0.253]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.023$\\[-1pt]{\scriptsize $[-0.087,\,+0.132]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.099$\\[-1pt]{\scriptsize $[-0.243,\,+0.033]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.090$\\[-1pt]{\scriptsize $[-0.201,\,+0.036]$}\end{tabular} \\
 \bottomrule
 \end{tabular}
-}
 \end{table}

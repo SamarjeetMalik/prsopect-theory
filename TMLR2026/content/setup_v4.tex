@@ -2,7 +2,7 @@
 \caption{Experimental setup. Legacy sweeps (earlier platform, 20 seeds per cell) supply the 300k decomposition and the cross-sectional horizon fit; pre-registered experiments E1--E4 run on one platform with ten seeds per cell.}
 \label{tab:setup}
 \centering\scriptsize
-\begin{tabular}{@{}p{.16\textwidth}p{.39\textwidth}p{.39\textwidth}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.395\textwidth}>{\raggedright\arraybackslash}p{.395\textwidth}@{}}
 \toprule
  & Supply chain (legacy, E1--E3) & Level-Based Foraging (E4) \\
 \midrule
@@ -14,7 +14,7 @@ Optimizer & Default: one Adam step ($\epsilon=10^{-5}$), global clip 0.5, no val
 Collapse label & $\mathbf 1[\bar S<10\wedge\bar\pi\le-127.1]$ on ten deterministic evaluation episodes. & Native team return $<0.626$ over ten evaluation episodes (no effort cost). \\
 Arms & Linear; curvature $\alpha{=}\beta{=}.88$ with $\lambda\in\{1,\ldots,7\}$ (legacy); B, A ($\lambda=7$), S ($\times7$), R ($\times3.451$) with $z_0=-2.628$ (E1, E2); linear, curvature, $\lambda=7$ (E3). & Linear; curvature; A ($\lambda=4$); S (both branches $\times4$). \\
 Budget, grid & 300k, eight cells (E1, E2); 3.6M with 24 checkpoints, nine cells (E3). & 2M timesteps; ten cells $\{0,.1,.2,.3,.5,.65,.75,.85,.9,.95\}$. \\
-Uncertainty & \multicolumn{2}{p{.78\textwidth}}{Firth logistic midpoint; 2,000 multinomial draws of complete training-seed blocks, shared across conditions so that contrasts are paired.} \\
+Uncertainty & \multicolumn{2}{>{\raggedright\arraybackslash}p{.80\textwidth}}{Firth logistic midpoint; 2,000 multinomial draws of complete training-seed blocks, shared across conditions so that contrasts are paired.} \\
 \bottomrule
 \end{tabular}
 \end{table*}

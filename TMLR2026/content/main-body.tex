@@ -38,9 +38,8 @@ that makes symmetric reward scaling indistinguishable from loss asymmetry under 
 showing that it acts through critic target magnitude rather than Adam's $\epsilon$;
 (iii)~evidence that, with the artifact removed, a loss-only multiplier moves the crossing and a
 symmetric one does not, replicated in a second environment and learner;
-(iv)~a single-platform refined horizon cohort showing that the multiplier contrast persists but
-shrinks to 3.6M transitions, that crossings are non-monotone in budget, and that collapse is not
-absorbing.
+(iv)~a single-platform refined horizon cohort under the default optimizer showing that crossings stay
+budget-dependent and non-monotone to 3.6M transitions and that collapse is not absorbing.
 The logistic midpoint itself is standard response-curve machinery; the contribution is its controlled
 use to compare reward designs while exposing its dependence on budget, reward units, optimizer and
 behavioral label. We use ``boundary'' only in this operational sense, not as a claim of phase-like
@@ -209,9 +208,9 @@ unimodality ($p\ge0.30$). At $n=20$ the dip test, calibrated against the uniform
 has little power, so non-rejection is not evidence of unimodality; it only means the data do not
 establish a second regime. We therefore use \emph{threshold-defined behavioral crossing} throughout.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=.62\textwidth]{generated/boundary_observed.pdf}
+\includegraphics[width=.46\textwidth]{generated/boundary_observed.pdf}
 \caption{Finite-budget supply PPO crossings in the legacy sweep. Top and middle: observed collapse proportions with 95\% Wilson intervals, Firth curves drawn only over sampled grids, midpoint lines and seed-block 95\% CI bands. Bottom: independently fitted horizons; budgets count requested agent transitions.}
 \label{fig:boundary}
 \Description{Observed collapse proportions and fitted curves at 150k and 300k, followed by the four estimated finite-budget midpoints and intervals.}
@@ -231,9 +230,13 @@ within-policy recovery.
 To follow the same policies, we trained 270 trajectories to 3.6M transitions, evaluated every 150k: linear,
 curvature-only and $\lambda=7$ rewards, ten seeds, and nine mixture cells
 $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$. The four cells between .6 and .85 were added because a coarser
-five-cell grid gave zero-width bootstrap intervals there. The multiplier-minus-curvature difference is
-positive at every primary budget but shrinks, from \VfourHorizonStart{} at 300k to \VfourHorizonEnd{} at
-3.6M (Table~\ref{tab:horizon}, Figure~\ref{fig:horizon}). The $\lambda=7$ crossing falls monotonically,
+five-cell grid gave zero-width bootstrap intervals there. E3 uses the \emph{default} optimizer
+configuration (single Adam step, global clip, raw rewards). Section~\ref{sec:optimizer} shows that in this
+configuration reward scale alone moves the crossing, so the E3 contrasts below include that scale pathway:
+they measure how transform effects evolve with budget under the default learner, not loss asymmetry. The
+multiplier-minus-curvature difference is positive at every primary budget but shrinks, from
+\VfourHorizonStart{} at 300k to \VfourHorizonEnd{} at 3.6M (Table~\ref{tab:horizon},
+Figure~\ref{fig:horizon}). The $\lambda=7$ crossing falls monotonically,
 whereas the linear and curvature-only crossings fall until 900k and then rise again. No condition meets
 the pre-declared stability criterion, a 3.6M$-$1.8M interval within $\pm.05$
 (Table~\ref{tab:horizon_stability}), so all readings are budget-conditional.
@@ -246,9 +249,9 @@ crossings reflect this relapse at high $w$. Cell-level counts are in Appendix~\r
 \input{generated/v4/horizon_table}
 \input{generated/v4/horizon_stability}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
-\includegraphics[width=.7\textwidth]{generated/v4/horizon_curves.pdf}
+\includegraphics[width=.78\textwidth]{generated/v4/horizon_curves.pdf}
 \caption{E3 crossings at every checkpoint (lines) with pointwise 95\% seed-block bands. Nine mixture cells, ten seeds per cell and condition.}
 \label{fig:horizon}
 \Description{Three crossing curves over training budget: lambda seven decreasing throughout; linear and curvature-only falling to 900k and rising afterwards.}
@@ -268,7 +271,7 @@ partially cancel. Against the curvature baseline the loss-multiplier shift is \L
 On its own, this shift cannot distinguish loss asymmetry from the larger reward magnitude the multiplier
 creates; Section~\ref{sec:optimizer} separates the two.
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=.92\textwidth]{generated/decomposition_observed.pdf}
 \caption{Legacy supply PPO null and selected transform conditions at 300k. Points show collapse counts divided by cell totals with 95\% Wilson intervals; curves are Firth fits over observed grids. Vertical bands are midpoint seed-block intervals.}
@@ -335,7 +338,7 @@ within a fixed configuration.
 \input{generated/v4/factorial_crossings}
 \input{generated/v4/factorial_contrasts}
 
-\begin{figure}[t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/factorial_contrasts.pdf}
 \caption{Symmetric-scaling (left) and asymmetric-minus-symmetric (right) crossing differences in each optimizer cell, with paired 95\% seed-block intervals. Under the default configuration (top row) symmetric scaling moves the crossing as far as the loss multiplier; with normalized rewards and/or separate optimizers it does not, while A$-$S becomes positive.}
@@ -344,6 +347,7 @@ within a fixed configuration.
 \end{figure}
 
 % =======================================================================
+\FloatBarrier
 \section{A Second Environment: Level-Based Foraging}
 \label{sec:lbf}
 
@@ -375,6 +379,7 @@ the supply-chain clipping pathway, which LBF does not exhibit.
 \input{generated/v4/lbf_table}
 
 % =======================================================================
+\FloatBarrier
 \section{Discussion and Limitations}
 \label{sec:discussion}
 

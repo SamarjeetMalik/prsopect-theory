@@ -1,17 +1,15 @@
-\begin{table}[t]
-\caption{Refined single-platform horizon cohort (E3): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-block intervals; last row is the paired contrast.}
+\begin{table}[!htbp]
+\caption{Refined single-platform horizon cohort (E3), default optimizer configuration (global clip, raw rewards): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-block intervals; last row is the paired contrast.}
 \label{tab:horizon}
-\centering\scriptsize
-\resizebox{\linewidth}{!}{%
+\centering\footnotesize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Condition & 300k & 900k & 1.8M & 3.6M \\
 \midrule
-Linear & $0.663$ $[0.628,\,0.698]$ & $0.512$ $[0.449,\,0.584]$ & $0.535$ $[0.471,\,0.599]$ & $0.578$ $[0.515,\,0.643]$ \\
-Curvature only & $0.587$ $[0.540,\,0.629]$ & $0.473$ $[0.400,\,0.558]$ & $0.523$ $[0.453,\,0.597]$ & $0.559$ $[0.513,\,0.612]$ \\
-$\lambda=7$ & $0.877$ $[0.843,\,0.909]$ & $0.760$ $[0.745,\,0.775]$ & $0.710$ $[0.690,\,0.730]$ & $0.681$ $[0.634,\,0.713]$ \\
-$\lambda7-$curvature & $+0.291$$^{\ast}$ $[+0.233,\,+0.341]$ & $+0.287$$^{\ast}$ $[+0.193,\,+0.364]$ & $+0.187$$^{\ast}$ $[+0.123,\,+0.247]$ & $+0.121$$^{\ast}$ $[+0.064,\,+0.177]$ \\
+Linear & \begin{tabular}[t]{@{}c@{}}$0.663$\\[-1pt]{\scriptsize $[0.628,\,0.698]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.512$\\[-1pt]{\scriptsize $[0.449,\,0.584]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.535$\\[-1pt]{\scriptsize $[0.471,\,0.599]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.578$\\[-1pt]{\scriptsize $[0.515,\,0.643]$}\end{tabular} \\
+Curvature only & \begin{tabular}[t]{@{}c@{}}$0.587$\\[-1pt]{\scriptsize $[0.540,\,0.629]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.473$\\[-1pt]{\scriptsize $[0.400,\,0.558]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.523$\\[-1pt]{\scriptsize $[0.453,\,0.597]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.559$\\[-1pt]{\scriptsize $[0.513,\,0.612]$}\end{tabular} \\
+$\lambda=7$ & \begin{tabular}[t]{@{}c@{}}$0.877$\\[-1pt]{\scriptsize $[0.843,\,0.909]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.760$\\[-1pt]{\scriptsize $[0.745,\,0.775]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.710$\\[-1pt]{\scriptsize $[0.690,\,0.730]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.681$\\[-1pt]{\scriptsize $[0.634,\,0.713]$}\end{tabular} \\
+$\lambda7-$curvature & \begin{tabular}[t]{@{}c@{}}$+0.291$$^{\ast}$\\[-1pt]{\scriptsize $[+0.233,\,+0.341]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.287$$^{\ast}$\\[-1pt]{\scriptsize $[+0.193,\,+0.364]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.187$$^{\ast}$\\[-1pt]{\scriptsize $[+0.123,\,+0.247]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.121$$^{\ast}$\\[-1pt]{\scriptsize $[+0.064,\,+0.177]$}\end{tabular} \\
 \bottomrule
 \end{tabular}
-}
 \end{table}

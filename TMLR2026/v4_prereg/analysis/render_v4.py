@@ -32,21 +32,28 @@ def star(r):
     return r"$^{\ast}$" if (r.ci_low > 0 or r.ci_high < 0) else ""
 
 
-def table(path, caption, label, colspec, header, rows, size=r"\small", fit=False):
-    body = "\n".join(" & ".join(r) + r" \\" for r in rows)
-    open_, close_ = (r"\resizebox{\linewidth}{!}{%" + "\n", "}\n") if fit else ("", "")
-    path.write_text(f"""\\begin{{table}}[t]
+def stack(cell):
+    """Put a trailing confidence interval on its own line inside the cell, so wide tables need no shrinking."""
+    if " $[" not in cell:
+        return cell
+    est, ci = cell.split(" $[", 1)
+    return r"\begin{tabular}[t]{@{}c@{}}" + est + r"\\[-1pt]{\scriptsize $[" + ci + r"}\end{tabular}"
+
+
+def table(path, caption, label, colspec, header, rows, size=r"\small", fit=False, pos="!htbp"):
+    body = "\n".join(" & ".join(stack(c) for c in r) + r" \\" for r in rows)
+    path.write_text(f"""\\begin{{table}}[{pos}]
 \\caption{{{caption}}}
 \\label{{{label}}}
 \\centering{size}
-{open_}\\begin{{tabular}}{{{colspec}}}
+\\begin{{tabular}}{{{colspec}}}
 \\toprule
 {header} \\\\
 \\midrule
 {body}
 \\bottomrule
 \\end{{tabular}}
-{close_}\\end{{table}}
+\\end{{table}}
 """)
 
 
@@ -61,7 +68,7 @@ for c in CELLS:
     rows.append(r)
 table(OUT / "factorial_crossings.tex",
       r"Optimizer $\times$ reward-normalization factorial (E1) and Adam-$\epsilon$ addendum (E2): crossings $w_{50}$ at 300k with 95\% seed-block intervals. B: curvature only; A: losses $\times7$; S: both branches $\times7$; R: both branches $\times3.451$ (A's pooled RMS ratio). Ten seeds per cell, eight mixture cells, one platform.",
-      "tab:factorial_crossings", "@{}lcccc@{}", r"Optimizer / reward & B & A & S & R", rows, size=r"\scriptsize", fit=True)
+      "tab:factorial_crossings", "@{}lcccc@{}", r"Optimizer / reward & B & A & S & R", rows, size=r"\footnotesize")
 rows = []
 for c in CELLS:
     r = [CELL_TEX[c]]
@@ -71,7 +78,7 @@ for c in CELLS:
     rows.append(r)
 table(OUT / "factorial_contrasts.tex",
       r"Paired seed-block contrasts within each optimizer cell. $^{\ast}$: 95\% interval excludes zero. A$-$S is the pre-declared asymmetry contrast; S$-$B and R$-$B are symmetric-scaling effects.",
-      "tab:factorial_contrasts", "@{}lcccc@{}", r"Optimizer / reward & A$-$S & A$-$B & S$-$B & R$-$B", rows, size=r"\scriptsize", fit=True)
+      "tab:factorial_contrasts", "@{}lcccc@{}", r"Optimizer / reward & A$-$S & A$-$B & S$-$B & R$-$B", rows, size=r"\footnotesize")
 rows = []
 for c in CELLS[1:]:
     r = [CELL_TEX[c]]
@@ -81,7 +88,7 @@ for c in CELLS[1:]:
     rows.append(r)
 table(OUT / "factorial_interactions.tex",
       r"Change in each contrast relative to the default cell (global clip, raw reward), paired by seed. $^{\ast}$: interval excludes zero.",
-      "tab:factorial_interactions", "@{}lcccc@{}", r"Intervention & $\Delta$(A$-$S) & $\Delta$(A$-$B) & $\Delta$(S$-$B) & $\Delta$(R$-$B)", rows, size=r"\scriptsize", fit=True)
+      "tab:factorial_interactions", "@{}lcccc@{}", r"Intervention & $\Delta$(A$-$S) & $\Delta$(A$-$B) & $\Delta$(S$-$B) & $\Delta$(R$-$B)", rows, size=r"\footnotesize", pos="H")
 rows = []
 for c in CELLS:
     for a in ["B", "A", "S"]:
@@ -90,17 +97,17 @@ for c in CELLS:
                      f"{x.mb_actor_grad_energy_share:.3f}", f"{x.mb_clip_freq:.3f}", f"{x.reward_transformed_rms:.1f}"])
 table(OUT / "factorial_diagnostics.tex",
       r"Optimizer diagnostics (means over runs of per-minibatch means). Pre-clip critic and actor gradient norms, post-clip (applied) actor norm, actor share of squared gradient norm, fraction of minibatches whose norm exceeds 0.5, and transformed-reward RMS. With separate optimizers no clipping is applied, so the applied actor norm equals the pre-clip norm.",
-      "tab:factorial_diagnostics", "@{}llrrrrrr@{}", r"Cell & Arm & Critic & Actor & Applied actor & Actor share & Over 0.5 & Reward RMS", rows, size=r"\scriptsize", fit=True)
+      "tab:factorial_diagnostics", "@{}llrrrrrr@{}", r"Cell & Arm & Critic & Actor & Applied actor & Actor share & Over 0.5 & Reward RMS", rows, size=r"\scriptsize", pos="H")
 
 # Figure: A-S and S-B by cell
-fig, axes = plt.subplots(1, 2, figsize=(9.2, 2.9), sharey=True)
-for ax, name, title in [(axes[0], "S-B", "Symmetric $\\times7$ minus curvature (S$-$B)"), (axes[1], "A-S", "Losses $\\times7$ minus symmetric $\\times7$ (A$-$S)")]:
+fig, axes = plt.subplots(1, 2, figsize=(7.0, 3.1), sharey=True)
+for ax, name, title in [(axes[0], "S-B", "S$-$B: symmetric $\\times7$"), (axes[1], "A-S", "A$-$S: losses vs. symmetric $\\times7$")]:
     sub = co[co.contrast == name].set_index("cell").loc[CELLS]
     y = np.arange(len(CELLS))[::-1]
     ax.errorbar(sub.difference, y, xerr=[sub.difference - sub.ci_low, sub.ci_high - sub.difference], fmt="o", color="k", ms=4, capsize=2)
-    ax.axvline(0, color="0.6", lw=0.8); ax.set_title(title, fontsize=9); ax.set_xlabel("crossing difference at 300k", fontsize=8)
-    ax.tick_params(labelsize=7)
-axes[0].set_yticks(np.arange(len(CELLS))[::-1]); axes[0].set_yticklabels([CELL_TEX[c].replace("$\\epsilon{=}10^{-8}$", "eps=1e-8").replace("$", "") for c in CELLS], fontsize=7)
+    ax.axvline(0, color="0.6", lw=0.8); ax.set_title(title, fontsize=10); ax.set_xlabel("crossing difference at 300k", fontsize=9)
+    ax.tick_params(labelsize=8)
+axes[0].set_yticks(np.arange(len(CELLS))[::-1]); axes[0].set_yticklabels([CELL_TEX[c].replace("{=}", "=") for c in CELLS], fontsize=8)
 fig.tight_layout(); fig.savefig(OUT / "factorial_contrasts.pdf"); plt.close(fig)
 
 # ---------------------------------------------------------------- E3
@@ -119,8 +126,8 @@ for ck in PRIMARY:
     x = hc[(hc.checkpoint == ck) & (hc.contrast == "lambda7-curvature")].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
 rows.append(r)
 table(OUT / "horizon_table.tex",
-      r"Refined single-platform horizon cohort (E3): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-block intervals; last row is the paired contrast.",
-      "tab:horizon", "@{}lcccc@{}", r"Condition & 300k & 900k & 1.8M & 3.6M", rows, size=r"\scriptsize", fit=True)
+      r"Refined single-platform horizon cohort (E3), default optimizer configuration (global clip, raw rewards): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-block intervals; last row is the paired contrast.",
+      "tab:horizon", "@{}lcccc@{}", r"Condition & 300k & 900k & 1.8M & 3.6M", rows, size=r"\footnotesize")
 rows = []
 for _, x in st.iterrows():
     y = rc[rc.condition == x.condition].iloc[0]
@@ -129,11 +136,11 @@ for _, x in st.iterrows():
 table(OUT / "horizon_stability.tex",
       r"Late-budget change and within-policy outcomes (E3). Stability requires the 3.6M$-$1.8M interval to lie within $\pm.05$ (pre-declared for v4). Recovery: collapsed at 300k, not collapsed at 3.6M; relapse: the reverse.",
       "tab:horizon_stability", "@{}lcccc@{}", r"Condition & 3.6M$-$1.8M & Stable & Recovered & Relapsed", rows)
-fig, ax = plt.subplots(figsize=(6.2, 3.0))
+fig, ax = plt.subplots(figsize=(6.0, 3.0))
 for cond, m in [("null", "o"), ("curvature", "s"), ("lambda7", "^")]:
     sub = h[h.condition == cond].sort_values("checkpoint"); t = sub.checkpoint / 1e6
-    ax.plot(t, sub.w50, marker=m, ms=3, lw=1, label=COND_TEX[cond].replace("$", "")); ax.fill_between(t, sub.ci_low, sub.ci_high, alpha=.15)
-ax.set_xlabel("requested agent transitions (millions)", fontsize=8); ax.set_ylabel("$w_{50}$", fontsize=9); ax.tick_params(labelsize=7); ax.legend(fontsize=7, frameon=False)
+    ax.plot(t, sub.w50, marker=m, ms=3.5, lw=1.2, label=COND_TEX[cond]); ax.fill_between(t, sub.ci_low, sub.ci_high, alpha=.15)
+ax.set_xlabel("requested agent transitions (millions)", fontsize=10); ax.set_ylabel("crossing $w_{50}$", fontsize=10); ax.tick_params(labelsize=9); ax.legend(fontsize=9, frameon=False)
 fig.tight_layout(); fig.savefig(OUT / "horizon_curves.pdf"); plt.close(fig)
 
 # ---------------------------------------------------------------- E4
@@ -151,7 +158,7 @@ for opt in ["global_clip", "separate_no_clip"]:
     rows.append(r)
 table(OUT / "lbf_table.tex",
       r"MAPPO on Level-Based Foraging (E4): crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. $^{\dagger}$: point estimate outside the sampled grid (linear and curvature rarely collapse, so their crossings are not localized). $^{\ast}$: interval excludes zero.",
-      "tab:lbf", "@{}lcccccc@{}", r"Optimizer & Linear & Curvature & A & S & A$-$S & A$-$linear", rows, size=r"\scriptsize", fit=True)
+      "tab:lbf", "@{}lcccccc@{}", r"Optimizer & Linear & Curvature & A & S & A$-$S & A$-$linear", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
@@ -160,17 +167,17 @@ g1 = cell_header(cr.iloc[0].cells)
 rows = [[CELL_TEX[c] if a == "B" else "", a] + [c2.split(":")[1].split("/")[0] for c2 in cr[(cr.cell == c) & (cr.arm == a)].iloc[0].cells.split()]
         for c in CELLS for a in ["B", "A", "S", "R"]]
 table(OUT / "factorial_cells.tex", r"E1/E2 observed collapsed runs out of ten seeds per mixture cell at 300k.", "tab:factorial_cells",
-      "@{}ll" + "r" * len(g1) + "@{}", "Cell & Arm & " + " & ".join(f"$w{{=}}{x}$" for x in g1), rows, size=r"\scriptsize", fit=True)
+      "@{}ll" + "r" * len(g1) + "@{}", "Cell & Arm & " + " & ".join(f"$w{{=}}{x}$" for x in g1), rows, size=r"\scriptsize", pos="H")
 g3 = cell_header(h.iloc[0].cells)
 rows = [[COND_TEX[cond] if ck == PRIMARY[0] else "", BUD[ck]] + [c2.split(":")[1].split("/")[0] for c2 in h[(h.condition == cond) & (h.checkpoint == ck)].iloc[0].cells.split()]
         for cond in ["null", "curvature", "lambda7"] for ck in PRIMARY]
 table(OUT / "horizon_cells.tex", r"E3 observed collapsed trajectories out of ten seeds per mixture cell at the four primary budgets. Full checkpoint records are in the archive.", "tab:horizon_cells",
-      "@{}ll" + "r" * len(g3) + "@{}", "Condition & Budget & " + " & ".join(f"$w{{=}}{x}$" for x in g3), rows, size=r"\scriptsize")
+      "@{}ll" + "r" * len(g3) + "@{}", "Condition & Budget & " + " & ".join(f"$w{{=}}{x}$" for x in g3), rows, size=r"\scriptsize", pos="H")
 g4 = [c.split(":")[0] for c in c4.iloc[0].cells.split()]
 rows = [[OPT_TEX[opt] if a == "linear" else "", ARM4[a]] + [c2.split(":")[1] for c2 in c4[(c4.optimizer == opt) & (c4.arm == a)].iloc[0].cells.split()]
         for opt in ["global_clip", "separate_no_clip"] for a in ["linear", "curvature", "A", "S"]]
 table(OUT / "lbf_cells.tex", r"E4 observed collapsed runs out of ten seeds per mixture cell (2M timesteps).", "tab:lbf_cells",
-      "@{}ll" + "r" * len(g4) + "@{}", "Optimizer & Arm & " + " & ".join(f"$w{{=}}{x}$" for x in g4), rows, size=r"\scriptsize")
+      "@{}ll" + "r" * len(g4) + "@{}", "Optimizer & Arm & " + " & ".join(f"$w{{=}}{x}$" for x in g4), rows, size=r"\scriptsize", pos="H")
 
 # ---------------------------------------------------------------- macros
 def mac(name, v): return f"\\newcommand{{\\{name}}}{{{v}}}\n"
@@ -216,6 +223,6 @@ table(OUT / "compute_table.tex",
       r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
-      + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]])
+      + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))
