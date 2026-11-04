@@ -35,13 +35,15 @@ Level-Based Foraging.
 The contributions are:
 (i)~a protocol for locating a finite-budget behavioral crossing from observed collapse proportions,
 with bracketing checks and training-seed-block uncertainty;
-(ii)~a pre-registered factorial (1,600 trajectories) identifying a critic-dominated clipping artifact
-that makes symmetric reward scaling indistinguishable from loss asymmetry under default settings, and
-showing that it acts through critic target magnitude rather than Adam's $\epsilon$;
-(iii)~evidence that, with the artifact removed, a loss-only multiplier moves the crossing and a
-symmetric one does not, replicated in a second environment and learner;
-(iv)~a single-platform refined horizon cohort under the default optimizer showing that crossings stay
-budget-dependent and non-monotone to 3.6M transitions and that collapse is not absorbing.
+(ii)~pre-registered optimizer experiments (2,320 trajectories) showing that, under default settings,
+symmetric reward scaling is indistinguishable from loss asymmetry, and decomposing the artifact into a
+shared-clip part, in which the critic takes the actor's clip budget and the actor's actual parameter
+updates shrink, and a critic-target-scale part that clipping does not touch and reward normalization
+removes;
+(iii)~evidence that, with both parts removed, a gain-to-loss-ratio change moves the crossing and symmetric
+scaling produces no detectable shift, through 3.6M transitions and in a second environment and learner;
+(iv)~single-platform horizon cohorts showing that crossings stay budget-dependent and non-monotone to
+3.6M transitions and that neither collapse nor coordination is absorbing.
 The logistic midpoint itself is standard response-curve machinery; the contribution is its controlled
 use to compare reward designs while exposing its dependence on budget, reward units, optimizer and
 behavioral label. We use ``boundary'' only in this operational sense, not as a claim of phase-like
@@ -185,13 +187,14 @@ PettingZoo/SuperSuit~\citep{terry2021pettingzoo,terry2020supersuit}; the second 
 Level-Based Foraging (Section~\ref{sec:lbf}).
 
 \paragraph{Pre-registration and platform.}
-Experiments E1--E4 were pre-declared, with source and design hashes frozen before launch; one
-pre-execution source fix and two analysis-code fixes are logged (Appendix~\ref{app:prereg}). All
-E1--E4 trajectories run on one CPU platform. An earlier platform does not reproduce trained policies
+Experiments E1--E6 were pre-declared, with source and design hashes frozen before launch; the
+departures (one pre-execution source fix, a label-threshold fallback corrected from stored data, and
+analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E6 trajectories run on one CPU
+platform. An earlier platform does not reproduce trained policies
 bit-for-bit, but collapse labels agree in \VfourAgreeControl{} of matched direct-control runs and
 \VfourAgreeHorizon{} of matched horizon checkpoints, so we make reproducibility claims at the level of
 labels and crossings. The legacy sweeps in Sections~\ref{sec:results}--\ref{sec:transforms} (20 seeds
-per cell) come from the earlier platform and are not pooled with E1--E4.
+per cell) come from the earlier platform and are not pooled with E1--E6.
 
 % =======================================================================
 \section{Observed Crossings and Estimator Validation}
@@ -254,6 +257,19 @@ crossings reflect this relapse at high $w$. Cell-level counts are in Appendix~\r
 \input{generated/v4/horizon_table}
 \input{generated/v4/horizon_stability}
 
+\paragraph{Decoupled cohort (E5).}
+To test the asymmetric effect over budget without the scale pathway, we repeated the horizon design with
+the fully decoupled learner of Section~\ref{sec:optimizer} (separate optimizers without clipping,
+normalized rewards) and arms B, A and S: 270 trajectories on the same nine cells to 3.6M. All three
+pre-declared predictions are met (Table~\ref{tab:e5}). A$-$S is positive at every primary budget, from
+\VfiveAsymStart{} at 300k to \VfiveAsymEnd{} at 3.6M, and no symmetric shift is detectable at any budget
+(S$-$B \VfiveSymStart{} at 300k, \VfiveSymEnd{} at 3.6M). The loss-only contrast A$-$B is positive to
+900k and not detectable afterwards. Under this learner the crossings fall to 900k and then rise as many
+initially coordinated trajectories relapse into collapse, and no arm stabilizes. The asymmetric effect
+therefore persists over the tested budgets while the absolute crossings keep moving.
+
+\input{generated/v4/e5_table}
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=.78\textwidth]{generated/v4/horizon_curves.pdf}
@@ -280,7 +296,7 @@ creates; Section~\ref{sec:optimizer} separates the two.
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=.92\textwidth]{generated/decomposition_observed.pdf}
+\includegraphics[width=.74\textwidth]{generated/decomposition_observed.pdf}
 \caption{Legacy supply PPO null and selected transform conditions at 300k. Points show collapse counts divided by cell totals with 95\% Wilson intervals; curves are Firth fits over observed grids. Vertical bands are midpoint seed-block intervals.}
 \label{fig:decomposition}
 \Description{Four panels compare observed collapse proportions and fitted midpoints for null, lambda one, lambda three and lambda seven.}
@@ -344,9 +360,23 @@ critic's explained variance agrees: without clipping and with raw rewards it fal
 and \VfourEVNormS{}. Two qualifications limit this account. First, \texttt{VecNormalize} normalizes
 rewards, not value targets as PopArt does~\citep{vanhasselt2016popart}. Second, the separate-optimizer
 arm removes clipping as well; because Adam is per-parameter, splitting one Adam into two changes nothing
-by itself, so this arm tests the removal of clipping, not optimizer grouping. We also measured gradient
-norms rather than the parameter updates Adam applies. A follow-up cohort that clips actor and critic
-separately and logs parameter updates (E6) is pre-registered.
+by itself, so this arm tests the removal of clipping, not optimizer grouping.
+
+\paragraph{Clipping isolation (E6).}
+A second pre-registered cohort (720 runs) clips actor and critic gradients separately under one Adam step,
+and logs, at every optimizer step, both the applied gradient and the actual parameter change
+(Table~\ref{tab:e6}). With logging switched on, the default and no-clip modes reproduce the corresponding
+E1 runs exactly (\VsixRepro{} labels and profits), so the logging does not alter training. Under the shared
+clip the actor's applied gradient for S is \VsixGradGlobal{} of B's, but Adam partly compensates, and the
+actor's actual parameter update is \VsixUpdGlobal{} of B's. With per-group clipping or no clipping the ratio
+is \VsixUpdGroup{} and \VsixUpdNone{}, close to but detectably below one, so our pre-declared prediction of
+no difference is not met as stated. Per-group clipping reduces the symmetric effect by \VsixSymGroupChange{}
+to \VsixSymGroup{}, and its crossings are almost identical to those without any clipping. The shared clip
+therefore accounts for part of the artifact, roughly 0.2 of the 0.36 shift. The remainder is unaffected by
+clipping, accompanies a poorly fitted critic, and disappears under reward normalization
+(Section~\ref{sec:optimizer}, E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
+clipping.
+
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
@@ -356,6 +386,7 @@ within a fixed configuration.
 
 \input{generated/v4/factorial_crossings}
 \input{generated/v4/factorial_contrasts}
+\input{generated/v4/e6_table}
 
 \begin{figure}[!htbp]
 \centering
@@ -426,10 +457,9 @@ and all results use one PPO implementation (SB3 2.8.0); other implementations ma
 critic differently.
 \item \textbf{Environments.} Two environments and two learners, both small. In LBF the linear arm's
 crossing under the global clip lies below the sampled grid, so contrasts with it are not identified.
-\item \textbf{Mechanism.} The diagnostics are gradient norms and critic explained variance, not the
-parameter updates Adam applies, and the separate-optimizer arm also removes clipping; a cohort that
-isolates per-group clipping and logs parameter updates is pre-registered. Reward normalization is not
-value-target normalization.
+\item \textbf{Mechanism.} The two-part account rests on parameter-update norms, critic explained variance
+and interventions, not on a model of the learning dynamics; we do not explain why a poorly fitted critic
+moves the crossing. Reward normalization is not value-target normalization, and we did not test PopArt.
 \item \textbf{Statistics.} Ten training seeds per cell; intervals that include zero are reported as no
 detectable effect, not as equivalence. Isotonic and Firth crossings agree within
 \VfourIsoMaxSupply{} on the supply chain; LBF gaps are larger, but the LBF conclusion holds under both

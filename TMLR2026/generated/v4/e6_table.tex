@@ -1,0 +1,14 @@
+\begin{table}[!htbp]
+\caption{Clipping isolation (E6): one Adam step with a global clip, actor and critic clipped separately, or no clipping; raw rewards; arms B, A, S on the E1 grid; ten seeds; 720 runs at 300k. Crossing contrasts, and seed-paired S/B ratios of the actor's applied (post-clip) gradient norm and of the norm of its actual parameter update. $^{\ast}$: interval excludes zero.}
+\label{tab:e6}
+\centering\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Mode & S$-$B & A$-$S & Applied actor gradient S/B & Actor update S/B \\
+\midrule
+Global clip (default) & \begin{tabular}[t]{@{}c@{}}$+0.357$$^{\ast}$\\[-1pt]{\scriptsize $[+0.249,\,+0.464]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.074$\\[-1pt]{\scriptsize $[-0.150,\,+0.000]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.121$\\[-1pt]{\scriptsize $[0.114,\,0.129]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.391$\\[-1pt]{\scriptsize $[0.378,\,0.405]$}\end{tabular} \\
+Per-group clip & \begin{tabular}[t]{@{}c@{}}$+0.150$$^{\ast}$\\[-1pt]{\scriptsize $[+0.095,\,+0.226]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.168$$^{\ast}$\\[-1pt]{\scriptsize $[+0.077,\,+0.240]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.000$\\[-1pt]{\scriptsize $[1.000,\,1.000]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.949$\\[-1pt]{\scriptsize $[0.936,\,0.962]$}\end{tabular} \\
+No clip & \begin{tabular}[t]{@{}c@{}}$+0.160$$^{\ast}$\\[-1pt]{\scriptsize $[+0.078,\,+0.254]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.174$$^{\ast}$\\[-1pt]{\scriptsize $[+0.083,\,+0.255]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.087$\\[-1pt]{\scriptsize $[1.021,\,1.164]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.956$\\[-1pt]{\scriptsize $[0.944,\,0.967]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

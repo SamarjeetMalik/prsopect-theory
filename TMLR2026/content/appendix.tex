@@ -37,7 +37,10 @@ parameters (policy MLP, action head, log-standard-deviation) and one over the cr
 MLP and head), applies the unchanged PPO loss, and skips gradient clipping; execution aborts if any
 trainable parameter is shared. \texttt{VecNormalize} divides rewards by the running standard deviation of
 discounted returns ($\gamma=0.99$, $\epsilon=10^{-8}$, reward clip 10, no observation normalization). E2
-passes \texttt{optimizer\_kwargs=\{eps: 1e-8\}}. Every run logs per-minibatch actor, critic and total
+passes \texttt{optimizer\_kwargs=\{eps: 1e-8\}}. E6's \texttt{groupwise\_clip} keeps one Adam optimizer and
+clips the actor and critic gradients to norm 0.5 separately; E6 also records, at every optimizer step and
+for each parameter group, the post-clip gradient norm and the norm of the parameter change, by copying the
+parameters before the step. Every run logs per-minibatch actor, critic and total
 gradient norms before and after the clipping step.
 
 \paragraph{Labels.}
@@ -61,7 +64,7 @@ For each fixed configuration we fit $P(Y=1\mid w)=\sigma(b_0+b_1w)$ by Firth log
 report $w_{50}=-b_0/b_1$. A point estimate is reported only with an identified nonzero slope; observed
 proportions are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use 2,000
 percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
-random seed 20261015 for E1--E4). The same weight vector is used for every condition in an experiment,
+random seed 20261015 for E1--E6). The same weight vector is used for every condition in an experiment,
 so differences are seed-paired. Fits outside the grid and non-converged draws are retained and counted.
 Intervals are pointwise; no simultaneous statement across checkpoints or cells is made.
 
@@ -73,7 +76,7 @@ the legacy supply-chain sweep is 0.018. Table~\ref{tab:isotonic} compares Firth 
 every in-grid E1--E4 fit.
 
 \input{generated/v4/isotonic_agreement}
-
+\FloatBarrier
 \input{generated/supply_cells}
 \input{generated/lambda_table}
 \FloatBarrier
@@ -81,7 +84,9 @@ every in-grid E1--E4 fit.
 \section{Pre-registration and Deviations}
 \label{app:prereg}
 
-E1--E4 were declared in a pre-registration written before any of their outcomes existed. Source,
+E1--E4 were declared in a pre-registration written before any of their outcomes existed; E5 and E6 were
+declared later, in response to reviews of an earlier draft, again before any of their runs. Each of E5 and E6
+had a pre-launch gate that reproduced a completed E1 run bit-for-bit through the new code path. Source,
 design and protocol hashes were frozen before E1 launched, and the E4 runner's hash before E4 launched,
 after a timing check. Launch scripts refused to run on any hash mismatch. The record shows four
 departures, none changing a design:
@@ -124,7 +129,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \section{Computational Accounting}
 \label{app:compute}
 
-E1--E4 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+E1--E6 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
 (Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
 the earlier confirmation cohorts were run separately on another platform and are not included.
 
@@ -135,7 +140,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 \label{app:artifact}
 
 The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
-deviation log; the executed source for E1--E4; per-run tables for every E1--E4 trajectory (protocol,
+deviation log; the executed source for E1--E6; per-run tables for every E1--E6 trajectory (protocol,
 label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Raw per-minibatch diagnostics and checkpoints
 (about 45\,GB) are available on request. The legacy sweeps are accompanied by their per-run records,

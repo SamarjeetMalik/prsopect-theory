@@ -1,0 +1,17 @@
+\begin{table}[!htbp]
+\caption{Decoupled horizon cohort (E5): separate actor and critic optimizers without clipping and normalized rewards; arms B, A, S; the nine E3 cells; ten seeds; 270 trajectories to 3.6M. Crossings, then paired contrasts. $^{\ast}$: interval excludes zero.}
+\label{tab:e5}
+\centering\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Arm or contrast & 300k & 900k & 1.8M & 3.6M \\
+\midrule
+B (curvature) & \begin{tabular}[t]{@{}c@{}}$0.425$\\[-1pt]{\scriptsize $[0.344,\,0.507]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.385$\\[-1pt]{\scriptsize $[0.332,\,0.439]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.639$\\[-1pt]{\scriptsize $[0.541,\,0.715]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.732$\\[-1pt]{\scriptsize $[0.638,\,0.866]$}\end{tabular} \\
+A (losses $\times7$) & \begin{tabular}[t]{@{}c@{}}$0.603$\\[-1pt]{\scriptsize $[0.564,\,0.640]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.526$\\[-1pt]{\scriptsize $[0.452,\,0.597]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.667$\\[-1pt]{\scriptsize $[0.612,\,0.731]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.837$\\[-1pt]{\scriptsize $[0.766,\,0.916]$}\end{tabular} \\
+S (both $\times7$) & \begin{tabular}[t]{@{}c@{}}$0.369$\\[-1pt]{\scriptsize $[0.267,\,0.450]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.329$\\[-1pt]{\scriptsize $[0.237,\,0.391]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.548$\\[-1pt]{\scriptsize $[0.427,\,0.646]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.683$\\[-1pt]{\scriptsize $[0.592,\,0.759]$}\end{tabular} \\
+A$-$S & \begin{tabular}[t]{@{}c@{}}$+0.234$$^{\ast}$\\[-1pt]{\scriptsize $[+0.165,\,+0.322]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.197$$^{\ast}$\\[-1pt]{\scriptsize $[+0.086,\,+0.328]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.119$$^{\ast}$\\[-1pt]{\scriptsize $[+0.034,\,+0.244]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.154$$^{\ast}$\\[-1pt]{\scriptsize $[+0.053,\,+0.256]$}\end{tabular} \\
+A$-$B & \begin{tabular}[t]{@{}c@{}}$+0.178$$^{\ast}$\\[-1pt]{\scriptsize $[+0.081,\,+0.271]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.141$$^{\ast}$\\[-1pt]{\scriptsize $[+0.064,\,+0.224]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.028$\\[-1pt]{\scriptsize $[-0.044,\,+0.113]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.105$\\[-1pt]{\scriptsize $[-0.045,\,+0.242]$}\end{tabular} \\
+S$-$B & \begin{tabular}[t]{@{}c@{}}$-0.056$\\[-1pt]{\scriptsize $[-0.147,\,+0.043]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.056$\\[-1pt]{\scriptsize $[-0.146,\,+0.016]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.091$\\[-1pt]{\scriptsize $[-0.262,\,+0.054]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.049$\\[-1pt]{\scriptsize $[-0.240,\,+0.099]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

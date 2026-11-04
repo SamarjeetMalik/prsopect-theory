@@ -1,0 +1,102 @@
+== E5: 270 trajectories x 24 checkpoints present, unique, 10 evaluation episodes each
+
+== E5 crossings at primary budgets
+  B: 300k 0.425; 900k 0.385; 1800k 0.639; 3600k 0.732
+  A: 300k 0.603; 900k 0.526; 1800k 0.667; 3600k 0.837
+  S: 300k 0.369; 900k 0.329; 1800k 0.548; 3600k 0.683
+
+== E5 contrasts
+    300k A-S: +0.234 [+0.165, +0.322]  *
+    300k A-B: +0.178 [+0.081, +0.271]  *
+    300k S-B: -0.056 [-0.147, +0.043]
+    900k A-S: +0.197 [+0.086, +0.328]  *
+    900k A-B: +0.141 [+0.064, +0.224]  *
+    900k S-B: -0.056 [-0.146, +0.016]
+   1800k A-S: +0.119 [+0.034, +0.244]  *
+   1800k A-B: +0.028 [-0.044, +0.113]
+   1800k S-B: -0.091 [-0.262, +0.054]
+   3600k A-S: +0.154 [+0.053, +0.256]  *
+   3600k A-B: +0.105 [-0.045, +0.242]
+   3600k S-B: -0.049 [-0.240, +0.099]
+
+== E5 stability (3.6M - 1.8M)
+arm  change  ci_low  ci_high  stable_pm05
+  B   0.093  -0.021    0.235        False
+  A   0.169   0.102    0.237        False
+  S   0.135   0.056    0.228        False
+
+== E5 recovery
+arm  collapsed_300k  recovered_3p6M  noncollapsed_300k  relapsed_3p6M
+  B              18               4                 72             36
+  A              30               1                 60             36
+  S              14               0                 76             32
+
+== E5 pre-declared predictions
+P1 300k: A-S > 0 and S-B includes 0 -> MET
+P2 persistence: A-S excludes 0 at every primary budget -> MET
+P3 symmetric: S-B includes 0 at every primary budget -> MET
+
+== E6: 720 runs complete, unique, 300,160 transitions, declared evaluation seeds
+
+== E6 crossings
+  global_clip: B 0.538; A 0.821; S 0.895
+  groupwise_clip: B 0.335; A 0.653; S 0.485
+  separate_no_clip: B 0.326; A 0.661; S 0.487
+
+== E6 contrasts
+  global_clip       S-B: +0.357 [+0.249, +0.464]  *
+  global_clip       A-B: +0.283 [+0.181, +0.386]  *
+  global_clip       A-S: -0.074 [-0.150, +0.000]
+  groupwise_clip    S-B: +0.150 [+0.095, +0.226]  *
+  groupwise_clip    A-B: +0.318 [+0.268, +0.381]  *
+  groupwise_clip    A-S: +0.168 [+0.077, +0.240]  *
+  separate_no_clip  S-B: +0.160 [+0.078, +0.254]  *
+  separate_no_clip  A-B: +0.334 [+0.274, +0.405]  *
+  separate_no_clip  A-S: +0.174 [+0.083, +0.255]  *
+
+== E6 change relative to global_clip
+  groupwise_clip    d(S-B): -0.207 [-0.336, -0.085]  *
+  groupwise_clip    d(A-S): +0.242 [+0.111, +0.367]  *
+  separate_no_clip  d(S-B): -0.197 [-0.366, -0.021]  *
+  separate_no_clip  d(A-S): +0.248 [+0.136, +0.373]  *
+
+== E6 seed-paired update ratios (actor parameter-update norm unless stated)
+  global_clip       S/B pu_actor_update_norm         0.391 [0.378, 0.405]  (excludes 1)
+  global_clip       S/B pu_critic_update_norm        0.748 [0.718, 0.787]  (excludes 1)
+  global_clip       S/B pu_applied_actor_grad_norm   0.121 [0.114, 0.129]  (excludes 1)
+  global_clip       A/B pu_actor_update_norm         0.685 [0.654, 0.725]  (excludes 1)
+  global_clip       A/B pu_critic_update_norm        0.802 [0.757, 0.853]  (excludes 1)
+  global_clip       A/B pu_applied_actor_grad_norm   0.573 [0.509, 0.663]  (excludes 1)
+  groupwise_clip    S/B pu_actor_update_norm         0.949 [0.936, 0.962]  (excludes 1)
+  groupwise_clip    S/B pu_critic_update_norm        0.662 [0.636, 0.686]  (excludes 1)
+  groupwise_clip    S/B pu_applied_actor_grad_norm   1.000 [1.000, 1.000]
+  groupwise_clip    A/B pu_actor_update_norm         0.883 [0.877, 0.890]  (excludes 1)
+  groupwise_clip    A/B pu_critic_update_norm        0.862 [0.836, 0.885]  (excludes 1)
+  groupwise_clip    A/B pu_applied_actor_grad_norm   0.999 [0.999, 1.000]  (excludes 1)
+  separate_no_clip  S/B pu_actor_update_norm         0.956 [0.944, 0.967]  (excludes 1)
+  separate_no_clip  S/B pu_critic_update_norm        0.733 [0.704, 0.762]  (excludes 1)
+  separate_no_clip  S/B pu_applied_actor_grad_norm   1.087 [1.021, 1.164]  (excludes 1)
+  separate_no_clip  A/B pu_actor_update_norm         0.879 [0.866, 0.892]  (excludes 1)
+  separate_no_clip  A/B pu_critic_update_norm        0.780 [0.748, 0.811]  (excludes 1)
+  separate_no_clip  A/B pu_applied_actor_grad_norm   0.895 [0.834, 0.956]  (excludes 1)
+
+== E6 update diagnostics (means)
+                      pu_actor_update_norm  pu_critic_update_norm  pu_applied_actor_grad_norm  pu_actor_update_per_grad  explained_variance_last
+optimizer_mode   arm                                                                                                                            
+global_clip      B                 0.00199                0.00891                     0.00152                   2.21363                  0.61238
+                 A                 0.00136                0.00715                     0.00087                   3.51168                  0.36250
+                 S                 0.00078                0.00667                     0.00018                   8.65234                  0.28484
+groupwise_clip   B                 0.00632                0.00945                     0.49989                   0.01265                  0.66001
+                 A                 0.00559                0.00815                     0.49962                   0.01119                  0.44336
+                 S                 0.00600                0.00625                     0.49988                   0.01201                  0.25354
+separate_no_clip B                 0.00699                0.01127                     4.05621                   0.00324                  0.68481
+                 A                 0.00614                0.00879                     3.63218                   0.00319                  0.49030
+                 S                 0.00669                0.00826                     4.40903                   0.00305                  0.29989
+
+== E6 reproduction of E1 (global_clip and separate_no_clip, raw): labels 480/480; bit-identical profit 480/480
+
+== E6 pre-declared predictions
+P1 actor update S/B < 1 under global clip, ~1 otherwise -> NOT MET (global 0.391, groupwise 0.949, separate 0.956)
+P2 clipping isolation: a channel other than the shared clip remains (groupwise S-B +0.150 [+0.095, +0.226]; d(S-B) vs global -0.207 [-0.336, -0.085])
+P3 A-S under groupwise clip > 0 -> MET (+0.168 [+0.077, +0.240])
+P4 reproduction: 480/480 labels equal E1

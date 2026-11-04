@@ -177,3 +177,66 @@ The stored E4 labels used a placeholder θ = 0.5. Recomputed at θ = 0.626 from 
   - separate_no_clip/raw: B 0.685, S 0.300;
   - VecNormalize: B 0.668, S 0.664.
 - **Loss-branch occupancy under fixed z₀:** about 0.58 at w = 0, falling to about 0.07 at w = 1, and policy-dependent.
+
+---
+
+# E5 and E6 results (2026-11-04)
+Analysis: `analysis/phase3_e5e6.py`; output in `results/phase3_e5e6_report.txt` and `results/E5_*.csv`, `results/E6_*.csv`.
+- **E5:** 270/270 trajectories × 24 checkpoints.
+- **E6:** 720/720 runs.
+- **E6 gate (job 3262):** passed. It is bit-identical to E1 runs 120 and 760.
+
+## E5: decoupled horizon (separate_no_clip + VecNormalize, B/A/S, 9 cells, to 3.6M)
+
+| Budget | A − S | A − B | S − B |
+|---|---|---|---|
+| 300k | +0.234 [+0.165, +0.322]* | +0.178* | −0.056 [−0.147, +0.043] |
+| 900k | +0.197 [+0.086, +0.328]* | +0.141* | −0.056 [−0.146, +0.016] |
+| 1.8M | +0.119 [+0.034, +0.244]* | +0.028 | −0.091 [−0.262, +0.054] |
+| 3.6M | +0.154 [+0.053, +0.256]* | +0.105 | −0.049 [−0.240, +0.099] |
+
+- **Predictions:** P1 MET; P2 (persistence of A − S at every budget) MET; P3 (S − B undetectable at every budget) MET.
+- **Crossings rise after 900k:**
+  - B: 0.425 → 0.385 → 0.639 → 0.732;
+  - A: 0.603 → 0.526 → 0.667 → 0.837;
+  - S: 0.369 → 0.329 → 0.548 → 0.683.
+- **Relapse among runs non-collapsed at 300k:** 36/72 (B), 36/60 (A), 32/76 (S).
+- **Stability:** met by no arm.
+
+## E6: clipping isolation (raw rewards, B/A/S, E1 grid, 300k)
+
+| Mode | S − B | A − S |
+|---|---|---|
+| global_clip | +0.357* | −0.074 |
+| groupwise_clip | **+0.150 [+0.095, +0.226]*** | **+0.168 [+0.077, +0.240]*** |
+| separate_no_clip | +0.160* | +0.174* |
+
+- **Δ(S − B), groupwise vs global:** −0.207 [−0.336, −0.085]*. Groupwise and no-clip crossings are nearly identical.
+- **Actor parameter-update ratio S/B (seed-paired):**
+  - global clip 0.391 [0.378, 0.405];
+  - groupwise clip 0.949 [0.936, 0.962];
+  - no clip 0.956 [0.944, 0.967].
+
+  The applied actor-gradient ratio under the global clip is 0.121, so Adam partly compensates: the update shrinks
+  less than the gradient.
+- **Critic explained variance at S:** 0.28 (global), 0.25 (groupwise), 0.30 (no clip); about 0.61–0.68 for B.
+- **Predictions:**
+  - **P1 NOT MET as worded.** The global-clip ratio is < 1 (met), but the groupwise and no-clip ratios (0.95)
+    have intervals excluding 1.
+  - **P2: a channel other than the shared clip remains.** The shared clip accounts for Δ = −0.207 of the +0.357
+    artifact. The residual (+0.15) is unaffected by clipping and is removed by reward normalization (E1).
+  - **P3 MET.**
+  - **P4:** 480/480 labels and profits are bit-identical to E1.
+
+## Verdict
+The symmetric-scaling artifact under SB3 defaults has two parts:
+1. **A shared-clip part.** The critic takes the actor's clip budget. The actor's actual updates fall to 0.39×, and
+   per-group clipping removes this part.
+2. **A critic-target-scale part.** It is unaffected by clipping, comes with poor critic fit, and is removed by
+   reward normalization.
+
+Under the learner that removes both (separate optimizers + VecNormalize), symmetric scaling stays undetectable
+through 3.6M, while the gain-to-loss-ratio effect A − S persists at every budget.
+
+**Analysis-code fix (no design change):** `c6.mode` resolved to the DataFrame method; it now uses `c6["mode"]`.
+It raised an error before any E6 verdict was printed.

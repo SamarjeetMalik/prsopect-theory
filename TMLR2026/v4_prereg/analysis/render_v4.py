@@ -204,6 +204,37 @@ table(OUT / "isotonic_agreement.tex",
       r"Agreement between Firth and decreasing-isotonic crossings for every in-grid fit. LBF collapse proportions are far from the logistic shape for some arms, which is why E4 shows the largest gaps; E4's A$-$S conclusion holds under both estimators (Table~\ref{tab:lbf_theta}).",
       "tab:isotonic", "@{}lrr@{}", r"Experiment & Max $|$Firth$-$isotonic$|$ & Median", iso_rows, pos="H")
 
+
+# ---------------------------------------------------------------- E5 / E6
+c5r = pd.read_csv(RES / "E5_crossings.csv"); k5 = pd.read_csv(RES / "E5_contrasts.csv")
+rows = []
+for a, lab in [("B", "B (curvature)"), ("A", r"A (losses $\times7$)"), ("S", r"S (both $\times7$)")]:
+    r = [lab]
+    for ck in PRIMARY:
+        x = c5r[(c5r.arm == a) & (c5r.checkpoint == ck)].iloc[0]; r.append(f"${num(x.w50)}$ ${iv(x.ci_low, x.ci_high)}$")
+    rows.append(r)
+for name in ["A-S", "A-B", "S-B"]:
+    r = [name.replace("-", "$-$")]
+    for ck in PRIMARY:
+        x = k5[(k5.checkpoint == ck) & (k5.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
+    rows.append(r)
+table(OUT / "e5_table.tex",
+      r"Decoupled horizon cohort (E5): separate actor and critic optimizers without clipping and normalized rewards; arms B, A, S; the nine E3 cells; ten seeds; 270 trajectories to 3.6M. Crossings, then paired contrasts. $^{\ast}$: interval excludes zero.",
+      "tab:e5", "@{}lcccc@{}", r"Arm or contrast & 300k & 900k & 1.8M & 3.6M", rows, size=r"\footnotesize")
+c6r = pd.read_csv(RES / "E6_crossings.csv"); k6 = pd.read_csv(RES / "E6_contrasts.csv"); ur = pd.read_csv(RES / "E6_update_ratios.csv")
+MODE_TEX = {"global_clip": "Global clip (default)", "groupwise_clip": "Per-group clip", "separate_no_clip": "No clip"}
+rows = []
+for mo in ["global_clip", "groupwise_clip", "separate_no_clip"]:
+    r = [MODE_TEX[mo]]
+    for name in ["S-B", "A-S"]:
+        x = k6[(k6["mode"] == mo) & (k6.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
+    for q in ["pu_applied_actor_grad_norm", "pu_actor_update_norm"]:
+        x = ur[(ur["mode"] == mo) & (ur.ratio == "S/B") & (ur.quantity == q)].iloc[0]; r.append(f"${x.point:.3f}$ $[{x.ci_low:.3f},\\,{x.ci_high:.3f}]$")
+    rows.append(r)
+table(OUT / "e6_table.tex",
+      r"Clipping isolation (E6): one Adam step with a global clip, actor and critic clipped separately, or no clipping; raw rewards; arms B, A, S on the E1 grid; ten seeds; 720 runs at 300k. Crossing contrasts, and seed-paired S/B ratios of the actor's applied (post-clip) gradient norm and of the norm of its actual parameter update. $^{\ast}$: interval excludes zero.",
+      "tab:e6", "@{}lcccc@{}", r"Mode & S$-$B & A$-$S & Applied actor gradient S/B & Actor update S/B", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -262,7 +293,8 @@ m += mac("VfourAgreeHorizon", f"{b.agree:,}/{b.total:,} ({100 * b.agree / b.tota
 cp = pd.read_csv(RES / "compute_v4.csv")
 m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
-        "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps"}
+        "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
+        "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k"}
 table(OUT / "compute_table.tex",
       r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
@@ -274,5 +306,16 @@ m += mac("VfourEVNormB", f"{evd[('separate_no_clip/vecnormalize', 'B')]:.2f}"); 
 m += mac("VfourLBFLossOnly", cv(k4, optimizer="separate_no_clip", contrast="A-curvature"))
 m += mac("VfourLBFLossOnlyGlobal", cv(k4, optimizer="global_clip", contrast="A-curvature"))
 m += mac("VfourIsoMaxSupply", f"{max(c1[c1.in_grid].gap.max(), h3.gap.max()):.3f}")
+g5 = lambda ck, n: cv(k5, checkpoint=ck, contrast=n)
+m += mac("VfiveAsymStart", g5(300000, "A-S")); m += mac("VfiveAsymEnd", g5(3600000, "A-S")); m += mac("VfiveSymEnd", g5(3600000, "S-B"))
+m += mac("VfiveSymStart", g5(300000, "S-B"))
+it6 = pd.read_csv(RES / "E6_interactions.csv")
+m += mac("VsixSymGroup", cv(k6, mode="groupwise_clip", contrast="S-B")); m += mac("VsixAsymGroup", cv(k6, mode="groupwise_clip", contrast="A-S"))
+x = it6[(it6["mode"] == "groupwise_clip") & (it6.contrast == "S-B")].iloc[0]
+m += mac("VsixSymGroupChange", f"${num(x.change_vs_global, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
+gr6 = lambda mo, q: ur[(ur["mode"] == mo) & (ur.ratio == "S/B") & (ur.quantity == q)].iloc[0]
+m += mac("VsixUpdGlobal", f"{gr6('global_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixUpdGroup", f"{gr6('groupwise_clip', 'pu_actor_update_norm').point:.2f}")
+m += mac("VsixUpdNone", f"{gr6('separate_no_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixGradGlobal", f"{gr6('global_clip', 'pu_applied_actor_grad_norm').point:.2f}")
+rp = pd.read_csv(RES / "E6_reproduction.csv").iloc[0]; m += mac("VsixRepro", f"{rp.agree}/{rp.total}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))
