@@ -1,0 +1,84 @@
+{
+ "design": "e7-critic-scale-v4",
+ "arms": [
+  "B",
+  "A",
+  "S",
+  "M"
+ ],
+ "critic_modes": [
+  "plain",
+  "popart"
+ ],
+ "popart_beta": 0.1,
+ "popart_sigma_min": 0.01,
+ "M_affine": {
+  "0": {
+   "scale": 4.331812,
+   "shift": -12.791754,
+   "A_mean": -6.726362,
+   "A_sd": 35.399535,
+   "B_mean": 1.400198,
+   "B_sd": 8.171993
+  },
+  "0.2": {
+   "scale": 3.917658,
+   "shift": -13.907773,
+   "A_mean": -7.751742,
+   "A_sd": 31.269667,
+   "B_mean": 1.571355,
+   "B_sd": 7.981726
+  },
+  "0.4": {
+   "scale": 3.385493,
+   "shift": -26.740776,
+   "A_mean": -12.905985,
+   "A_sd": 28.989249,
+   "B_mean": 4.086492,
+   "B_sd": 8.562785
+  },
+  "0.5": {
+   "scale": 3.539523,
+   "shift": -32.953835,
+   "A_mean": -14.816085,
+   "A_sd": 28.987541,
+   "B_mean": 5.124349,
+   "B_sd": 8.189675
+  },
+  "0.6": {
+   "scale": 3.909679,
+   "shift": -37.968468,
+   "A_mean": -13.163428,
+   "A_sd": 29.814994,
+   "B_mean": 6.344521,
+   "B_sd": 7.625945
+  },
+  "0.7": {
+   "scale": 4.020567,
+   "shift": -36.271437,
+   "A_mean": -6.353316,
+   "A_sd": 28.703804,
+   "B_mean": 7.44127,
+   "B_sd": 7.139243
+  },
+  "0.85": {
+   "scale": 3.518092,
+   "shift": -26.466404,
+   "A_mean": 3.7544,
+   "A_sd": 23.146639,
+   "B_mean": 8.590113,
+   "B_sd": 6.579317
+  },
+  "1": {
+   "scale": 3.839402,
+   "shift": -31.461546,
+   "A_mean": 5.561013,
+   "A_sd": 26.537298,
+   "B_mean": 9.642794,
+   "B_sd": 6.911831
+  }
+ },
+ "M_affine_source": "E1 optimizer_mode=separate_no_clip, reward_mode=raw: per-w seed-pooled mean and SD of the transformed training reward (reward_transformed_mean, reward_transformed_rms) for arms A and B; scale = sd_A/sd_B, shift = mean_A - scale*mean_B",
+ "reuse_from_E1": "plain x {B,A,S} equals E1 separate_no_clip/raw; those 240 runs are reused, gated by index 120 vs E1 760",
+ "main_array": "240-639"
+}

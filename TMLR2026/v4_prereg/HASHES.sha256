@@ -29,3 +29,8 @@ d96b74002f5196e6e659f294ffd8db120ab343c9db6dd30f24e0dd662dd3cecb  TMLR2026/v4_pr
 # E6 freeze, 2026-10-30T12:06:21Z, before any E6 run; the gate (index 120 vs E1 120, 600 vs E1 760, groupwise smoke 360) runs after E5 and blocks the main array on failure
 379b3c6f2ce8ddc6e1e881b4b880bd54d4923ba80570a56ff83514602dfcfeda  TMLR2026/v4_prereg/PREREGISTRATION_E6.md
 61178b58ddd48c528ffbcf359e66c74f81c340e49c5b47d497bdc34235d0237f  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e6_clip_isolation.py
+
+# E7 freeze, 2026-11-05T05:52:29Z, before the gate and any main-array run; gate: index 120 vs E1 760 bit-identical, popart 520 and M 280 complete at 300k; main array 240-639
+4a81242452b837db4a7395d091db7e59a9bfb56c3758ad069fe6f0f385b593f6  TMLR2026/v4_prereg/PREREGISTRATION_E7.md
+7d395703053a54c792f1648e730f541607fc19ba4e1fff79a5b05993bd0067a9  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_critic_scale.py
+dd28989132d607f900fb9f62b4dd30d2d67f17ecbe81bf658ebcffa325e50542  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_design.json
