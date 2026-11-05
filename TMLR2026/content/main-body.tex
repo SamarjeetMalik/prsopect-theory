@@ -7,47 +7,59 @@ learning complementary behavior, agents can settle into locally safe, low-cooper
 We call this \emph{coordination collapse};
 in the MARL literature its endpoint is the \emph{lazy-agent}
 policy~\citep{liu2023lazy,peng2023curo}, and the underlying private-versus-collective conflict is
-the one studied in sequential social dilemmas~\citep{leibo2017multi}. We study this failure through
-a local/team \emph{reward-weighting} dial: within each reward-mixing sweep, agent $i$ is trained on the
-blended scalar $x_i(w)=(1-w)\,r_i^{\mathrm{local}}+w\,r^{\mathrm{global}}$, $w\in[0,\allowbreak 1]$, so at
-$w{=}0$ the learner sees only its own local reward and at $w{=}1$ only the team reward. That
-decentralized reward shaping cannot match centralized training is broadly
-accepted~\citep{dmarl2025}, and lazy-agent and credit-assignment
-work~\citep{liu2023lazy,peng2023curo,sunehag2018vdn,rashid2018qmix,foerster2018counterfactual}
-mitigates the pathology. \citet{weng2026} locate an empirical collapse threshold over a payoff-harshness
-parameter at fixed exploration strength. We instead ask whether coordination collapse admits a
-\emph{measurable} finite-budget 50\% behavioral crossing $\wcrit$ along the reward-weighting dial, with
-seed-paired uncertainty, and how reward transformations move it. Because the team reward sums agents'
-rewards, the dial changes reward scale as well as reward composition (Section~\ref{sec:method}).
+the one studied in sequential social dilemmas~\citep{leibo2017multi}. Credit-assignment and
+centralized-training methods mitigate it~\citep{sunehag2018vdn,rashid2018qmix,foerster2018counterfactual},
+and decentralized reward shaping is known not to match centralized training~\citep{dmarl2025}. Less is
+known about \emph{where} collapse sets in as the reward design changes.
 
-The second question turns out to depend on the optimizer. We use prospect theory only as a controlled
+We study this through a local/team \emph{reward-weighting} dial: agent $i$ is trained on
+$x_i(w)=(1-w)\,r_i^{\mathrm{local}}+w\,r^{\mathrm{global}}$, $w\in[0,\allowbreak 1]$, so at $w{=}0$ the
+learner sees only its own reward and at $w{=}1$ only the team reward. The dial is a natural experimental
+axis because it is the design choice practitioners actually make, and because collapse is common at one
+end and rare at the other. We summarize it by an operational, finite-budget 50\% behavioral crossing
+$\wcrit$, estimated from pre-specified evaluation labels with seed-paired uncertainty.
+\citet{weng2026} locate an empirical collapse threshold over a payoff-harshness parameter; $\wcrit$
+plays the same role on the reward-weighting axis and lets two reward designs be compared by a paired
+contrast. Because the team reward sums agents' rewards, the dial changes reward scale as well as reward
+composition (Section~\ref{sec:method}).
+
+Reward-transform comparisons are where scale matters. We use prospect theory only as a controlled
 reward-transform family, not a psychological claim: a pointwise transform of the blended reward with
-value-function curvature and a loss-branch multiplier $\lambda$~\citep{kahneman1979,tversky1992}. In
-the default Stable-Baselines3 PPO configuration a loss multiplier raises the crossing, but so does a
-\emph{symmetric} multiplier of the same size, because the value loss dominates a single global
-gradient clip shared by actor and critic, and larger rewards then shrink the actor's applied update.
-A reward-scale artifact of this kind would make any transform comparison uninterpretable, so we
-pre-registered an optimizer $\times$ reward-normalization factorial to remove it. Once actor and
-critic are optimized separately and rewards are normalized, symmetric scaling no longer moves the
-crossing detectably, while the loss-only multiplier still does, on the inventory network and on
-Level-Based Foraging.
+value-function curvature and a loss-branch multiplier $\lambda$~\citep{kahneman1979,tversky1992}. Any such
+transform also changes the reward's magnitude, and in actor--critic learners reward magnitude reaches the
+policy through the optimizer. In the default Stable-Baselines3 PPO configuration actor and critic share one
+global gradient clip, so a larger reward can change the actor's update without changing what the reward
+says. We ask three questions.
+\textbf{RQ1:} Can a finite-budget crossing along the dial be estimated with useful precision, and how does
+it depend on training budget?
+\textbf{RQ2:} Does a symmetric rescaling of the reward move the crossing, and if so through which optimizer
+pathway?
+\textbf{RQ3:} With that pathway removed, does a loss-only multiplier still move the crossing relative to a
+symmetric control?
 
 The contributions are:
-(i)~a protocol for locating a finite-budget behavioral crossing from observed collapse proportions,
-with bracketing checks and training-seed-block uncertainty;
-(ii)~pre-registered optimizer experiments (2,320 trajectories) showing that, under default settings,
-symmetric reward scaling is indistinguishable from loss asymmetry, and decomposing the artifact into a
-shared-clip part, in which the critic takes the actor's clip budget and the actor's actual parameter
-updates shrink, and a critic-target-scale part that clipping does not touch and reward normalization
-removes;
-(iii)~evidence that, with both parts removed, a gain-to-loss-ratio change moves the crossing and symmetric
-scaling produces no detectable shift, through 3.6M transitions and in a second environment and learner;
-(iv)~single-platform horizon cohorts showing that crossings stay budget-dependent and non-monotone to
-3.6M transitions and that neither collapse nor coordination is absorbing.
-The logistic midpoint itself is standard response-curve machinery; the contribution is its controlled
-use to compare reward designs while exposing its dependence on budget, reward units, optimizer and
-behavioral label. We use ``boundary'' only in this operational sense, not as a claim of phase-like
-criticality.
+(i)~\emph{a measurement protocol}: observed collapse proportions, Firth logistic midpoints, bracketing
+checks and training-seed-block bootstrap intervals that make reward designs comparable by paired
+contrasts. The midpoint itself is standard response-curve machinery; the protocol's value is its controlled
+use and its explicit dependence on budget, reward units, optimizer and label.
+(ii)~\emph{an optimizer confound and its mechanism}: in pre-registered experiments (2,320 trajectories),
+symmetric $\times7$ scaling moves the crossing at least as far as a loss-only multiplier under the default
+configuration. Parameter-update logging shows that the critic takes the actor's share of the shared clip,
+and per-group clipping restores the actor's updates and removes part of the shift. The remainder,
+which clipping does not touch, disappears under reward normalization; it is consistent with critic target
+scale but not isolated.
+(iii)~\emph{a controlled asymmetric effect}: with separate optimizers and normalized rewards no symmetric
+shift is detectable, while the loss-only multiplier still raises the crossing relative to the symmetric
+control, through 3.6M transitions and, by a different incentive route, in Level-Based Foraging.
+Along the way we find that crossings remain budget-dependent and non-monotone to 3.6M transitions and that
+neither collapse nor coordination is absorbing. We use ``boundary'' only in this operational sense, not as
+a claim of phase-like criticality.
+
+Section~\ref{sec:related} positions the work; Section~\ref{sec:method} defines the reward, transforms,
+learner and estimand; Sections~\ref{sec:results}--\ref{sec:transforms} establish the crossing, its budget
+dependence and the legacy transform comparisons; Section~\ref{sec:optimizer} isolates the optimizer
+pathway; Section~\ref{sec:lbf} turns to a second environment; Section~\ref{sec:discussion} states what
+the results do and do not establish.
 
 % =======================================================================
 \section{Related Work}
@@ -168,7 +180,8 @@ the deterministic base-stock target $250(a_1+1)$ chosen at the reset of the firs
 where $a_1$ is the node's first action component. Node 1 is scripted to order 20 units, split equally
 across its action entries. Collapsed runs sit at the lazy-policy profit floor ($\approx-128$), so the
 profit clause is a redundancy check on $\bar S<10$; threshold variants of $\pm20\%$ change $\wcrit$ by
-at most 0.015.
+at most 0.015. Across all \VrevLabelN{} E1 runs only \VrevLabelNearS{} has $\bar S$ within one unit of the
+threshold, so the label is not a fine cut through a continuum (Figure~\ref{fig:label}, Appendix~\ref{app:factorial}).
 
 \paragraph{Estimation.}
 We write the estimand as $w_{50}(T;E,A,V,U,L,Q)$: training budget, environment, learner (including its
@@ -180,7 +193,8 @@ complete training-seed blocks; the same draws serve every condition in an experi
 seed-paired~\citep{efron1993bootstrap}. Out-of-grid and non-converged draws are retained and counted,
 never clipped. Logistic, probit and decreasing isotonic fits on the same rows serve as sensitivity
 estimators (convention in Appendix~\ref{app:estimation}); their maximum spread on the supply-chain data
-is 0.018. The primary substrate is
+is 0.018. Leaving out any one of the ten training seeds changes the sign of none of the principal
+contrasts (Table~\ref{tab:loso}). The primary substrate is
 \texttt{NetworkManagement-v1}~\citep{hubbs2020orgym}, a six-node multi-echelon inventory
 network~\citep{oroojlooyjadid2022,gijsbrechts2022,marlim2023} wrapped with
 PettingZoo/SuperSuit~\citep{terry2021pettingzoo,terry2020supersuit}; the second environment is
@@ -267,15 +281,21 @@ pre-declared predictions are met (Table~\ref{tab:e5}). A$-$S is positive at ever
 900k and not detectable afterwards. Under this learner the crossings fall to 900k and then rise as many
 initially coordinated trajectories relapse into collapse, and no arm stabilizes. The asymmetric effect
 therefore persists over the tested budgets while the absolute crossings keep moving.
+Figure~\ref{fig:e5} shows all 24 checkpoints. This reading of the non-primary checkpoints is exploratory
+and its intervals are pointwise. The A$-$S interval excludes zero at \VrevAsymPos{} checkpoints, with
+point estimates between \VrevAsymMin{} and \VrevAsymMax{}. The S$-$B interval excludes zero at
+\VrevSymNeg{} intermediate checkpoints (\VrevSymNegSpan{}), all with S \emph{below} B, and at no
+checkpoint with S above B. The default-optimizer E3 contrast is drawn for comparison; its own crossings
+are in Figure~\ref{fig:horizon} (Appendix~\ref{app:horizon}).
 
 \input{generated/v4/e5_table}
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=.78\textwidth]{generated/v4/horizon_curves.pdf}
-\caption{E3 crossings at every checkpoint (lines) with pointwise 95\% seed-block bands. Nine mixture cells, ten seeds per cell and condition.}
-\label{fig:horizon}
-\Description{Three crossing curves over training budget: lambda seven decreasing throughout; linear and curvature-only falling to 900k and rising afterwards.}
+\includegraphics[width=\textwidth]{generated/v4/fig_e5_horizon.pdf}
+\caption{Decoupled horizon cohort (E5) at all 24 checkpoints. Left: crossings of B, A and S with pointwise 95\% seed-block bands. Right: paired contrasts with bands; the dashed line is the default-optimizer E3 contrast $\lambda7-$curvature (the E3 analogue of A$-$B, which includes the scale pathway). Nine mixture cells, ten seeds per cell and arm.}
+\label{fig:e5}
+\Description{Left: three crossing curves falling to about 600k and rising to 3.6M, with A highest throughout. Right: A minus S stays above zero at every checkpoint; S minus B stays near or below zero.}
 \end{figure}
 
 % =======================================================================
@@ -316,6 +336,14 @@ smaller training budget.
 \section{The Default Optimizer Masks the Asymmetric Effect}
 \label{sec:optimizer}
 
+This section builds the optimizer account in five steps, summarized in Table~\ref{tab:hierarchy}: an
+observation, a diagnostic, an intervention that isolates one pathway, a residual effect, and an
+interpretation of that residual which the present experiments do not isolate. The quantities involved are
+distinct: the \emph{pre-clip} gradient norm, the \emph{applied} gradient after clipping, and the actual
+parameter \emph{update} after Adam's rescaling; E6 measures all three.
+
+\input{content/hierarchy_table}
+
 \paragraph{Design (E1, E2).}
 The pre-registered factorial crosses two optimizer modes with two reward modes at 300k. The optimizer
 modes are SB3's default global clip and separate actor and critic Adam optimizers without clipping. The
@@ -340,14 +368,17 @@ With normalized rewards the critic's gradient falls below the clip norm, the act
 of the gradient energy, and no symmetric shift is detectable (S$-$B \VfourSymNorm{}). With separate
 optimizers alone the symmetric $\times7$ effect shrinks to \VfourSymSep{} and the $\times3.451$ effect is
 no longer detectable. With both interventions, S$-$B is \VfourSymBoth{}, while A$-$B remains
-\VfourLossBoth{}. These intervals include zero, but they are not equivalence results: the S$-$B interval
+\VfourLossBoth{}. The S$-$B intervals include zero, but they are not equivalence results: the S$-$B interval
 under both interventions extends beyond a $\pm.05$ margin. Because A and S apply the same multiplier to
 losses and differ only in whether gains are also scaled, A$-$S compares two gain-to-loss ratios (1:7 and
 1:1) at matched loss scale, and A$-$B isolates the loss-branch multiplier at fixed gains. A$-$S is
 positive and excludes zero under normalization (\VfourAsymNorm{}), separate optimizers (\VfourAsymSep{})
 and both together (\VfourAsymBoth{}), so the pre-declared criterion for a sign-asymmetric effect is met.
 How much of each reward falls on the loss branch depends on $w$ and on the learned policy, because $z_0$
-is fixed; near the crossings both branches are active (Table~\ref{tab:loss_occupancy}). The changes in each contrast relative to the default cell are in
+is fixed; near the crossings both branches are active (Table~\ref{tab:loss_occupancy}). The arms also differ
+in reward mean, not only in scale: A's transformed rewards have a negative mean at most $w$, whereas S
+and R have positive means that grow with $w$ (Figure~\ref{fig:reward_moments}, Appendix~\ref{app:factorial}).
+A$-$S therefore compares gain-to-loss ratios but does not hold the first two moments fixed. The changes in each contrast relative to the default cell are in
 Table~\ref{tab:factorial_interactions}; Figure~\ref{fig:factorial} summarizes them.
 
 \paragraph{The artifact is not Adam's $\epsilon$, and points to critic target magnitude.}
@@ -375,7 +406,15 @@ to \VsixSymGroup{}, and its crossings are almost identical to those without any 
 therefore accounts for part of the artifact, roughly 0.2 of the 0.36 shift. The remainder is unaffected by
 clipping, accompanies a poorly fitted critic, and disappears under reward normalization
 (Section~\ref{sec:optimizer}, E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
-clipping.
+clipping. Figure~\ref{fig:e6} puts the three steps side by side.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/fig_e6_mechanism.pdf}
+\caption{The shared-clip pathway. Left: in the default E1 cell (log scale) the critic's pre-clip gradient norm rises from \VrevCritB{} (B) to \VrevCritS{} (S) while the actor's stays near 2, so one global clip to 0.5 shrinks the actor's applied gradient more for S. Middle: E6 seed-paired S/B ratios of the actor's applied gradient and of its actual parameter update, with 95\% intervals; a parameter-update ratio is not a gradient ratio, because Adam rescales. Right: E6 crossing contrasts. Per-group clipping restores the actor update and removes part of the symmetric shift; A$-$S becomes positive.}
+\label{fig:e6}
+\Description{Three panels: bar chart of gradient norms on a log scale; dot plot of S over B ratios near 0.4 and 0.1 under the shared clip and near one otherwise; dot plot of crossing contrasts by clipping mode.}
+\end{figure}
 
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
@@ -422,7 +461,17 @@ relative to food rewards, while S scales both and leaves their ratio unchanged; 
 training rewards below zero falls to a few percent at low and middle $w$ (Table~\ref{tab:lbf_occupancy}),
 because agents stop attempting loads. We therefore read the LBF result as a second environment in which an
 asymmetric transform moves the crossing through an incentive change, not as an independent confirmation of
-the supply-chain mechanism.
+the supply-chain mechanism. Figure~\ref{fig:lbf} shows the observed proportions behind Table~\ref{tab:lbf}.
+Several arms are far from the logistic shape, which is why Firth and isotonic crossings differ more here
+than on the supply chain; A's curve lies to the right of S's under both estimators.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/fig_e4_curves.pdf}
+\caption{E4 (MAPPO on LBF): observed collapse proportions at $\theta=0.626$ with 95\% Wilson intervals (ten seeds per point; arms offset slightly in $w$), Firth fits (lines) and decreasing-isotonic crossings (vertical ticks at 0.5). The global-clip linear arm has no isotonic crossing in the grid and its Firth crossing lies below it (Table~\ref{tab:lbf}).}
+\label{fig:lbf}
+\Description{Two panels of collapse proportion against mixture weight for four arms; the loss-multiplier arm A stays collapsed to much higher w than the others in both panels.}
+\end{figure}
 
 \paragraph{Two pre-declared predictions are not confirmed.}
 We had predicted that curvature would raise the LBF crossing under the global clip (P1) and that
@@ -440,53 +489,87 @@ from the stored team returns (deviation D4, Appendix~\ref{app:prereg}).
 \section{Discussion and Limitations}
 \label{sec:discussion}
 
-A loss-only reward multiplier moves the coordination-collapse crossing in two environments, and once
-actor and critic no longer share a clipped update and rewards are normalized, a symmetric multiplier
-produces no detectable shift. Under SB3's default PPO configuration the same experiment yields the opposite conclusion. A
-reward-design comparison that does not control critic scale can thus confuse an optimizer artifact with
-a property of the reward. The asymmetric effect is a property of the transformed training signal, not
-evidence about loss aversion as a psychological mechanism; in LBF it is plainly an incentive change on a
-costly cooperative action.
+\paragraph{What is established.}
+Three findings are supported at the level of evidence stated in Table~\ref{tab:hierarchy} and
+Sections~\ref{sec:horizon} and~\ref{sec:lbf}. First, a finite-budget crossing along the reward-weighting
+dial can be estimated with seed-paired intervals of roughly $\pm0.03$--$0.1$, but it moves with training
+budget, does not stabilize by 3.6M transitions, and depends on the optimizer configuration. Second, under
+SB3's default PPO a symmetric reward multiplier moves the crossing at least as far as a loss-only multiplier,
+and part of this is the shared gradient clip, which E6 isolates. Third, with separate optimizers and
+normalized rewards, a loss-only multiplier moves the crossing relative to a symmetric control on the
+supply chain, through 3.6M transitions, and an asymmetric transform moves it on Level-Based Foraging by a
+different route. None of this is evidence about loss aversion as a psychological mechanism: the effect is
+a property of the transformed training signal, and in LBF it is plainly an incentive change on a costly
+cooperative action.
 
-\paragraph{Limitations.}
-\begin{itemize}
-\item \textbf{Budget.} No condition has a stable crossing by 3.6M, and the multiplier contrast shrinks
-with budget; all readings are finite-budget.
-\item \textbf{Optimizer and implementation.} Absolute crossings move with the optimizer configuration,
-and all results use one PPO implementation (SB3 2.8.0); other implementations may couple actor and
-critic differently.
-\item \textbf{Environments.} Two environments and two learners, both small. In LBF the linear arm's
-crossing under the global clip lies below the sampled grid, so contrasts with it are not identified.
-\item \textbf{Mechanism.} The two-part account rests on parameter-update norms, critic explained variance
-and interventions, not on a model of the learning dynamics; we do not explain why a poorly fitted critic
-moves the crossing. Reward normalization is not value-target normalization, and we did not test PopArt.
-\item \textbf{Statistics.} Ten training seeds per cell; intervals that include zero are reported as no
-detectable effect, not as equivalence. Isotonic and Firth crossings agree within
-\VfourIsoMaxSupply{} on the supply chain; LBF gaps are larger, but the LBF conclusion holds under both
-(Appendix~\ref{app:estimation}).
-\item \textbf{Label and grid.} Crossings are conditional on the behavioral label and the sampled grid;
-non-bracketed estimates are reported, not clipped.
-\item \textbf{Platform.} Trained policies are not bit-reproducible across hardware and software builds;
-labels and crossings are.
-\item \textbf{Action representation.} An earlier ablation on the supply chain found no interior crossing
-for PPO, QMIX or IQL on a coarse 11-level discretization of the base-stock action, so the phenomenon also
-depends on the action representation.
-\end{itemize}
+\paragraph{Implications for reward-transform experiments.}
+The practical lesson is about design, not about loss asymmetry. A reward-transform comparison in
+actor--critic MARL should include a symmetric-scaling control at the same multiplier and should report
+whether actor and critic share a gradient clip and whether rewards or value targets are normalized; without
+these, a change in reward scale can pass for a change in reward shape.
 
-A deployment requirement such as at most 5\% collapse would need its own probability target and
-uncertainty assessment; the 50\% midpoint supplies no such guarantee.
+\paragraph{Implications for actor--critic optimization.}
+The confound needs two ingredients that are SB3 PPO's defaults: an unnormalized critic and one gradient
+clip over actor and critic. Advantages are normalized per minibatch, so the actor's loss is nearly
+scale-free, but the critic's gradient grows with the reward and takes the clip budget. Cooperative PPO
+implementations that normalize value targets by default~\citep{yu2022surprising} should be less exposed;
+we did not test them.
+
+\paragraph{Interpreting finite-budget crossings.}
+$\wcrit$ is a 50\% point of a fitted response curve at a stated budget, learner, reward unit and label. It is
+not a critical point, a safe operating point or an asymptotic property. Trajectories both recover from
+and relapse into collapse (Table~\ref{tab:horizon_stability}), so the crossing summarizes a population of
+training outcomes, not an attractor. Contrasts between arms within one configuration are more stable than
+absolute crossings: in E5 the absolute crossings fall and rise again, while A$-$S stays positive. A
+deployment requirement such as at most 5\% collapse would need its own probability target and uncertainty
+assessment.
+
+\paragraph{Limitations that bear on the main claims.}
+\emph{Mechanism.} The shared-clip part is isolated; the remainder is only consistent with a
+critic-target-scale pathway, because reward normalization also rescales the actor's rewards and we have not
+run a critic-only intervention such as PopArt~\citep{vanhasselt2016popart}. \emph{Reward moments.} A and S
+differ in the training reward's mean and variance as well as in the gain-to-loss ratio
+(Figure~\ref{fig:reward_moments}), so A$-$S does not hold the first two moments fixed.
+\emph{Statistics.} Ten training seeds per cell give contrast intervals of about $\pm0.1$ at 300k and up to
+$\pm0.17$ at 3.6M; intervals that include zero are reported as no detectable effect, never as equivalence,
+and none would support equivalence at a $\pm0.05$ margin. Intervals are pointwise; the 24-checkpoint E5
+reading is exploratory. No principal contrast changes sign when any one seed is left out
+(Table~\ref{tab:loso}).
+
+\paragraph{Limitations that bear on generality.}
+\emph{Environments and learners.} Two small environments and one PPO implementation (SB3 2.8.0); other
+implementations may couple actor and critic differently. In LBF the linear arm's crossing under the global
+clip lies below the sampled grid, so contrasts with it are not identified, and Firth and isotonic crossings
+differ by up to 0.161 there, although A$-$S keeps its sign under both. \emph{Budget.} No condition has a
+stable crossing by 3.6M, so all readings are finite-budget. \emph{Action representation.} An earlier
+ablation on the supply chain found no interior crossing for PPO, QMIX or IQL on a coarse 11-level
+discretization of the base-stock action. \emph{Label and grid.} Crossings are conditional on the behavioral
+label and the sampled grid; non-bracketed estimates are reported, not clipped.
+
+\paragraph{Reproducibility.}
+All E1--E6 runs share one platform; trained policies are not bit-reproducible across hardware and software
+builds, but labels agree in \VfourAgreeControl{} of matched runs, so we claim reproducibility of labels and
+crossings, not of policies. The artifact rebuilds every reported table, figure and number from per-run
+records with one command (Appendix~\ref{app:artifact}).
+
+\paragraph{Future experiments.}
+Two experiments would close the identification gaps above: a critic-only target normalization with the
+actor's rewards unchanged, and a symmetric control matched to the loss-multiplier arm's reward mean and
+variance. Additional seeds near the decoupled crossings would narrow the null intervals. A second PPO
+implementation would test whether the confound is specific to SB3's update.
 
 % =======================================================================
 \section{Conclusion}
 \label{sec:conclusion}
 
-Reward centralization is usually treated as a direction: more team signal helps. It also has a
-measurable finite-budget location, $\wcrit$, that moves with reward transforms, training budget and the
-optimizer. Measured with the optimizer coupling removed, a loss-only multiplier moves the crossing and a
-symmetric multiplier produces no detectable shift, in two environments; measured with default settings, the two cannot be
-told apart. We therefore recommend reporting $\wcrit$ together with the optimizer configuration and,
-for any reward-transform comparison, a symmetric-scaling control run under value or reward
-normalization.
+Reward centralization is usually treated as a direction: more team signal helps. It also has a measurable
+finite-budget location, $\wcrit$, that moves with reward transforms, training budget and the optimizer.
+Measured with default SB3 PPO, a symmetric reward multiplier and a loss-only multiplier cannot be told
+apart, because a shared gradient clip lets reward scale reach the actor's updates. With that coupling
+removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
+no detectable shift, in the tested configurations of two environments. Reward-transform comparisons in
+actor--critic MARL should therefore include symmetric-scaling controls and report the optimizer coupling,
+gradient clipping, reward or value normalization and training budget under which they were run.
 
 % =======================================================================
 \section*{Ethical Statement}

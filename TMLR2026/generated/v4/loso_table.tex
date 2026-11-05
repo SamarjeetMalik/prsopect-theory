@@ -1,0 +1,21 @@
+\begin{table}[H]
+\caption{Leave-one-seed-out sensitivity of the principal contrasts (exploratory). Each contrast is refitted ten times on nine training seeds; the range of the ten point estimates and the number that keep the full-data sign are shown. E4 uses the pre-declared $\theta=0.626$.}
+\label{tab:loso}
+\centering\small
+\begin{tabular}{@{}llrcr@{}}
+\toprule
+Experiment & Contrast & All seeds & Leave-one-out range & Same sign \\
+\midrule
+E1 default & S$-$B & $+0.357$ & $[+0.325,\,+0.384]$ & 10/10 \\
+E1 default & A$-$S & $-0.074$ & $[-0.098,\,-0.048]$ & 10/10 \\
+E1 decoupled & S$-$B & $-0.049$ & $[-0.072,\,-0.031]$ & 10/10 \\
+E1 decoupled & A$-$S & $+0.237$ & $[+0.200,\,+0.267]$ & 10/10 \\
+E5, 3.6M & S$-$B & $-0.049$ & $[-0.102,\,-0.013]$ & 10/10 \\
+E5, 3.6M & A$-$S & $+0.154$ & $[+0.134,\,+0.189]$ & 10/10 \\
+E6 per-group clip & S$-$B & $+0.150$ & $[+0.135,\,+0.169]$ & 10/10 \\
+E6 per-group clip & A$-$S & $+0.168$ & $[+0.148,\,+0.193]$ & 10/10 \\
+E4 global clip & A$-$S & $+0.447$ & $[+0.423,\,+0.504]$ & 10/10 \\
+E4 separate & A$-$S & $+0.490$ & $[+0.453,\,+0.533]$ & 10/10 \\
+\bottomrule
+\end{tabular}
+\end{table}

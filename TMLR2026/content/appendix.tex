@@ -76,6 +76,7 @@ the legacy supply-chain sweep is 0.018. Table~\ref{tab:isotonic} compares Firth 
 every in-grid E1--E4 fit.
 
 \input{generated/v4/isotonic_agreement}
+\input{generated/v4/loso_table}
 \FloatBarrier
 \input{generated/supply_cells}
 \input{generated/lambda_table}
@@ -107,6 +108,14 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \label{app:horizon}
 
 \input{generated/v4/horizon_cells}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.78\textwidth]{generated/v4/horizon_curves.pdf}
+\caption{E3 crossings at every checkpoint (lines) with pointwise 95\% seed-block bands. Default optimizer; nine mixture cells, ten seeds per cell and condition.}
+\label{fig:horizon}
+\Description{Three crossing curves over training budget: lambda seven decreasing throughout; linear and curvature-only falling to 900k and rising afterwards.}
+\end{figure}
 \FloatBarrier
 
 \section{Optimizer Factorial Details}
@@ -116,6 +125,22 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \input{generated/v4/factorial_diagnostics}
 \input{generated/v4/factorial_cells}
 \input{generated/v4/loss_occupancy}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/fig_reward_moments.pdf}
+\caption{Transformed-reward moments over training in E1, by arm and mixture weight: mean, RMS and fraction on the loss branch (per-run means, averaged over seeds), for the default cell (solid) and the fully decoupled cell (dashed). Only per-run moments were logged, not full distributions.}
+\label{fig:reward_moments}
+\Description{Three line panels against mixture weight; A has a negative mean while S and R have growing positive means; RMS is largest for S.}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=.5\textwidth]{generated/v4/fig_label.pdf}
+\caption{Collapse-label validation on all E1 runs: evaluation base-stock target $\bar S$ against evaluation profit, with the two label thresholds ($\bar S<10$, profit $\le-127.1$) dashed. Collapsed runs sit at the lazy-policy corner.}
+\label{fig:label}
+\Description{Scatter of profit against base-stock target; collapsed runs cluster at near-zero target and profit near minus 128.}
+\end{figure}
 \FloatBarrier
 
 \section{Level-Based Foraging Details}

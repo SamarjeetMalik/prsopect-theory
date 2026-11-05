@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{Evidence hierarchy for the optimizer account. Each level names the experiment that supports it and how far the evidence goes. ``Isolated'' means an intervention changes only the named quantity; ``consistent'' means the data agree with the explanation but an alternative is not excluded.}
+\label{tab:hierarchy}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.17\textwidth}>{\raggedright\arraybackslash}p{.40\textwidth}>{\raggedright\arraybackslash}p{.24\textwidth}>{\raggedright\arraybackslash}p{.11\textwidth}@{}}
+\toprule
+Level & Finding & Evidence & Status \\
+\midrule
+1. Observation & Under the default configuration, symmetric $\times7$ scaling moves the crossing (S$-$B \VfourSymStd{}). & E1, Table~\ref{tab:factorial_contrasts} & Direct \\
+2. Diagnostic & The critic dominates the shared clip: pre-clip critic norm \VfourCriticNormB{} (B) vs.\ \VfourCriticNormS{} (S); the actor's applied gradient for S is \VsixGradGlobal{} of B's and its parameter update \VsixUpdGlobal{}. & E1, E6, Tables~\ref{tab:factorial_diagnostics} and~\ref{tab:e6} & Direct \\
+3. Intervention & Clipping actor and critic separately restores the actor update (\VsixUpdGroup{}) and changes S$-$B by \VsixSymGroupChange{}. & E6 & Isolated \\
+4. Residual & Without clipping S$-$B is \VfourSymSep{}; adding reward normalization gives \VfourSymBoth{} (\VfourSymNorm{} under the shared clip). & E1, E6 & Direct \\
+5. Interpretation & Candidate: the residual reflects the critic's target scale; explained variance \VfourEVSepRawB{} (B) vs.\ \VfourEVSepRawS{} (S) without normalization, \VfourEVNormB{} and \VfourEVNormS{} with it. Reward normalization also rescales the actor's rewards. & E1 & Consistent, not isolated \\
+\bottomrule
+\end{tabular}
+\end{table}
