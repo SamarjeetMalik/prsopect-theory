@@ -1,11 +1,17 @@
 # E8 pre-declaration: online moment-matched symmetric control, and an independent-seed replication of E7 P1
 
-Written 2026-11-05, after E7's outcomes were known and before any E8 run. **Status: DRAFT, awaiting author
-approval.** On approval it is frozen together with the E8 sources and `e8_targets.json`: their hashes are appended to
-`HASHES.sha256` before the gate or any main-array run.
+Written 2026-11-05, after E7's outcomes were known and before any E8 run. **Approved by the authors and frozen on
+2026-11-05T22:48:51Z**, together with the E8 sources and `e8_targets.json`. Their hashes were appended to `HASHES.sha256` before the
+gate or any main-array run.
 
 `e8_targets.json` was built on 2026-11-06 by `analysis/e8_build_targets.py` from the per-rollout logs of E1 and E7 A
-(cluster job 4930), with SHA-256 prefix `514270f3031287f6`. Building it read no outcome label. It is not yet frozen.
+(cluster job 4930), with SHA-256 prefix `514270f3031287f6`. Building it read no outcome label.
+
+**Smoke test (2,560 transitions, Slurm job 4944; not part of E8).**
+- It exercised the static (index 40), online popart (index 120) and part-B (index 160) paths; all three completed.
+- Online tracking: the first adapted rollout's mean and SD were −27.7 and 63.9, against targets of −28.9 and 64.3.
+- Largest PopArt output drift: 3×10⁻⁵.
+- No outcome was analysed or kept.
 
 Platform, environment, learner, estimator and bootstrap are E7's (`PREREGISTRATION_E7.md`).
 

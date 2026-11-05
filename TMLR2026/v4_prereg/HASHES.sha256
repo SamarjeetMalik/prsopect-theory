@@ -34,3 +34,8 @@ d96b74002f5196e6e659f294ffd8db120ab343c9db6dd30f24e0dd662dd3cecb  TMLR2026/v4_pr
 4a81242452b837db4a7395d091db7e59a9bfb56c3758ad069fe6f0f385b593f6  TMLR2026/v4_prereg/PREREGISTRATION_E7.md
 7d395703053a54c792f1648e730f541607fc19ba4e1fff79a5b05993bd0067a9  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_critic_scale.py
 dd28989132d607f900fb9f62b4dd30d2d67f17ecbe81bf658ebcffa325e50542  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_design.json
+# E8 freeze, 2026-11-05T22:48:51Z, before the gate and any main-array run; smoke job 4944 passed; gate: index 40 --static vs E7 280 bit-identical, online 120 with 469 rollout records, part-B 160 complete; main array 0-479
+d8fd96721faaea0775c0e72b9aea82564726d5fa605bd359a46c64bc19297aca  TMLR2026/v4_prereg/PREREGISTRATION_E8.md
+f2a7fc789d57c02efb9a62c0334f7cc9317f248828372e3fe8f3a68846813f49  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_online_moments.py
+26afa7c067ab3b115bcd69a75d3c04866e580b3b693c9c8f09301da52c0a5113  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_design.json
+514270f3031287f617700990b89fc7244e0a303279051867061938c4a4ca6abf  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_targets.json
