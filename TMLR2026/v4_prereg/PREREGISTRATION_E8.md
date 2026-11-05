@@ -4,6 +4,9 @@ Written 2026-11-05, after E7's outcomes were known and before any E8 run. **Stat
 approval.** On approval it is frozen together with the E8 sources and `e8_targets.json`: their hashes are appended to
 `HASHES.sha256` before the gate or any main-array run.
 
+`e8_targets.json` was built on 2026-11-06 by `analysis/e8_build_targets.py` from the per-rollout logs of E1 and E7 A
+(cluster job 4930), with SHA-256 prefix `514270f3031287f6`. Building it read no outcome label. It is not yet frozen.
+
 Platform, environment, learner, estimator and bootstrap are E7's (`PREREGISTRATION_E7.md`).
 
 ## Why

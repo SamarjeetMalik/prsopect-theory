@@ -1,0 +1,21 @@
+\begin{table}[H]
+\caption{E7 training-reward and critic-target distributions. Per-rollout statistics of the transformed training reward (pooled over the five nodes) and of the rollout-buffer returns that the critic regresses, averaged over the 469 rollouts of each run and then over the 80 runs of each arm (ten seeds, eight cells). Quantile skewness is $(p_{90}+p_{10}-2p_{50})/(p_{90}-p_{10})$. M's reward statistics are reconstructed exactly from the logged B reward and M's frozen affine map; its fraction of negative rewards is not recoverable from the logs. Descriptive; not pre-registered.}
+\label{tab:dist}
+\centering\scriptsize\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llrrrrrrrrr@{}}
+\toprule
+& & \multicolumn{7}{c}{Training reward (per rollout)} & \multicolumn{2}{c}{Critic targets} \\
+\cmidrule(lr){3-9}\cmidrule(l){10-11}
+Critic & Arm & Mean & SD & $p_{10}$ & $p_{50}$ & $p_{90}$ & Q-skew & Frac.\ $<0$ & Mean & SD \\
+\midrule
+Plain & B (curvature) & $+5.5$ & 7.0 & $-1.0$ & $+5.8$ & $+13.0$ & $+0.01$ & 0.23 & $+68$ & 50 \\
+Plain & A (losses $\times7$) & $-6.6$ & 22.4 & $-25.7$ & $-3.9$ & $+12.2$ & $-0.12$ & 0.40 & $-104$ & 113 \\
+Plain & S (both $\times7$) & $+31.5$ & 47.5 & $-15.1$ & $+31.0$ & $+88.9$ & $+0.10$ & 0.30 & $+256$ & 270 \\
+Plain & M (affine of B) & $-13.5$ & 26.2 & $-38.9$ & $-15.4$ & $+20.0$ & $+0.18$ & -- & $-185$ & 148 \\
+PopArt & B (curvature) & $+5.5$ & 7.0 & $-1.2$ & $+5.9$ & $+13.0$ & $-0.01$ & 0.23 & $+73$ & 53 \\
+PopArt & A (losses $\times7$) & $-3.1$ & 22.2 & $-21.0$ & $+1.5$ & $+12.6$ & $-0.27$ & 0.32 & $-70$ & 123 \\
+PopArt & S (both $\times7$) & $+38.5$ & 48.6 & $-7.8$ & $+40.4$ & $+91.0$ & $+0.01$ & 0.24 & $+501$ & 371 \\
+PopArt & M (affine of B) & $-4.8$ & 26.3 & $-29.2$ & $-3.9$ & $+22.4$ & $-0.02$ & -- & $-90$ & 146 \\
+\bottomrule
+\end{tabular}
+\end{table}

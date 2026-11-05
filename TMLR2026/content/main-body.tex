@@ -564,7 +564,13 @@ constants mostly do not, and B's reward is lower under a collapsed policy. M is
 thus a scale-matched control whose mean is more negative than A's, and the plain-critic reading cannot
 separate a moment effect from that mean difference. An affine control can match at most the first two
 moments; what it leaves different, by construction, is the shape of the reward distribution, which is the
-feature an asymmetric transform is meant to change. A control whose moments track A's under its own policy is
+feature an asymmetric transform is meant to change. The training-reward logs confirm this and show one further
+difference (Table~\ref{tab:dist}, Appendix~\ref{app:factorial}). A's per-rollout reward is left-skewed (quantile
+skewness \VdaSkewA{}), M's is not (\VdaSkewM{}). With the plain critic, M's critic targets are also larger than
+A's (mean return \VdaRetMeanM{} against \VdaRetMeanA{}, SD \VdaRetSdM{} against \VdaRetSdA{}). Larger target
+scale is the pathway with which the residual symmetric shift is consistent (Section~\ref{sec:optimizer}), so with
+a raw-target critic M is exposed to it at least as much as A. This is consistent with, but does not establish, a
+target-scale explanation of the near-null plain-critic A$-$M. A control whose moments track A's under its own policy is
 pre-registered as an outstanding experiment (Section~\ref{sec:limitations}).
 
 \begin{figure}[!htbp]
@@ -746,7 +752,10 @@ the sampled grid; non-bracketed estimates are reported, not clipped.
 
 \paragraph{Pre-registration record.} E4's stored labels used a fallback threshold of 0.5 instead of the
 declared 0.626 because a calibration file was missing from the frozen source; all E4 results are recomputed
-from the stored team returns (deviation D4). The provenance of 0.626 is an earlier calibration whose raw
+from the stored team returns (deviation D4). Each stored team return equals the mean of the run's ten stored
+per-episode returns (largest difference $\VdaEMaxDiff{}$, all 800 runs), and the stored labels are exactly the
+0.5-threshold labels. \VdaETies{} run has a return of exactly 0.75, so its label in the $\theta=0.75$ sensitivity
+analysis depends on floating-point summation order; no other threshold is affected. The provenance of 0.626 is an earlier calibration whose raw
 records are not archived, so the threshold itself is taken as declared, not re-derived; Figure~\ref{fig:lbf_sensitivity}
 shows that the A$-$S ordering does not depend on it.
 

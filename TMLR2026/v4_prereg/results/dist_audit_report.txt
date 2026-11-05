@@ -1,0 +1,24 @@
+== Training-reward and critic-target distributions (per-rollout statistics averaged over 469 rollouts, then over runs)
+                 r_mean   r_std   r_p10   r_p50   r_p90  qskew  r_neg  ret_mean  ret_std
+critic_mode arm                                                                         
+plain       A    -6.550  22.445 -25.748  -3.895  12.199 -0.122  0.398  -103.597  113.492
+            B     5.525   6.993  -1.024   5.850  13.004  0.008  0.228    67.539   50.008
+            M   -13.487  26.189 -38.890 -15.351  19.979  0.180    NaN  -184.779  147.664
+            S    31.549  47.523 -15.149  31.033  88.861  0.102  0.300   256.430  270.097
+popart      A    -3.113  22.224 -21.033   1.467  12.613 -0.268  0.317   -69.856  122.977
+            B     5.542   7.004  -1.166   5.876  13.031 -0.007  0.229    73.003   52.896
+            M    -4.794  26.316 -29.163  -3.948  22.441 -0.018    NaN   -90.327  145.626
+            S    38.460  48.567  -7.801  40.439  91.011  0.006  0.236   500.982  370.991
+
+== A vs M by critic: what an affine (scale-and-shift) control can and cannot match
+  plain  mean A -6.55 M -13.49 | SD A 22.44 M 26.19 | p10 A -25.75 M -38.89 | p90 A +12.20 M +19.98 | quantile skew A -0.122 M +0.180 | return SD A 113.5 M 147.7
+  popart mean A -3.11 M -4.79 | SD A 22.22 M 26.32 | p10 A -21.03 M -29.16 | p90 A +12.61 M +22.44 | quantile skew A -0.268 M -0.018 | return SD A 123.0 M 145.6
+
+== E4 per-episode audit (800 runs)
+  episodes per run: [np.int64(10)]; max |stored team_return - mean(stored episodes)| = 2.220e-16
+  stored label == (stored team_return < 0.5): 800/800
+  per-episode native returns in [0.000, 1.000]
+  theta 0.5: collapsed 176 (from recomputed per-episode means)
+  theta 0.626: collapsed 290 (from recomputed per-episode means)
+  theta 0.75: collapsed 394 (from recomputed per-episode means)
+  runs whose theta-0.75 label depends on floating-point summation order (return exactly at 0.75): 1

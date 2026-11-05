@@ -144,7 +144,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/fig_reward_moments.pdf}
-\caption{Transformed-reward moments over training in E1, by arm and mixture weight: mean, RMS and fraction on the loss branch (per-run means, averaged over seeds), for the default cell (solid) and the fully decoupled cell (dashed). Only per-run moments were logged, not full distributions.}
+\caption{Transformed-reward moments over training in E1, by arm and mixture weight: mean, RMS and fraction on the loss branch (per-run means, averaged over seeds), for the default cell (solid) and the fully decoupled cell (dashed). The per-run tables keep these moments; per-rollout quantiles were also logged and are summarized for E7 in Table~\ref{tab:dist}.}
 \label{fig:reward_moments}
 \Description{Three line panels against mixture weight; A has a negative mean while S and R have growing positive means; RMS is largest for S.}
 \end{figure}
@@ -156,6 +156,9 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \label{fig:label}
 \Description{Scatter of profit against base-stock target; collapsed runs cluster at near-zero target and profit near minus 128.}
 \end{figure}
+\FloatBarrier
+
+\input{generated/v4/dist_table}
 \FloatBarrier
 
 \section{Level-Based Foraging Details}
