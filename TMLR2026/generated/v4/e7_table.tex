@@ -1,0 +1,14 @@
+\begin{table}[!htbp]
+\caption{Critic-target normalization and a moment-matched control (E7): separate actor and critic optimizers without clipping, raw rewards, the E1 grid, ten seeds, 300k. M is the affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward with constants frozen to give A's E1 training-reward mean and SD. The plain-critic B, A and S runs are E1's. Crossing contrasts with paired 95\% seed-block intervals; the bottom row is the change in each contrast from the plain to the PopArt critic. $^{\ast}$: interval excludes zero.}
+\label{tab:e7}
+\centering\footnotesize
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Critic & S$-$B & A$-$S & A$-$M & M$-$B & A$-$B \\
+\midrule
+Plain & \begin{tabular}[t]{@{}c@{}}$+0.160$$^{\ast}$\\[-1pt]{\scriptsize $[+0.078,\,+0.254]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.174$$^{\ast}$\\[-1pt]{\scriptsize $[+0.083,\,+0.255]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.050$\\[-1pt]{\scriptsize $[+0.000,\,+0.100]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.285$$^{\ast}$\\[-1pt]{\scriptsize $[+0.208,\,+0.363]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.334$$^{\ast}$\\[-1pt]{\scriptsize $[+0.274,\,+0.405]$}\end{tabular} \\
+PopArt & \begin{tabular}[t]{@{}c@{}}$+0.075$\\[-1pt]{\scriptsize $[-0.032,\,+0.164]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.207$$^{\ast}$\\[-1pt]{\scriptsize $[+0.141,\,+0.266]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.268$$^{\ast}$\\[-1pt]{\scriptsize $[+0.211,\,+0.317]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.014$\\[-1pt]{\scriptsize $[-0.082,\,+0.113]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.282$$^{\ast}$\\[-1pt]{\scriptsize $[+0.181,\,+0.380]$}\end{tabular} \\
+PopArt$-$plain & \begin{tabular}[t]{@{}c@{}}$-0.085$\\[-1pt]{\scriptsize $[-0.183,\,+0.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.033$\\[-1pt]{\scriptsize $[-0.080,\,+0.135]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.218$$^{\ast}$\\[-1pt]{\scriptsize $[+0.143,\,+0.298]$}\end{tabular} &  &  \\
+\bottomrule
+\end{tabular}
+\end{table}

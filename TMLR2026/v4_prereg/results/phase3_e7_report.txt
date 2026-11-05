@@ -1,0 +1,49 @@
+== E7: 400 new runs complete, unique, 300,160 transitions, declared evaluation seeds; indices 240-639
+   plain B/A/S reused from E1 separate_no_clip/raw: 240 runs (gate 1: index 120 == E1 run 760 bit-identical)
+   popart: 320 runs, 469-469 rescales each, largest output drift 6.10e-04 (assertion never fired: every run completed)
+
+== E7 crossings (w50 [95% CI]; isotonic; cells k/10)
+  plain  B: 0.326 [0.256, 0.392]  iso 0.314  0:10/10 0.2:9/10 0.4:2/10 0.5:1/10 0.6:0/10 0.7:0/10 0.85:0/10 1:0/10
+  plain  A: 0.661 [0.628, 0.696]  iso 0.657  0:10/10 0.2:10/10 0.4:10/10 0.5:10/10 0.6:9/10 0.7:2/10 0.85:0/10 1:0/10
+  plain  S: 0.487 [0.412, 0.569]  iso 0.457  0:10/10 0.2:10/10 0.4:7/10 0.5:3/10 0.6:4/10 0.7:0/10 0.85:1/10 1:0/10
+  plain  M: 0.611 [0.570, 0.655]  iso 0.620  0:10/10 0.2:10/10 0.4:10/10 0.5:9/10 0.6:6/10 0.7:1/10 0.85:0/10 1:0/10
+  popart B: 0.278 [0.178, 0.385]  iso 0.200  0:10/10 0.2:5/10 0.4:3/10 0.5:2/10 0.6:0/10 0.7:1/10 0.85:0/10 1:0/10
+  popart A: 0.560 [0.518, 0.604]  iso 0.540  0:10/10 0.2:10/10 0.4:10/10 0.5:7/10 0.6:2/10 0.7:2/10 0.85:0/10 1:0/10
+  popart S: 0.353 [0.297, 0.417]  iso 0.333  0:10/10 0.2:9/10 0.4:3/10 0.5:2/10 0.6:0/10 0.7:0/10 0.85:0/10 1:0/10
+  popart M: 0.292 [0.238, 0.346]  iso 0.300  0:10/10 0.2:8/10 0.4:2/10 0.5:0/10 0.6:0/10 0.7:0/10 0.85:0/10 1:0/10
+
+== E7 contrasts within critic mode (Firth [95% CI]; isotonic)
+  plain  S-B: +0.160 [+0.078, +0.254]  *  iso +0.143
+  plain  A-S: +0.174 [+0.083, +0.255]  *  iso +0.200
+  plain  A-M: +0.050 [+0.000, +0.100]     iso +0.037
+  plain  M-B: +0.285 [+0.208, +0.363]  *  iso +0.306
+  plain  A-B: +0.334 [+0.274, +0.405]  *  iso +0.343
+  popart S-B: +0.075 [-0.032, +0.164]     iso +0.133
+  popart A-S: +0.207 [+0.141, +0.266]  *  iso +0.207
+  popart A-M: +0.268 [+0.211, +0.317]  *  iso +0.240
+  popart M-B: +0.014 [-0.082, +0.113]     iso +0.100
+  popart A-B: +0.282 [+0.181, +0.380]  *  iso +0.340
+
+== E7 interactions (popart minus plain)
+  d(S-B): -0.085 [-0.183, +0.006]
+  d(A-S): +0.033 [-0.080, +0.135]
+  d(A-M): +0.218 [+0.143, +0.298]  *
+
+== E7 diagnostics per (mode, arm): explained variance at last update, per-minibatch grad norms, training-reward moments
+  mode arm  explained_variance_last  actor_grad_norm  critic_grad_norm  value_loss  train_reward_mean  train_reward_sd  popart_sigma_final
+ plain   B                    0.685            4.056          1285.952    1422.121              5.525            8.190                 NaN
+ plain   A                    0.490            3.632          3737.636   19179.238             -6.550           30.148                 NaN
+ plain   S                    0.300            4.409         13923.980  151227.422             31.549           56.581                 NaN
+ plain   M                    0.354            3.893          3748.034   47665.646            -13.487           32.225                 NaN
+popart   B                    0.676            3.949          2587.225     724.144              5.542            8.231              59.354
+popart   A                    0.636            3.990         31661.723    6871.919             -3.113           29.472             128.847
+popart   S                    0.686            4.173        124554.266   34784.644             38.460           57.564             425.847
+popart   M                    0.551            4.013         32428.282   10401.325             -4.794           30.410             138.455
+
+== E7 pre-declared predictions
+P1 critic-target pathway: popart S-B +0.075 [-0.032, +0.164]; d(S-B) -0.085 [-0.183, +0.006] -> INCONCLUSIVE: popart S-B includes 0 but d(S-B) does not exclude 0
+P2 critic fit (descriptive): popart EV S 0.686 vs B 0.676 (gap +0.011; plain S 0.300 vs B 0.685) -> MET
+P3 asymmetry without critic pathway: popart A-S +0.207 [+0.141, +0.266] -> MET
+P4 moment control: plain A-M +0.050 [+0.000, +0.100]; popart A-M +0.268 [+0.211, +0.317] -> NOT MET: A-S reported as possibly a moment effect; abstract must change
+P5 matching check (within 25%): plain M mean -13.49 vs A -6.55 (106%), SD 32.23 vs 30.15 (7%); popart M mean -4.79 vs A -3.11 (54%), SD 30.41 vs 29.47 (3%) -> NOT MET: P4 carries the matching qualification
+P6 reproduction: gate 1 passed (E7 index 120 bit-identical to E1 run 760), so reused plain B/A/S labels are E1's -> MET

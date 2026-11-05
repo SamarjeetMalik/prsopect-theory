@@ -235,6 +235,20 @@ table(OUT / "e6_table.tex",
       r"Clipping isolation (E6): one Adam step with a global clip, actor and critic clipped separately, or no clipping; raw rewards; arms B, A, S on the E1 grid; ten seeds; 720 runs at 300k. Crossing contrasts, and seed-paired S/B ratios of the actor's applied (post-clip) gradient norm and of the norm of its actual parameter update. $^{\ast}$: interval excludes zero.",
       "tab:e6", "@{}lcccc@{}", r"Mode & S$-$B & A$-$S & Applied actor gradient S/B & Actor update S/B", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- E7
+k7, i7, g7 = (pd.read_csv(RES / f"E7_{n}.csv") for n in ["contrasts", "interactions", "diagnostics"])
+PAIRS7 = ["S-B", "A-S", "A-M", "M-B", "A-B"]
+MODE7 = {"plain": "Plain", "popart": "PopArt"}
+rows = []
+for mo in ["plain", "popart"]:
+    rows.append([MODE7[mo]] + [f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$"
+                               for x in (k7[(k7["mode"] == mo) & (k7.contrast == n)].iloc[0] for n in PAIRS7)])
+rows.append([r"PopArt$-$plain"] + [f"${num(x.change, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$"
+                                          for x in (i7[i7.contrast == n].iloc[0] for n in PAIRS7[:3])] + ["", ""])
+table(OUT / "e7_table.tex",
+      r"Critic-target normalization and a moment-matched control (E7): separate actor and critic optimizers without clipping, raw rewards, the E1 grid, ten seeds, 300k. M is the affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward with constants frozen to give A's E1 training-reward mean and SD. The plain-critic B, A and S runs are E1's. Crossing contrasts with paired 95\% seed-block intervals; the bottom row is the change in each contrast from the plain to the PopArt critic. $^{\ast}$: interval excludes zero.",
+      "tab:e7", "@{}lccccc@{}", r"Critic & S$-$B & A$-$S & A$-$M & M$-$B & A$-$B", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -294,7 +308,8 @@ cp = pd.read_csv(RES / "compute_v4.csv")
 m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
-        "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k"}
+        "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
+        "E7": "Critic-target normalization and moment control, 300k"}
 table(OUT / "compute_table.tex",
       r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
@@ -317,5 +332,18 @@ gr6 = lambda mo, q: ur[(ur["mode"] == mo) & (ur.ratio == "S/B") & (ur.quantity =
 m += mac("VsixUpdGlobal", f"{gr6('global_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixUpdGroup", f"{gr6('groupwise_clip', 'pu_actor_update_norm').point:.2f}")
 m += mac("VsixUpdNone", f"{gr6('separate_no_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixGradGlobal", f"{gr6('global_clip', 'pu_applied_actor_grad_norm').point:.2f}")
 rp = pd.read_csv(RES / "E6_reproduction.csv").iloc[0]; m += mac("VsixRepro", f"{rp.agree}/{rp.total}")
+c7 = lambda mo, n: cv(k7, mode=mo, contrast=n)
+for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
+    for n, nm in [("S-B", "Sym"), ("A-S", "Asym"), ("A-M", "AM"), ("M-B", "MB"), ("A-B", "AB")]:
+        m += mac(f"Vseven{nm}{tag}", c7(mo, n))
+for n, nm in [("S-B", "Sym"), ("A-S", "Asym"), ("A-M", "AM")]:
+    x = i7[i7.contrast == n].iloc[0]; m += mac(f"Vseven{nm}Change", f"${num(x.change, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
+gd = g7.set_index(["mode", "arm"])
+for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
+    for a in "BAS":
+        m += mac(f"VsevenEV{tag}{a}", f"{gd.loc[(mo, a)].explained_variance_last:.2f}")
+    for a in "AM":
+        m += mac(f"VsevenMean{tag}{a}", f"${gd.loc[(mo, a)].train_reward_mean:.1f}$"); m += mac(f"VsevenSD{tag}{a}", f"{gd.loc[(mo, a)].train_reward_sd:.1f}")
+m += mac("VsevenSigmaRange", f"{g7[g7['mode'] == 'popart'].popart_sigma_final.min():.0f}--{g7[g7['mode'] == 'popart'].popart_sigma_final.max():.0f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

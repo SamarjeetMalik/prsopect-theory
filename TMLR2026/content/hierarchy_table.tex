@@ -10,7 +10,8 @@ Level & Finding & Evidence & Status \\
 2. Diagnostic & The critic dominates the shared clip: pre-clip critic norm \VfourCriticNormB{} (B) vs.\ \VfourCriticNormS{} (S); the actor's applied gradient for S is \VsixGradGlobal{} of B's and its parameter update \VsixUpdGlobal{}. & E1, E6, Tables~\ref{tab:factorial_diagnostics} and~\ref{tab:e6} & Direct \\
 3. Intervention & Clipping actor and critic separately restores the actor update (\VsixUpdGroup{}) and changes S$-$B by \VsixSymGroupChange{}. & E6 & Isolated \\
 4. Residual & Without clipping S$-$B is \VfourSymSep{}; adding reward normalization gives \VfourSymBoth{} (\VfourSymNorm{} under the shared clip). & E1, E6 & Direct \\
-5. Interpretation & Candidate: the residual reflects the critic's target scale; explained variance \VfourEVSepRawB{} (B) vs.\ \VfourEVSepRawS{} (S) without normalization, \VfourEVNormB{} and \VfourEVNormS{} with it. Reward normalization also rescales the actor's rewards. & E1 & Consistent, not isolated \\
+5. Interpretation & Candidate: the residual reflects the critic's target scale. Normalizing only the critic's targets (PopArt) raises explained variance for S from \VsevenEVPlainS{} to \VsevenEVPopS{} (B: \VsevenEVPopB{}) and changes S$-$B by \VsevenSymChange{}. & E7, Table~\ref{tab:e7} & Tested, inconclusive \\
+6. Moment control & A symmetric affine map of B matched to A's reward scale: A$-$M is \VsevenAMPlain{} with a raw-target critic and \VsevenAMPop{} with PopArt. Its SD matches A's; its mean is more negative. & E7, Table~\ref{tab:e7} & Raw targets: not separable; PopArt: direct \\
 \bottomrule
 \end{tabular}
 \end{table}

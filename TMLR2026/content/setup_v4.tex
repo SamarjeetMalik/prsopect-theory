@@ -1,5 +1,5 @@
 \begin{table*}[t]
-\caption{Experimental setup. Legacy sweeps (earlier platform, 20 seeds per cell) supply the 300k decomposition and the cross-sectional horizon fit; pre-registered experiments E1--E6 run on one platform with ten seeds per cell.}
+\caption{Experimental setup. Legacy sweeps (earlier platform, 20 seeds per cell) supply the 300k decomposition and the cross-sectional horizon fit; pre-registered experiments E1--E7 run on one platform with ten seeds per cell.}
 \label{tab:setup}
 \centering\scriptsize
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.395\textwidth}>{\raggedright\arraybackslash}p{.395\textwidth}@{}}
@@ -10,9 +10,9 @@ Environment & Six-node \texttt{NetworkManagement-v1}; node 1 scripted, nodes 2--
 Local reward & Node $i$'s period profit (revenue minus procurement, operating, holding, pipeline and unfulfilled-demand costs). & Native food share minus 0.02 per LOAD attempt. \\
 Team reward & Sum of the five trained nodes' profits. & Sum of native food rewards. \\
 Learner & Parameter-shared PPO (SB3 2.8.0); separate actor and critic MLPs. & MAPPO: actor on own observation, critic on global state (SB3 2.8.0). \\
-Optimizer & Default: one Adam step ($\epsilon=10^{-5}$), global clip 0.5, no value normalization. E1 adds separate no-clip optimizers and \texttt{VecNormalize}; E2 sets $\epsilon=10^{-8}$; E6 clips actor and critic separately; E5 uses the fully decoupled learner. & Global clip 0.5 or separate no-clip optimizers. \\
+Optimizer & Default: one Adam step ($\epsilon=10^{-5}$), global clip 0.5, no value normalization. E1 adds separate no-clip optimizers and \texttt{VecNormalize}; E2 sets $\epsilon=10^{-8}$; E6 clips actor and critic separately; E5 uses the fully decoupled learner; E7 adds a PopArt critic to the separate no-clip learner. & Global clip 0.5 or separate no-clip optimizers. \\
 Collapse label & $\mathbf 1[\bar S<10\wedge\bar\pi\le-127.1]$ on ten deterministic evaluation episodes. & Native team return $<0.626$ over ten evaluation episodes (no effort cost). \\
-Arms & Linear; curvature $\alpha{=}\beta{=}.88$ with $\lambda\in\{1,\ldots,7\}$ (legacy); B, A ($\lambda=7$), S ($\times7$), R ($\times3.451$) with $z_0=-2.628$ (E1, E2); linear, curvature, $\lambda=7$ (E3); B, A, S (E5, E6). & Linear; curvature; A ($\lambda=4$); S (both branches $\times4$). \\
+Arms & Linear; curvature $\alpha{=}\beta{=}.88$ with $\lambda\in\{1,\ldots,7\}$ (legacy); B, A ($\lambda=7$), S ($\times7$), R ($\times3.451$) with $z_0=-2.628$ (E1, E2); linear, curvature, $\lambda=7$ (E3); B, A, S (E5, E6); B, A, S and an affine map M of B (E7). & Linear; curvature; A ($\lambda=4$); S (both branches $\times4$). \\
 Budget, grid & 300k, eight cells (E1, E2); 3.6M with 24 checkpoints, nine cells (E3, E5). & 2M timesteps; ten cells $\{0,.1,.2,.3,.5,.65,.75,.85,.9,.95\}$. \\
 Uncertainty & \multicolumn{2}{>{\raggedright\arraybackslash}p{.80\textwidth}}{Firth logistic midpoint; 2,000 multinomial draws of complete training-seed blocks, shared across conditions so that contrasts are paired.} \\
 \bottomrule
