@@ -1,0 +1,21 @@
+\begin{table}[H]
+\caption{Simulated behaviour of the seed-block percentile intervals at the paper's design: ten seeds, the E1 grid, one label per seed and cell, 1,000 replicates per row, 2,000 bootstrap draws. Each scenario has two arms; ``seed SD'' is the standard deviation of a per-seed logit intercept shared by both arms. Coverage is of the true crossing ($w_{50}$) and of the true paired contrast; the last block is the fraction of replicates whose contrast interval excludes zero, which is the false-positive rate under a null contrast and power otherwise.}
+\label{tab:coverage}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccccccccc@{}}
+\toprule
+& & & & \multicolumn{3}{c}{Coverage of $w_{50}$} & \multicolumn{3}{c}{Coverage of contrast} & \multicolumn{3}{c}{Interval excludes 0} \\
+\cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(l){11-13}
+Scenario & Seed SD & True $w_{50}$ & True contrast & 95 & 97.5 & 99 & 95 & 97.5 & 99 & 95 & 97.5 & 99 \\
+\midrule
+steep, null & 0 & $0.400$ & $+0.00$ & 0.923 & 0.942 & 0.963 & 0.913 & 0.940 & 0.955 & 0.087 & 0.060 & 0.045 \\
+steep, null & 1 & $0.400$ & $+0.00$ & 0.917 & 0.944 & 0.971 & 0.904 & 0.925 & 0.948 & 0.096 & 0.075 & 0.052 \\
+steep, +0.10 & 0 & $0.400$ & $+0.10$ & 0.919 & 0.944 & 0.966 & 0.899 & 0.938 & 0.961 & 0.822 & 0.759 & 0.670 \\
+steep, +0.10 & 1 & $0.400$ & $+0.10$ & 0.922 & 0.947 & 0.966 & 0.911 & 0.941 & 0.961 & 0.806 & 0.751 & 0.659 \\
+shallow, null & 0 & $0.438$ & $+0.00$ & 0.890 & 0.931 & 0.950 & 0.905 & 0.937 & 0.962 & 0.095 & 0.063 & 0.038 \\
+shallow, null & 1 & $0.438$ & $+0.00$ & 0.889 & 0.929 & 0.962 & 0.912 & 0.940 & 0.961 & 0.088 & 0.060 & 0.039 \\
+shallow, +0.20 & 0 & $0.438$ & $+0.20$ & 0.884 & 0.915 & 0.939 & 0.900 & 0.927 & 0.947 & 0.944 & 0.909 & 0.849 \\
+shallow, +0.20 & 1 & $0.438$ & $+0.20$ & 0.912 & 0.937 & 0.960 & 0.904 & 0.936 & 0.961 & 0.934 & 0.898 & 0.841 \\
+\bottomrule
+\end{tabular}
+\end{table}

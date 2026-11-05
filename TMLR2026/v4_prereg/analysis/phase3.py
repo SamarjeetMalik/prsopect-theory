@@ -21,6 +21,7 @@ sys.path.insert(0, str(ART / "AAMAS2027/analysis"))
 from boundary import firth  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from isotonic import isotonic_crossing  # noqa: E402
+from labels import check_supply_table  # noqa: E402  (stored labels must equal the declared rule)
 
 SEEDS = list(range(42, 52))
 GRID = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
@@ -65,6 +66,7 @@ def contrast(name, a, b):
 
 # ------------------------------------------------------------------ E1 / E2
 e1 = pd.read_csv(EXT / "E1_runs.csv"); e2 = pd.read_csv(EXT / "E2_runs.csv")
+check_supply_table(e1); check_supply_table(e2)
 say("== Validation")
 for name, f, n_exp, key in [("E1", e1, 1280, ["optimizer_mode", "reward_mode", "arm", "w", "seed"]), ("E2", e2, 320, ["arm", "w", "seed"])]:
     assert len(f) == n_exp and f.complete.all(), name
@@ -126,6 +128,7 @@ exact = int(np.isclose(m.profit, m.arch_profit, atol=1e-9).sum())
 
 # ------------------------------------------------------------------ E3
 e3 = pd.read_csv(EXT / "E3_checkpoints.csv", keep_default_na=False, na_values=[""])  # 'null' is a condition name
+check_supply_table(e3[e3.present == True])  # noqa: E712
 G3 = [0.2, 0.4, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1.0]; CK = sorted(e3.checkpoint.unique()); CONDS = ["null", "curvature", "lambda7"]
 assert e3.present.all() and len(e3) == 270 * 24 and (e3.n_eps == 10).all(), "E3 incomplete"
 assert not e3.duplicated(["w", "condition", "seed", "checkpoint"]).any()

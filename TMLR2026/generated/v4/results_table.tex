@@ -1,0 +1,25 @@
+\begin{table}[!htbp]
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same ten training seeds (seeds 42--51) on the experiment's mixture grid; intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The 99\% interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. No principal verdict differs between the two.}
+\label{tab:results}
+\centering\scriptsize
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}llp{.23\textwidth}lcccp{.13\textwidth}@{}}
+\toprule
+Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & 99\% interval & Reading \\
+\midrule
+E1 & Supply & Shared clip, raw rewards (default) & S$-$B & $+0.357$ & $[+0.249,\,+0.464]$ & $[+0.220,\,+0.495]$ & symmetric shift \\
+E6 & Supply & Per-group clip, raw rewards & S$-$B & $+0.150$ & $[+0.095,\,+0.226]$ & $[+0.077,\,+0.245]$ & symmetric shift reduced \\
+E1 & Supply & Separate optimizers, normalized rewards & S$-$B & $-0.049$ & $[-0.117,\,+0.017]$ & $[-0.139,\,+0.032]$ & none detectable \\
+E7 & Supply & Separate optimizers, PopArt critic, raw rewards & S$-$B & $+0.075$ & $[-0.032,\,+0.164]$ & $[-0.070,\,+0.180]$ & none detectable \\
+E1 & Supply & Separate optimizers, normalized rewards & A$-$S & $+0.237$ & $[+0.136,\,+0.346]$ & $[+0.114,\,+0.378]$ & asymmetric shift \\
+E1 & Supply & Separate optimizers, normalized rewards & A$-$B & $+0.188$ & $[+0.082,\,+0.266]$ & $[+0.047,\,+0.288]$ & loss-only shift \\
+E6 & Supply & Per-group clip, raw rewards & A$-$S & $+0.168$ & $[+0.077,\,+0.240]$ & $[+0.047,\,+0.261]$ & asymmetric shift \\
+E5 & Supply & Separate optimizers, normalized rewards, 3.6M & A$-$S & $+0.154$ & $[+0.053,\,+0.256]$ & $[+0.018,\,+0.277]$ & persists at 3.6M \\
+E7 & Supply & PopArt critic, raw rewards & A$-$S & $+0.207$ & $[+0.141,\,+0.266]$ & $[+0.126,\,+0.280]$ & asymmetric shift \\
+E7 & Supply & Plain critic, raw rewards & A$-$M & $+0.050$ & $[+0.000,\,+0.100]$ & $[-0.012,\,+0.112]$ & not separable from moments \\
+E7 & Supply & PopArt critic, raw rewards & A$-$M & $+0.268$ & $[+0.211,\,+0.317]$ & $[+0.194,\,+0.327]$ & exceeds scale-matched control \\
+E4 & LBF & MAPPO, shared clip & A$-$S & $+0.447$ & $[+0.312,\,+0.559]$ & $[+0.260,\,+0.600]$ & asymmetric shift \\
+E4 & LBF & MAPPO, separate optimizers & A$-$S & $+0.490$ & $[+0.315,\,+0.619]$ & $[+0.235,\,+0.670]$ & asymmetric shift \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -13,6 +13,7 @@ EXT, E1CSV, ART, OUT = map(Path, sys.argv[1:5]); OUT.mkdir(parents=True, exist_o
 sys.path.insert(0, str(ART / "AAMAS2027/analysis")); sys.path.insert(0, str(Path(__file__).resolve().parent))
 from boundary import firth  # noqa: E402
 from isotonic import isotonic_crossing  # noqa: E402
+from labels import check_supply_table  # noqa: E402  (stored labels must equal the declared rule)
 
 SEEDS = list(range(42, 52))
 WEIGHTS = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)
@@ -42,7 +43,7 @@ def contrast(a, b):
 
 
 # ================================================================== E5
-e5 = pd.read_csv(EXT / "E5_checkpoints.csv")
+e5 = pd.read_csv(EXT / "E5_checkpoints.csv"); check_supply_table(e5)
 G5 = [0.2, 0.4, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1.0]; CK = sorted(e5.checkpoint.unique()); ARMS5 = ["B", "A", "S"]
 assert e5.present.all() and len(e5) == 270 * 24 and (e5.n_eps == 10).all() and e5.complete.all()
 assert set(e5.design) == {"e5-decoupled-horizon-v4"} and set(e5.optimizer_mode) == {"separate_no_clip"} and set(e5.reward_mode) == {"vecnormalize"}
@@ -91,7 +92,7 @@ say(f"P2 persistence: A-S excludes 0 at every primary budget -> {'MET' if p2 els
 say(f"P3 symmetric: S-B includes 0 at every primary budget -> {'MET' if p3 else 'NOT MET: ' + ', '.join(f'{ck // 1000}k' for ck in PRIMARY if g(ck, 'S-B').excludes_zero)}")
 
 # ================================================================== E6
-e6 = pd.read_csv(EXT / "E6_runs.csv"); G6 = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
+e6 = pd.read_csv(EXT / "E6_runs.csv"); check_supply_table(e6); G6 = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
 MODES = ["global_clip", "groupwise_clip", "separate_no_clip"]; ARMS6 = ["B", "A", "S"]
 assert len(e6) == 720 and e6.complete.all() and (e6.actual == 300160).all() and (e6.n_eps == 10).all() and e6.eval_seeds_ok.all()
 assert set(e6.design) == {"e6-clip-isolation-v4"} and not e6.duplicated(["optimizer_mode", "arm", "w", "seed"]).any()

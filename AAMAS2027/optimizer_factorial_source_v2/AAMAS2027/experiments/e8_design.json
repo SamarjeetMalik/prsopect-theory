@@ -1,0 +1,10 @@
+{
+ "design": "e8-online-moments-v4",
+ "partA": {"arm": "M_on", "critic_modes": ["plain", "popart"], "seeds": [42, 43, 44, 45, 46, 47, 48, 49, 50, 51], "indices": "0-159",
+           "ema_weight": 0.5, "scale_clip_factor": 4.0, "sd_floor": 0.001, "rollout0": "E7 static constants (e7_design.json M_affine)"},
+ "partB_seeds": [52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
+ "partB": {"arms": ["B", "S"], "critic_modes": ["plain", "popart"], "indices": "160-479"},
+ "gate": "E8 index 40 with --static (plain, w=0.6, seed 42, E7 constants) reproduces E7 index 280 bit-for-bit (summary and ten episodes); a part-A online run (index 120, popart, w=0.6, seed 42) and a part-B run (index 160) complete at 300k",
+ "matching_tolerance": {"pooled_mean_rel": 0.10, "pooled_sd_rel": 0.10, "per_cell_rel_descriptive": 0.25},
+ "targets_source": "seed-averaged per-rollout mean and within-rollout SD of A's transformed training reward; plain: E1 separate_no_clip/raw A; popart: E7 popart A (e8_targets.json)"
+}

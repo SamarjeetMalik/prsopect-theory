@@ -13,6 +13,7 @@ E7CSV, E1CSV, ART, OUT = map(Path, sys.argv[1:5]); OUT.mkdir(parents=True, exist
 sys.path.insert(0, str(ART / "AAMAS2027/analysis")); sys.path.insert(0, str(Path(__file__).resolve().parent))
 from boundary import firth  # noqa: E402
 from isotonic import isotonic_crossing  # noqa: E402
+from labels import check_supply_table  # noqa: E402  (stored labels must equal the declared rule)
 
 SEEDS = list(range(42, 52))
 WEIGHTS = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)
@@ -38,7 +39,7 @@ def fit(frame):
 
 
 # ------------------------------------------------------------------ data
-e7 = pd.read_csv(E7CSV); e1 = pd.read_csv(E1CSV)
+e7 = pd.read_csv(E7CSV); e1 = pd.read_csv(E1CSV); check_supply_table(e7); check_supply_table(e1)
 assert len(e7) == 400 and e7.complete.all() and (e7.actual == 300160).all() and (e7.n_eps == 10).all() and e7.eval_seeds_ok.all()
 assert set(e7.design) == {"e7-critic-scale-v4"} and set(e7.optimizer_mode) == {"separate_no_clip"} and set(e7.reward_mode) == {"raw"}
 assert not e7.duplicated(["critic_mode", "arm", "w", "seed"]).any()

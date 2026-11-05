@@ -17,8 +17,7 @@ from isotonic import isotonic_crossing  # noqa: E402
 SEEDS = list(range(42, 52)); GRID = [0.0, 0.1, 0.2, 0.3, 0.5, 0.65, 0.75, 0.85, 0.9, 0.95]
 ARMS = ["linear", "curvature", "A", "S"]; OPTS = ["global_clip", "separate_no_clip"]
 WEIGHTS = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)
-THETA = 0.626            # pre-declared label (PREREGISTRATION_v4, E4); deviation D4: the runs' stored labels used 0.5
-THETAS = [0.5, 0.626, 0.75]
+from labels import lbf_label, E4_THETA as THETA, E4_THETA_SENSITIVITY as THETAS  # noqa: E402  (asserted against the pre-registration)
 log = []
 def say(s=""): print(s); log.append(s)
 def ci(z):
@@ -31,13 +30,13 @@ assert not f.duplicated(["optimizer_mode", "arm", "w", "seed"]).any()
 assert set(f.design) == {"e4-lbf-v4"} and set(f.seed) == set(SEEDS) and set(f.w) == set(round(x, 4) for x in GRID)
 say("E4: 800 runs complete, unique, >= 2M transitions, 10 evaluation episodes each")
 stored = f.collapsed.astype(int)
-assert (stored == (f.team_return < 0.5).astype(int)).all(), "stored labels are not the 0.5-threshold labels"
+assert (stored == lbf_label(f.team_return, 0.5)).all(), "stored labels are not the 0.5-threshold labels"
 say(f"Deviation D4: stored labels equal team_return < 0.5 for all 800 runs; primary analysis relabels at theta = {THETA}")
 
 
 def fit_all(theta):
     out = {}
-    lab = (f.team_return < theta).astype(int)
+    lab = pd.Series(lbf_label(f.team_return, theta), index=f.index)
     for opt in OPTS:
         for arm in ARMS:
             g = f[(f.optimizer_mode == opt) & (f.arm == arm)].assign(c=lab)
