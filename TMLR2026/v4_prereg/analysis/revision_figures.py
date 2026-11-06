@@ -22,7 +22,7 @@ import pandas as pd  # noqa: E402
 RUNS, RES = map(Path, sys.argv[1:3])
 OUT = Path(__file__).resolve().parents[2] / "generated/v4"
 plt.rcParams.update({"font.size": 8, "axes.titlesize": 8, "axes.labelsize": 8, "legend.fontsize": 7, "xtick.labelsize": 7, "ytick.labelsize": 7})
-CAL = pd.read_csv(RES / "stat_calibrated_intervals.csv"); COV = pd.read_csv(RES / "stat_coverage.csv"); MC = pd.read_csv(RES / "stat_bootstrap_stability.csv")
+HOLM = pd.read_csv(RES / "stat_holm.csv").set_index("contrast"); CAL = pd.read_csv(RES / "stat_calibrated_intervals.csv"); COV = pd.read_csv(RES / "stat_coverage.csv"); MC = pd.read_csv(RES / "stat_bootstrap_stability.csv")
 LEVEL = float(CAL.level.iloc[0])
 
 # ---------------------------------------------------------------- principal contrasts
@@ -38,12 +38,15 @@ META = {  # contrast label -> (display, environment, learner/intervention, readi
     "E7 popart A-S": (r"A$-$S", "Supply", "PopArt critic, raw rewards", "asymmetric shift"),
     "E7 plain A-M": (r"A$-$M", "Supply", "Plain critic, raw rewards", "not separable from moments"),
     "E7 popart A-M": (r"A$-$M", "Supply", "PopArt critic, raw rewards", "exceeds scale-matched control"),
+    "E8 plain A-M_on": (r"A$-$M$_{\mathrm{on}}$", "Supply", "Plain critic, raw rewards", "small, beyond moments"),
+    "E8 popart A-M_on": (r"A$-$M$_{\mathrm{on}}$", "Supply", "PopArt critic, raw rewards", "exceeds moment-matched control"),
+    "E8B popart S-B": (r"S$-$B", "Supply", "PopArt critic, raw rewards, seeds 52--61", "none detectable"),
     "E4 global_clip A-S": (r"A$-$S", "LBF", "MAPPO, shared clip", "asymmetric shift"),
     "E4 separate_no_clip A-S": (r"A$-$S", "LBF", "MAPPO, separate optimizers", "asymmetric shift"),
 }
-ORDER = ["E1 global_clip/raw S-B", "E6 groupwise_clip S-B", "E1 separate_no_clip/vecnormalize S-B", "E7 popart S-B",
+ORDER = ["E1 global_clip/raw S-B", "E6 groupwise_clip S-B", "E1 separate_no_clip/vecnormalize S-B", "E7 popart S-B", "E8B popart S-B",
          "E1 separate_no_clip/vecnormalize A-S", "E1 separate_no_clip/vecnormalize A-B", "E6 groupwise_clip A-S", "E5 3.6M A-S",
-         "E7 popart A-S", "E7 plain A-M", "E7 popart A-M", "E4 global_clip A-S", "E4 separate_no_clip A-S"]
+         "E7 popart A-S", "E7 plain A-M", "E7 popart A-M", "E8 plain A-M_on", "E8 popart A-M_on", "E4 global_clip A-S", "E4 separate_no_clip A-S"]
 c = CAL.set_index("contrast").loc[ORDER].reset_index()
 fig, ax = plt.subplots(figsize=(6.6, 4.1))
 y = np.arange(len(c))[::-1]
@@ -56,7 +59,7 @@ for yi, r in zip(y, c.itertuples()):
 ax.axvline(0, color="0.4", lw=.7, ls="--")
 ax.set_yticks(y); ax.set_yticklabels([f"{r.contrast.split()[0]}  {META[r.contrast][0]}: {META[r.contrast][2]}" for r in c.itertuples()])
 ax.set_xlabel(r"Crossing difference $\Delta w_{50}$")
-for yb in [len(c) - 4.5, len(c) - 9.5, len(c) - 11.5]:
+for yb in [len(c) - 5.5, len(c) - 10.5, len(c) - 14.5]:
     ax.axhline(yb, color="0.85", lw=.6)
 fig.tight_layout(); fig.savefig(OUT / "fig_summary.pdf"); plt.close(fig)
 
@@ -65,15 +68,16 @@ rows = []
 for r in c.itertuples():
     disp, env, setting, reading = META[r.contrast]; exp = r.contrast.split()[0]
     est = f"${r.difference:+.3f}$"; i95 = f"$[{r.ci_low_95:+.3f},\\,{r.ci_high_95:+.3f}]$"; ical = f"$[{r.ci_low_cal:+.3f},\\,{r.ci_high_cal:+.3f}]$"
-    rows.append(" & ".join([exp, env, setting, disp, est, i95, ical, reading]) + r" \\")
+    hm = "yes" if HOLM.loc[r.contrast].holm_reject else "no"
+    rows.append(" & ".join([exp, env, setting, disp, est, i95, ical, hm, reading]) + r" \\")
 (OUT / "results_table.tex").write_text(r"""\begin{table}[!htbp]
-\caption{Principal crossing contrasts. Each contrast pairs two arms over the same ten training seeds (seeds 42--51) on the experiment's mixture grid; intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. No principal verdict differs between the two.}
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same ten training seeds (seeds 42--51) on the experiment's mixture grid; intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all 14 principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
 \label{tab:results}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llp{.23\textwidth}lcccp{.13\textwidth}@{}}
+\begin{tabular}{@{}llp{.21\textwidth}lcccc p{.12\textwidth}@{}}
 \toprule
-Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval & Reading \\
+Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval & Holm & Reading \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
@@ -158,6 +162,7 @@ cc = [COV[f"cover_contrast_{LEVEL}"].min(), COV[f"cover_w50_{LEVEL}"].min()]
 m += mac("VrvCalCovMin", f"{min(cc):.2f}")
 m += mac("VrvMCShift", f"{np.abs(MC[['shift_low', 'shift_high']].to_numpy()).max():.3f}")
 m += mac("VrvNContrasts", f"{len(CAL)}")
+m += mac("VrvHolmKept", f"{int(HOLM.holm_reject.sum())}"); m += mac("VrvHolmMaxP", f"{HOLM[HOLM.holm_reject].p_boot.max():.3f}")
 m += mac("VrvVerdictsChanged", f"{int((CAL.excludes_zero_95 != CAL.excludes_zero_cal).sum())}")
 e1d = pd.read_csv(RES / "E1E2_diagnostics.csv"); ps = e1d[e1d.cell == "global_clip/raw"].set_index("arm")
 m += mac("VrvCriticRatio", f"{ps.loc['B'].mb_critic_grad_norm / ps.loc['S'].mb_critic_grad_norm:.3f}")
@@ -167,5 +172,12 @@ m += mac("VrvPredRatio", f"{pred(ps.loc['S']) / pred(ps.loc['B']):.3f}")
 m += mac("VrvMeasRatio", f"{ps.loc['S'].mb_post_actor_grad_norm / ps.loc['B'].mb_post_actor_grad_norm:.3f}")
 x = CAL.set_index("contrast")
 m += mac("VrvPlainAMcal", f"$[{x.loc['E7 plain A-M'].ci_low_cal:+.3f},\\,{x.loc['E7 plain A-M'].ci_high_cal:+.3f}]$")
+import json
+root = Path(__file__).resolve().parents[3]
+des = next(q for q in [root / "AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_design.json",
+                       root / "v4/executed_source/optimizer_factorial_source_v2/AAMAS2027/experiments/e7_design.json"] if q.exists())
+aff = json.loads(des.read_text())["M_affine"]; e8 = pd.read_csv(RUNS / "E8_runs.csv"); pa8 = e8[e8.part == "A"]
+lo = pa8.apply(lambda r: r.online_a_min <= aff[f"{r.w:g}"]["scale"] / 4 + 1e-9, axis=1)
+m += mac("VeightClamp", f"{int(lo.sum())}"); m += mac("VeightNA", f"{len(pa8)}")
 (OUT / "revision_numbers.tex").write_text(m)
 print("wrote fig_summary, fig_e7_moments, fig_lbf_sensitivity, results_table, coverage_table, revision_numbers")

@@ -32,7 +32,9 @@ def say(s=""): print(s); log.append(s)
 
 
 def matrix(frame, grid, col="collapsed"):
-    k = frame.assign(w=frame.w.round(4)).pivot(index="seed", columns="w", values=col).reindex(index=SEEDS, columns=[round(x, 4) for x in grid])
+    seeds = sorted(frame.seed.unique()) if frame.seed.min() >= 52 else SEEDS   # E8 part B uses fresh seeds 52-61
+    assert len(seeds) == 10
+    k = frame.assign(w=frame.w.round(4)).pivot(index="seed", columns="w", values=col).reindex(index=seeds, columns=[round(x, 4) for x in grid])
     assert not k.isna().any().any(), "missing cells"
     return k.to_numpy(float)
 
@@ -68,6 +70,12 @@ for m, name in [("global_clip", "S-B"), ("groupwise_clip", "S-B"), ("groupwise_c
 for m, name in [("plain", "A-M"), ("popart", "S-B"), ("popart", "A-S"), ("popart", "A-M")]:
     hi, lo = name.split("-"); d = e7all[e7all.critic_mode == m]
     CON.append((f"E7 {m} {name}", G1, d[d.arm == hi], d[d.arm == lo], c7[(c7["mode"] == m) & (c7.contrast == name)].iloc[0]))
+e8 = pd.read_csv(RUNS / "E8_runs.csv"); c8a = pd.read_csv(RES / "E8A_contrasts.csv"); c8b = pd.read_csv(RES / "E8B_contrasts.csv")
+for m in ["plain", "popart"]:
+    d = pd.concat([e7all[(e7all.critic_mode == m) & (e7all.arm == "A")], e8[(e8.critic_mode == m) & (e8.arm == "M_on")]])
+    CON.append((f"E8 {m} A-M_on", G1, d[d.arm == "A"], d[d.arm == "M_on"], c8a[(c8a["mode"] == m) & (c8a.contrast == "A-M_on")].iloc[0]))
+d = e8[(e8.part == "B") & (e8.critic_mode == "popart")]
+CON.append(("E8B popart S-B", G1, d[d.arm == "S"], d[d.arm == "B"], c8b[c8b.cohort.str.startswith("seeds") & (c8b.quantity == "popart S-B")].iloc[0]))
 d = e5[e5.checkpoint == 3600000]
 CON.append(("E5 3.6M A-S", G5, d[d.arm == "A"], d[d.arm == "S"], c5[(c5.checkpoint == 3600000) & (c5.contrast == "A-S")].iloc[0]))
 for o in ["global_clip", "separate_no_clip"]:
@@ -135,4 +143,22 @@ for label, grid, a, b, stored in CON:
     say(f"  {label:38s} {pa - pb:+.3f}  95% [{stored.ci_low:+.3f}, {stored.ci_high:+.3f}]  {CAL:.1%} [{lo:+.3f}, {hi:+.3f}]"
         f"{'  verdict changes' if ex95 != exc else ''}")
 pd.DataFrame(rows).to_csv(RES / "stat_calibrated_intervals.csv", index=False)
+
+# ---------------------------------------------------------------- 5. multiplicity (Holm across the principal contrasts)
+say("\n== 5. Holm adjustment across the principal contrasts (two-sided seed-block bootstrap p-values, alpha 0.05)")
+rows = []
+for label, grid, a_, b_, stored in CON:
+    _, ba = fit(matrix(a_, grid), grid, W2K); _, bb = fit(matrix(b_, grid), grid, W2K); z = (ba - bb)[np.isfinite(ba - bb)]
+    p_ = max(2 * min(np.mean(z <= 0), np.mean(z >= 0)), 1 / len(W2K))
+    rows.append(dict(contrast=label, difference=stored.difference, p_boot=min(p_, 1.0)))
+H = pd.DataFrame(rows).sort_values("p_boot").reset_index(drop=True); m_ = len(H)
+H["holm_threshold"] = [0.05 / (m_ - i) for i in range(m_)]
+rej = []; still = True
+for r in H.itertuples():
+    still = still and r.p_boot <= r.holm_threshold; rej.append(still)
+H["holm_reject"] = rej
+H["unadjusted_reject"] = H.p_boot <= 0.05
+H.to_csv(RES / "stat_holm.csv", index=False)
+for r in H.itertuples():
+    say(f"  {r.contrast:38s} {r.difference:+.3f}  p {r.p_boot:.4f}  Holm threshold {r.holm_threshold:.4f}  {'reject' if r.holm_reject else 'retain'}")
 (RES / "stat_checks_report.txt").write_text("\n".join(log) + "\n")

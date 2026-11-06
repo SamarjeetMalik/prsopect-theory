@@ -1,0 +1,38 @@
+== E8: 480 runs complete, unique, 300,160 transitions; part A 160 (M_on, seeds 42-51), part B 320 (B/S, seeds 52-61)
+
+== E8 part A crossings
+  plain: B 0.326; A 0.661; S 0.487; M 0.611; M_on 0.610
+  popart: B 0.278; A 0.560; S 0.353; M 0.292; M_on 0.314
+
+== E8 part A contrasts (95% primary; 99% sensitivity)
+  plain  A-M_on  +0.050 [+0.020, +0.082]  99% [+0.010, +0.092]  *
+  plain  M_on-B  +0.284 [+0.234, +0.338]  99% [+0.223, +0.361]  *
+  plain  A-S     +0.174 [+0.083, +0.255]  99% [+0.061, +0.281]  *
+  plain  M_on-M  -0.001 [-0.051, +0.049]  99% [-0.065, +0.059]
+  plain  A-M     +0.050 [+0.000, +0.100]  99% [-0.012, +0.112]
+  popart A-M_on  +0.246 [+0.197, +0.300]  99% [+0.184, +0.315]  *
+  popart M_on-B  +0.036 [-0.066, +0.130]  99% [-0.089, +0.153]
+  popart A-S     +0.207 [+0.141, +0.266]  99% [+0.126, +0.280]  *
+  popart M_on-M  +0.022 [-0.046, +0.085]  99% [-0.063, +0.105]
+  popart A-M     +0.268 [+0.211, +0.317]  99% [+0.194, +0.327]  *
+  d(A-M_on) popart - plain: +0.196 [+0.126, +0.267]
+
+== E8 part A matching (pooled as in E7 P5)
+  mode  A_mean   A_sd  Mon_mean  Mon_sd  rel_mean  rel_sd  track_mean_mae  track_sd_mae  a_min  a_max
+ plain  -6.550 30.148    -6.429  29.757     0.018   0.013           2.213         1.710   0.96  7.453
+popart  -3.113 29.472    -2.958  29.100     0.050   0.013           2.039         1.755   0.96  7.414
+
+== E8 part B
+  seeds 52-61 (primary)      plain S-B              +0.162 [+0.058, +0.262]  99% [+0.027, +0.293]  *
+  seeds 52-61 (primary)      popart S-B             +0.006 [-0.070, +0.085]  99% [-0.090, +0.109]
+  seeds 52-61 (primary)      d(S-B) popart - plain  -0.156 [-0.303, -0.016]  99% [-0.344, +0.025]  *
+  pooled 42-61 (secondary)   plain S-B              +0.159 [+0.094, +0.231]  99% [+0.076, +0.249]  *
+  pooled 42-61 (secondary)   popart S-B             +0.044 [-0.021, +0.109]  99% [-0.041, +0.129]
+  pooled 42-61 (secondary)   d(S-B) popart - plain  -0.115 [-0.209, -0.032]  99% [-0.239, -0.014]  *
+
+== E8 pre-declared predictions
+P1 matching (pooled mean and SD within 10% under both critics): MET plain: mean 2%, SD 1%; popart: mean 5%, SD 1%
+P2 popart A-M_on > 0: +0.246 [+0.197, +0.300] -> MET
+P3 plain A-M_on: +0.050 [+0.020, +0.082] -> positive, excludes 0: plain asymmetric contrast not explained by the first two moments
+P4 M_on-M: plain -0.001 [-0.051, +0.049]; popart +0.022 [-0.046, +0.085]
+P5 part B primary: popart S-B +0.006 [-0.070, +0.085]; d(S-B) -0.156 [-0.303, -0.016] -> MET: critic-target-scale attribution supported in an independent cohort

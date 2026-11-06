@@ -44,17 +44,18 @@ Table~\ref{tab:hierarchy}). Under default SB3 PPO, symmetric $\times7$ scaling m
 under symmetric scaling is \VsixGradGlobal{} of the baseline's and its parameter update \VsixUpdGlobal{}.
 Clipping actor and critic separately restores the update (\VsixUpdGroup{}) and reduces the shift by
 \VsixSymGroupChange{}. The remainder, which clipping does not touch, is not detectable under reward
-normalization; normalizing only the critic's targets shrinks it by an amount ten seeds cannot separate from
-zero.
+normalization, and in a fresh-seed cohort normalizing only the critic's targets removes it as well
+(change \VeightBChange{}), which attributes it to critic target scale at the declared level.
 (ii)~\emph{a measurement protocol with checked uncertainty} (Sections~\ref{sec:design} and~\ref{sec:robustness}):
 Firth logistic crossings with training-seed-block intervals, pre-registered experiments (\VfourTrajectories{} trajectories,
-of which 2,720 address the optimizer mechanism), and a simulation showing that the nominal 95\% intervals
+of which 3,200 address the optimizer mechanism), and a simulation showing that the nominal 95\% intervals
 cover at \VrvCovRange{}; every principal verdict is unchanged at a coverage-calibrated \VrvCalLevel{} level.
 (iii)~\emph{a conditional asymmetric effect} (Section~\ref{sec:asymmetric}). With the coupling removed and
 rewards normalized, a loss-only multiplier raises the crossing relative to the symmetric control
-(\VfourAsymBoth{}), through 3.6M transitions. Against a symmetric control matched to its reward scale, the
-effect is separable only when the critic's targets are normalized; with raw rewards and a raw-target critic
-it may be an effect of the reward's moments. In Level-Based Foraging an asymmetric transform also moves the
+(\VfourAsymBoth{}), through 3.6M transitions. Against a symmetric control whose training-reward mean and
+SD track the multiplier arm's under its own policy, the effect remains under both critics, but its size depends
+on the critic: with raw value targets it is small (\VeightAMonPlain{}), because a symmetric reward with the same
+moments reproduces most of the loss-only shift; with normalized value targets it is large (\VeightAMonPop{}). In Level-Based Foraging an asymmetric transform also moves the
 crossing, through a different incentive route (Section~\ref{sec:lbf}).
 We use ``boundary'' and ``crossing'' only in this operational, finite-budget sense, not as claims of
 phase-like criticality.
@@ -245,10 +246,14 @@ The argument makes four testable predictions, which Section~\ref{sec:optimizer} 
 not; (b)~the actor's applied gradient, and to a lesser degree its parameter update, shrink under symmetric
 scaling; (c)~per-group clipping restores the actor's update and removes the part of the crossing shift that
 runs through $\kappa$; (d)~what remains after (c) runs through the critic's targets, so normalizing rewards
-or targets should remove it. As a quantitative check of (b), Equation~\ref{eq:clip} evaluated at the
-default cell's mean per-minibatch norms predicts an S/B ratio of applied actor gradients of \VrvPredRatio{},
-against a measured \VrvMeasRatio{}; because it is evaluated at averages of heavy-tailed per-minibatch norms, we
-read this as agreement in order of magnitude only. Figure~\ref{fig:mechanism} summarizes the pathway and
+or targets should remove it. As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
+cell. The critic accounts for more than 99.99\% of the squared joint norm in both arms, every minibatch is clipped,
+and the predicted S/B ratio of applied actor gradients, \VeqPred{}, equals the measured \VeqMeas{} (largest
+per-minibatch relative error $\VeqMaxErr{}$); under per-group clipping both are \VeqGroupMeas{}. Because
+Equation~\ref{eq:clip} is how the clip is computed, this check does not test the clip itself. What it establishes
+is that the clip acts on the joint norm, that $\kappa\approx\tau/\|g_c\|$ throughout, and that the actor's
+attenuation is fully accounted for by the critic's gradient. Evaluating the formula at cell-mean norms instead gives
+\VrvPredRatio{}, because those norms are heavy-tailed. Figure~\ref{fig:mechanism} summarizes the pathway and
 where each intervention acts.
 
 \begin{figure}[!htbp]
@@ -281,7 +286,7 @@ where each intervention acts.
 \input{content/setup_v4}
 
 \begin{table}[!htbp]
-\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals; E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E7 each before any of its runs. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
+\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals (E8's replication cohort uses seeds 52--61); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
 \label{tab:matrix}
 \centering\scriptsize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{.045\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.17\textwidth}>{\raggedright\arraybackslash}p{.06\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}@{}}
@@ -295,16 +300,17 @@ E4 & Second environment & MAPPO on LBF; shared clip vs separate optimizers & lin
 E5 & Does A$-$S persist with budget? & Decoupled learner to 3.6M, 24 checkpoints & B, A, S; 9 cells & 270 & A$-$S positive at all primary budgets & Pointwise intervals \\
 E6 & Is the shared clip the pathway? & Shared vs per-group vs no clipping; update logging & B, A, S; 8 cells; 300k & 720 & Per-group clip restores update, reduces S$-$B & Residual unexplained \\
 E7 & Critic targets? Reward moments? & Plain vs PopArt critic; scale-matched control M & B, A, S, M; 8 cells; 300k & 400 new + 240 E1 & PopArt: inconclusive; A$-$M separable only with PopArt & M's mean unmatched \\
+E8 & Moments or shape? Critic targets, fresh seeds? & Online moment-matched control M$_{\mathrm{on}}$; B, S on seeds 52--61 & M$_{\mathrm{on}}$; B, S; 8 cells; 300k & 480 & A$-$M$_{\mathrm{on}}$ small (plain), large (PopArt); PopArt removes S$-$B & Map nonstationary; 99\% level \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Experiments.}
-Table~\ref{tab:matrix} lists the seven pre-registered experiments. Together they comprise 4,060 trajectories;
-the 2,720 in E1, E2, E6 and E7 address the optimizer mechanism, E3 and E5 follow 540 trajectories to 3.6M
+Table~\ref{tab:matrix} lists the eight pre-registered experiments. Together they comprise \VfourTrajectories{}
+trajectories; the 3,200 in E1, E2, E6, E7 and E8 address the optimizer mechanism, E3 and E5 follow 540 trajectories to 3.6M
 transitions, and E4's 800 run on the second environment. Earlier ``legacy'' sweeps from another platform
 (20 seeds per cell) supply the curvature-versus-multiplier decomposition and the cross-sectional horizon
-fit; they are reported separately and never pooled with E1--E7.
+fit; they are reported separately and never pooled with E1--E8.
 
 \paragraph{Estimation.}
 We fit the logistic curve by Firth's bias-reduced maximum likelihood~\citep{firth1993}, which stays finite
@@ -325,21 +331,26 @@ per-seed effect shared by paired arms (Appendix~\ref{app:estimation}, Table~\ref
 scenario, and excluded zero for a null contrast in \VrvFalsePos{} of them, rather than 5\%. Nominal
 \VrvCalLevel{} intervals covered at \VrvCalCovMin{} or more. We keep the declared 95\% intervals as the primary
 analysis and report the \VrvCalLevel{} intervals for every principal contrast as a sensitivity check
-(Table~\ref{tab:results}): none of the \VrvNContrasts{} principal verdicts changes. An independent set of
+(Table~\ref{tab:results}): none of the \VrvNContrasts{} principal verdicts changes. A Holm adjustment across the
+same \VrvNContrasts{} contrasts, with two-sided seed-block bootstrap $p$-values (resolution $1/2000$), also leaves
+every verdict unchanged: the \VrvHolmKept{} contrasts reported as nonzero all remain so (largest $p$ \VrvHolmMaxP{}),
+and those reported as not detectable are retained. E6's shared-clip cell reproduces E1's runs exactly, so the
+family counts that contrast twice, which makes the adjustment conservative. Both checks were added in revision and
+are not pre-registered. An independent set of
 10,000 bootstrap draws moves no endpoint by more than \VrvMCShift{}. Intervals are pointwise; we make no
 simultaneous claim across contrasts or checkpoints. An interval that includes zero is reported as no
 detectable effect, never as evidence of no effect; we make equivalence statements only against a stated
 margin.
 
 \paragraph{Pre-registration and platform.}
-Experiments E1--E7 were pre-declared, with source and design hashes frozen before launch; the
+Experiments E1--E8 were pre-declared, with source and design hashes frozen before launch; the
 departures (one pre-execution source fix, a label-threshold fallback corrected from stored data, and
-analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E7 trajectories run on one CPU
+analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E8 trajectories run on one CPU
 platform. An earlier platform does not reproduce trained policies
 bit-for-bit, but collapse labels agree in \VfourAgreeControl{} of matched direct-control runs and
 \VfourAgreeHorizon{} of matched horizon checkpoints, so we make reproducibility claims at the level of
 labels and crossings. The legacy sweeps in Sections~\ref{sec:asymmetric} and~\ref{sec:robustness} (20 seeds
-per cell) come from the earlier platform and are not pooled with E1--E7.
+per cell) come from the earlier platform and are not pooled with E1--E8.
 
 % =======================================================================
 
@@ -404,7 +415,7 @@ critic's targets, removes the detectable effect, whereas separating the optimize
 critic's explained variance agrees: without clipping and with raw rewards it falls from
 \VfourEVSepRawB{} (B) to \VfourEVSepRawS{} (S), whereas under reward normalization it is \VfourEVNormB{}
 and \VfourEVNormS{}. Two qualifications limit this account. First, \texttt{VecNormalize} normalizes
-rewards, not value targets as PopArt does~\citep{vanhasselt2016popart}; E7 below normalizes the targets
+rewards, not value targets as PopArt does~\citep{vanhasselt2016popart}; E7 and E8 below normalize the targets
 alone. Second, the separate-optimizer
 arm removes clipping as well; because Adam is per-parameter, splitting one Adam into two changes nothing
 by itself, so this arm tests the removal of clipping, not optimizer grouping.
@@ -444,8 +455,14 @@ rewards, advantages and loss are untouched. PopArt repairs the critic's fit: exp
 critic. The symmetric shift falls from \VsevenSymPlain{} to \VsevenSymPop{}, but the change, \VsevenSymChange{},
 does not exclude zero. Our pre-declared criterion for attributing the residual to critic target scale required
 both, so this reading is inconclusive: the point estimate is a partial reduction, and ten seeds cannot
-separate it from none (Table~\ref{tab:e7}). The residual of prediction (d) is therefore removed by reward
-normalization but not attributed.
+separate it from none (Table~\ref{tab:e7}). A fresh cohort pre-registered after E7 (E8, seeds 52--61, both
+critics, Table~\ref{tab:e8}) repeated the comparison. There the symmetric shift is \VeightBSymPlain{} with the
+plain critic, replicating E7, and \VeightBSymPop{} with PopArt, and the change, \VeightBChange{}, excludes zero.
+The pre-declared criterion is therefore met in the independent cohort, and the residual of prediction (d) is
+attributed to critic target scale. The attribution rests on the declared 95\% intervals. At the
+coverage-calibrated level the fresh cohort's change is \VeightBChangeNine{}, which includes zero; pooling both
+cohorts, a secondary analysis declared in advance, gives \VeightPoolChange{} (\VeightPoolChangeNine{} at the
+calibrated level).
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
@@ -549,8 +566,8 @@ E7's arm M is an increasing affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward, s
 with constants frozen so that M has A's E1 training-reward mean and SD. With the plain critic, M moves the
 crossing by \VsevenMBPlain{} relative to B, most of A's \VsevenABPlain{}, and A$-$M is \VsevenAMPlain{}; its
 lower bound touches zero (\VrvPlainAMcal{} at the calibrated level), so the pre-declared prediction that A
-exceeds M under both critics is not met. Under a critic trained on raw targets, therefore, the A$-$S contrast
-may be an effect of the reward's moments rather than of its sign asymmetry. With the PopArt critic M is
+exceeds M under both critics is not met. On E7 alone, therefore, the A$-$S contrast under a raw-target critic
+could be an effect of the reward's moments rather than of its sign asymmetry; E8 below tests this. With the PopArt critic M is
 indistinguishable from B (\VsevenMBPop{}), while A exceeds both S (\VsevenAsymPop{}) and M (\VsevenAMPop{});
 the change in A$-$M between critics is \VsevenAMChange{}.
 
@@ -570,8 +587,30 @@ skewness \VdaSkewA{}), M's is not (\VdaSkewM{}). With the plain critic, M's crit
 A's (mean return \VdaRetMeanM{} against \VdaRetMeanA{}, SD \VdaRetSdM{} against \VdaRetSdA{}). Larger target
 scale is the pathway with which the residual symmetric shift is consistent (Section~\ref{sec:optimizer}), so with
 a raw-target critic M is exposed to it at least as much as A. This is consistent with, but does not establish, a
-target-scale explanation of the near-null plain-critic A$-$M. A control whose moments track A's under its own policy is
-pre-registered as an outstanding experiment (Section~\ref{sec:limitations}).
+target-scale explanation of the near-null plain-critic A$-$M.
+
+\paragraph{An online moment-matched control separates moments from shape (E8).}
+E8's control M$_{\mathrm{on}}$ applies the same kind of increasing affine map to B's reward, but re-sets its
+constants before every rollout. They are chosen so that its training-reward mean and SD track A's, rollout by
+rollout, under M$_{\mathrm{on}}$'s own policy; the targets are the seed-averaged per-rollout moments of A in the
+same critic mode, frozen before any E8 run. The matching criterion is met. Pooled over the eight cells, M$_{\mathrm{on}}$'s
+achieved mean and SD lie within \VeightMatchMeanPlain{} and \VeightMatchSdPlain{} of A's with the plain critic,
+and within \VeightMatchMeanPop{} and \VeightMatchSdPop{} with PopArt; \VeightClamp{} of \VeightNA{} runs
+reached the declared lower bound on the scale at some rollout. Matching the mean leaves the control where it
+was: M$_{\mathrm{on}}-$M is \VeightMonMPlain{} (plain) and \VeightMonMPop{} (PopArt), so E7's mean mismatch was
+not driving its result. With PopArt, A$-$M$_{\mathrm{on}}$ is \VeightAMonPop{}. With the plain critic it is
+\VeightAMonPlain{}, and it also excludes zero at the calibrated level (\VeightAMonPlainNine{}). By the
+pre-declared rule, the plain-critic asymmetric contrast is therefore not explained by the training reward's first
+two moments, and the E7 reading above is revised. The part that is not explained is small, however.
+M$_{\mathrm{on}}-$B is \VeightMonBPlain{}, most of A$-$B (\VsevenABPlain{}). So with a raw-target critic, most of
+the loss-only shift is reproduced by a symmetric reward with the same moments; only the remainder,
+A$-$M$_{\mathrm{on}}$, depends on the asymmetric shape. With PopArt the moment-matched symmetric control has no detectable effect
+(\VeightMonBPop{}), and the asymmetric effect is large. Two features of the design limit this reading.
+M$_{\mathrm{on}}$'s map changes between rollouts whereas A's is fixed. And an affine control matches only the first
+two moments, so A$-$M$_{\mathrm{on}}$ contrasts A with a moment-matched, nonstationary symmetric control, not a
+manipulation of sign asymmetry alone.
+
+\input{generated/v4/e8_table}
 
 \begin{figure}[!htbp]
 \centering
@@ -722,18 +761,17 @@ evaluation statistics by one module that checks each threshold against the pre-r
 \label{sec:limitations}
 
 \paragraph{Mechanism.} The shared-clip part of the symmetric shift is isolated by an intervention (E6). The
-remainder is removed by reward normalization, but a critic-only target normalization (PopArt) shrinks it by an
-amount ten seeds cannot separate from zero, so the critic-target-scale pathway is neither confirmed nor ruled
-out. How much of Adam's partial compensation is due to the varying clip factor and how much to $\epsilon$ is not
+remainder is removed by reward normalization and, in an independent fresh-seed cohort, by a critic-only target
+normalization (PopArt), which attributes it to critic target scale at the declared 95\% level. At the
+coverage-calibrated level the fresh cohort's change includes zero, and it excludes zero only when both cohorts are
+pooled. How much of Adam's partial compensation is due to the varying clip factor and how much to $\epsilon$ is not
 isolated.
 
 \paragraph{Reward moments.} A and S differ in the training reward's mean and variance as well as in the
-gain-to-loss ratio. Against a symmetric control matched to A's reward scale, A's effect is not separable from a
-moment effect under a raw-target critic, and is separable under a PopArt critic; the control matched A's SD but
-not its mean. \emph{Outstanding experiment.} An online moment-matched control, whose affine constants are
-re-set every rollout so that its training-reward mean and SD track A's under its own policy, together with an
-independent ten-seed replication of the PopArt comparison, is pre-registered (480 trajectories,
-\texttt{PREREGISTRATION\_E8.md} in the artifact) but has not been run; no result from it is reported.
+gain-to-loss ratio. The online control matches A's training-reward mean and SD but not its shape, and its map is
+nonstationary where A's is fixed; \VeightClamp{} of its \VeightNA{} runs reached the declared bound on the scale.
+With a raw-target critic, the part of the asymmetric effect not explained by the first two moments is small
+(\VeightAMonPlain{}), and a moment-matched symmetric reward reproduces most of the loss-only shift.
 
 \paragraph{Statistics.} Ten training seeds per cell give contrast intervals of about $\pm0.1$ at 300k and up to
 $\pm0.17$ at 3.6M, and the declared 95\% intervals under-cover at this sample size (Section~\ref{sec:stats}).
@@ -775,9 +813,8 @@ actor's parameter update shrinks, and clipping the two separately restores the u
 Third, with separate optimizers and
 normalized rewards, a loss-only multiplier moves the crossing relative to a symmetric control on the
 supply chain, through 3.6M transitions, and an asymmetric transform moves it on Level-Based Foraging by a
-different route. On the supply chain this is established against a scale-matched control only when the
-critic's targets are normalized; with raw targets, a symmetric control of the same scale moves the crossing
-nearly as far (E7). None of this is evidence about loss aversion as a psychological mechanism: the effect is
+different route. Against a symmetric control matched online in mean and SD (E8), the supply-chain effect is
+large when the critic's targets are normalized and small, though detectable, when they are not. None of this is evidence about loss aversion as a psychological mechanism: the effect is
 a property of the transformed training signal, and in LBF it is plainly an incentive change on a costly
 cooperative action.
 
@@ -804,7 +841,7 @@ deployment requirement such as at most 5\% collapse would need its own probabili
 assessment.
 
 \paragraph{Reproducibility.}
-All E1--E7 runs share one platform; trained policies are not bit-reproducible across hardware and software
+All E1--E8 runs share one platform; trained policies are not bit-reproducible across hardware and software
 builds, but labels agree in \VfourAgreeControl{} of matched runs, so we claim reproducibility of labels and
 crossings, not of policies. The artifact rebuilds every reported table, figure and number from per-run
 records with one command (Appendix~\ref{app:artifact}).
@@ -815,9 +852,10 @@ finite-budget location, $\wcrit$, that moves with reward transforms, training bu
 Measured with default SB3 PPO, a symmetric reward multiplier and a loss-only multiplier cannot be told
 apart, because a shared gradient clip lets reward scale reach the actor's updates. With that coupling
 removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
-no detectable shift, in the tested configurations of two environments. Whether that shift is about sign
-asymmetry or about the reward's moments depends on the critic: with raw rewards and raw value targets, a symmetric control
-of matched scale moves the crossing nearly as far; with normalized value targets, it does not. Reward-transform comparisons in
+no detectable shift, in the tested configurations of two environments. How much of that shift is about sign
+asymmetry rather than the reward's moments depends on the critic. With raw value targets, a symmetric control with
+matched mean and SD reproduces most of it, leaving a small asymmetric remainder; with normalized value targets it
+reproduces almost none. Reward-transform comparisons in
 actor--critic MARL should therefore include symmetric-scaling controls and report the optimizer coupling,
 gradient clipping, reward or value normalization and training budget under which they were run.
 

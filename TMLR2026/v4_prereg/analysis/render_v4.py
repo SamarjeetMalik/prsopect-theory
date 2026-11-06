@@ -249,6 +249,35 @@ table(OUT / "e7_table.tex",
       r"Critic-target normalization and a moment-matched control (E7): separate actor and critic optimizers without clipping, raw rewards, the E1 grid, ten seeds, 300k. M is the affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward with constants frozen to give A's E1 training-reward mean and SD. The plain-critic B, A and S runs are E1's. Crossing contrasts with paired 95\% seed-block intervals; the bottom row is the change in each contrast from the plain to the PopArt critic. $^{\ast}$: interval excludes zero.",
       "tab:e7", "@{}lccccc@{}", r"Critic & S$-$B & A$-$S & A$-$M & M$-$B & A$-$B", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- E8
+k8a, k8b, m8 = (pd.read_csv(RES / f) for f in ["E8A_contrasts.csv", "E8B_contrasts.csv", "E8A_matching.csv"])
+cell8 = lambda x: f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$"
+rows = []
+for mo in ["plain", "popart"]:
+    rows.append([MODE7[mo]] + [cell8(k8a[(k8a["mode"] == mo) & (k8a.contrast == n)].iloc[0]) for n in ["A-M_on", "M_on-B", "M_on-M", "A-S"]])
+pri = k8b[k8b.cohort.str.startswith("seeds")]; poo = k8b[k8b.cohort.str.startswith("pooled")]
+rowsb = [[lab] + [cell8(f[f.quantity == q].iloc[0]) for q in ["plain S-B", "popart S-B", "d(S-B) popart - plain"]]
+         for lab, f in [("Seeds 52--61 (primary)", pri), ("Seeds 42--61 (secondary)", poo)]]
+body = "\n".join(" & ".join(stack(c) for c in r) + r" \\" for r in rows)
+bodyb = "\n".join(" & ".join(stack(c) for c in r) + r" \\" for r in rowsb)
+(OUT / "e8_table.tex").write_text(r"""\begin{table}[!htbp]
+\caption{Online moment-matched control and fresh-seed replication (E8): separate optimizers without clipping, raw rewards, the E1 grid, 300k. Top: M$_{\mathrm{on}}$ is an affine map of B's reward whose constants are reset every rollout so that its training-reward mean and SD track A's under its own policy; A, B, S and the static control M are the E1 and E7 runs on the same seeds (42--51). Bottom: S$-$B with fresh seeds 52--61 (pre-declared primary) and pooled with E1/E7's seeds 42--51 (secondary), and its change from the plain to the PopArt critic. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.}
+\label{tab:e8}
+\centering\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Critic & A$-$M$_{\mathrm{on}}$ & M$_{\mathrm{on}}-$B & M$_{\mathrm{on}}-$M & A$-$S \\
+\midrule
+""" + body + r"""
+\midrule
+Cohort & Plain S$-$B & PopArt S$-$B & Change, PopArt$-$plain & \\
+\midrule
+""" + bodyb + r"""
+\bottomrule
+\end{tabular}
+\end{table}
+""")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -309,7 +338,8 @@ m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourCore
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
         "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
-        "E7": "Critic-target normalization and moment control, 300k"}
+        "E7": "Critic-target normalization and moment control, 300k",
+        "E8": "Online moment control; fresh-seed replication, 300k"}
 table(OUT / "compute_table.tex",
       r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
@@ -345,5 +375,19 @@ for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
     for a in "AM":
         m += mac(f"VsevenMean{tag}{a}", f"${gd.loc[(mo, a)].train_reward_mean:.1f}$"); m += mac(f"VsevenSD{tag}{a}", f"{gd.loc[(mo, a)].train_reward_sd:.1f}")
 m += mac("VsevenSigmaRange", f"{g7[g7['mode'] == 'popart'].popart_sigma_final.min():.0f}--{g7[g7['mode'] == 'popart'].popart_sigma_final.max():.0f}")
+g8 = lambda mo, n: k8a[(k8a["mode"] == mo) & (k8a.contrast == n)].iloc[0]
+for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
+    for n, nm in [("A-M_on", "AMon"), ("M_on-B", "MonB"), ("M_on-M", "MonM")]:
+        x = g8(mo, n); m += mac(f"Veight{nm}{tag}", f"${num(x.difference, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
+x = g8("plain", "A-M_on"); m += mac("VeightAMonPlainNine", f"${iv(x.ci_low_99, x.ci_high_99, True)}$")
+mm = m8.set_index("mode")
+for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
+    m += mac(f"VeightMatchMean{tag}", f"{100 * mm.loc[mo].rel_mean:.0f}\\%"); m += mac(f"VeightMatchSd{tag}", f"{100 * mm.loc[mo].rel_sd:.0f}\\%")
+    m += mac(f"VeightMonMean{tag}", f"${mm.loc[mo].Mon_mean:.1f}$"); m += mac(f"VeightMonSd{tag}", f"{mm.loc[mo].Mon_sd:.1f}")
+q8 = lambda c, qn: k8b[k8b.cohort.str.startswith(c) & (k8b.quantity == qn)].iloc[0]
+for c, ctag in [("seeds", "B"), ("pooled", "Pool")]:
+    for qn, nm in [("plain S-B", "SymPlain"), ("popart S-B", "SymPop"), ("d(S-B) popart - plain", "Change")]:
+        x = q8(c, qn); m += mac(f"Veight{ctag}{nm}", f"${num(x.difference, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
+    x = q8(c, "d(S-B) popart - plain"); m += mac(f"Veight{ctag}ChangeNine", f"${iv(x.ci_low_99, x.ci_high_99, True)}$")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

@@ -1,0 +1,18 @@
+\begin{table}[!htbp]
+\caption{Online moment-matched control and fresh-seed replication (E8): separate optimizers without clipping, raw rewards, the E1 grid, 300k. Top: M$_{\mathrm{on}}$ is an affine map of B's reward whose constants are reset every rollout so that its training-reward mean and SD track A's under its own policy; A, B, S and the static control M are the E1 and E7 runs on the same seeds (42--51). Bottom: S$-$B with fresh seeds 52--61 (pre-declared primary) and pooled with E1/E7's seeds 42--51 (secondary), and its change from the plain to the PopArt critic. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.}
+\label{tab:e8}
+\centering\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Critic & A$-$M$_{\mathrm{on}}$ & M$_{\mathrm{on}}-$B & M$_{\mathrm{on}}-$M & A$-$S \\
+\midrule
+Plain & \begin{tabular}[t]{@{}c@{}}$+0.050$$^{\ast}$\\[-1pt]{\scriptsize $[+0.020,\,+0.082]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.284$$^{\ast}$\\[-1pt]{\scriptsize $[+0.234,\,+0.338]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.001$\\[-1pt]{\scriptsize $[-0.051,\,+0.049]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.174$$^{\ast}$\\[-1pt]{\scriptsize $[+0.083,\,+0.255]$}\end{tabular} \\
+PopArt & \begin{tabular}[t]{@{}c@{}}$+0.246$$^{\ast}$\\[-1pt]{\scriptsize $[+0.197,\,+0.300]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.036$\\[-1pt]{\scriptsize $[-0.066,\,+0.130]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.022$\\[-1pt]{\scriptsize $[-0.046,\,+0.085]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.207$$^{\ast}$\\[-1pt]{\scriptsize $[+0.141,\,+0.266]$}\end{tabular} \\
+\midrule
+Cohort & Plain S$-$B & PopArt S$-$B & Change, PopArt$-$plain & \\
+\midrule
+Seeds 52--61 (primary) & \begin{tabular}[t]{@{}c@{}}$+0.162$$^{\ast}$\\[-1pt]{\scriptsize $[+0.058,\,+0.262]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.006$\\[-1pt]{\scriptsize $[-0.070,\,+0.085]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.156$$^{\ast}$\\[-1pt]{\scriptsize $[-0.303,\,-0.016]$}\end{tabular} \\
+Seeds 42--61 (secondary) & \begin{tabular}[t]{@{}c@{}}$+0.159$$^{\ast}$\\[-1pt]{\scriptsize $[+0.094,\,+0.231]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.044$\\[-1pt]{\scriptsize $[-0.021,\,+0.109]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.115$$^{\ast}$\\[-1pt]{\scriptsize $[-0.209,\,-0.032]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}
