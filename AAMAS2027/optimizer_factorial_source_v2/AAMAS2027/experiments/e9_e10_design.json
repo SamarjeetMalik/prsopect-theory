@@ -1,0 +1,12 @@
+{
+ "design": "e9-e10-v4",
+ "e9_taus": [300.0, 3000.0, 10000.0, 30000.0],
+ "e9_arms": ["B", "S"],
+ "e9_indices": "0-639",
+ "e10_seeds": [62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81],
+ "e10_arms": ["B", "S"],
+ "e10_critics": ["plain", "popart"],
+ "e10_indices": "640-1279",
+ "e10_bootstrap": {"draws": 2000, "seed": 20261108, "pooled_seed": 20261109},
+ "gate": "E9 runner with --tau 0.5 (B, w=0.6, seed 42) reproduces E1 run 40 bit-for-bit; E10 runner with --critic popart (B, w=0.6, seed 42) reproduces E7 run 360 bit-for-bit; main-array indices 630 (E9, tau 30000) and 640 (E10) complete"
+}

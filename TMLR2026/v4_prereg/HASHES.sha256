@@ -39,3 +39,7 @@ d8fd96721faaea0775c0e72b9aea82564726d5fa605bd359a46c64bc19297aca  TMLR2026/v4_pr
 f2a7fc789d57c02efb9a62c0334f7cc9317f248828372e3fe8f3a68846813f49  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_online_moments.py
 26afa7c067ab3b115bcd69a75d3c04866e580b3b693c9c8f09301da52c0a5113  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_design.json
 514270f3031287f617700990b89fc7244e0a303279051867061938c4a4ca6abf  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e8_targets.json
+# E9/E10 freeze, 2026-11-06T11:56:42Z, before the gate and any main-array run; smoke job 5527 passed; gate: tau 0.5 vs E1 40 and popart vs E7 360 bit-identical, indices 630 and 640 complete; arrays 0-639 (E9) and 640-1279 (E10)
+4d841fa8ac2208854ed00404e2f6934ac463270e03e9c5d2e78f52829fea3a10  TMLR2026/v4_prereg/PREREGISTRATION_E9_E10.md
+338d3c6fab29a7a83d982bccfb0274cdc7800e5fd91a2b15e91466207a045141  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e9_e10_runner.py
+ce11a6ae73c97337ac369e3bbb596f46bc432172fa0b7bb9b908f54658593fe6  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/e9_e10_design.json
