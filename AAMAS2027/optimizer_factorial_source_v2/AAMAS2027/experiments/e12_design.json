@@ -1,0 +1,7 @@
+{
+ "design": "e12-localobs-v4",
+ "learners": ["default", "decoupled"],
+ "arms": ["B", "A", "S"],
+ "observation": "each node: own retail demand, own inventory, own incoming pipeline, zero-padded, plus one-hot node identifier",
+ "indices": "0-479"
+}

@@ -1,0 +1,7 @@
+{
+ "design": "e11-cleanrl-v4",
+ "conditions": ["cleanrl_raw", "cleanrl_default", "cleanrl_group"],
+ "arms": ["B", "A", "S"],
+ "indices": "0-719",
+ "reference": "CleanRL ppo_continuous_action.py (Huang et al., 2022), ported; hyperparameters in e11_cleanrl.py header"
+}
