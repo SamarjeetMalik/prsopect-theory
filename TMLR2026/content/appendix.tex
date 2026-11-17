@@ -66,7 +66,8 @@ For each fixed configuration we fit $P(Y=1\mid w)=\sigma(b_0+b_1w)$ by Firth log
 report $w_{50}=-b_0/b_1$. A point estimate is reported only with an identified nonzero slope; observed
 proportions are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use 2,000
 percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
-random seed 20261015 for E1--E8; E8's fresh-seed cohort uses the same weights over seeds 52--61). The same weight vector is used for every condition in an experiment,
+random seed 20261015 for E1--E12; E8's fresh-seed cohort uses the same weights over seeds 52--61, and E10's
+twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). The same weight vector is used for every condition in an experiment,
 so differences are seed-paired. Fits outside the grid and non-converged draws are retained and counted.
 Intervals are pointwise; no simultaneous statement across checkpoints or cells is made.
 
@@ -99,9 +100,9 @@ every in-grid E1--E4 fit.
 \section{Pre-registration and Deviations}
 \label{app:prereg}
 
-E1--E4 were declared in a pre-registration written before any of their outcomes existed; E5--E8 were
-declared later, in response to reviews of an earlier draft, again before any of their runs. Each of E5--E8
-had a pre-launch gate that reproduced a completed earlier run bit-for-bit (an E1 run; for E8, an E7 run) through the new code path. Source,
+E1--E4 were declared in a pre-registration written before any of their outcomes existed; E5--E12 were
+declared later, in response to reviews of an earlier draft, again before any of their runs (E9 with E10, and E11
+with E12). Each of E5--E10 had a pre-launch gate that reproduced a completed earlier run bit-for-bit (an E1 run; for E8, an E7 run; for E9 and E10, an E1 and an E7 run) through the new code path; E11, whose implementation is new, was gated on run-to-run determinism, and E12 on completion. Source,
 design and protocol hashes were frozen before E1 launched, and the E4 runner's hash before E4 launched,
 after a timing check. Launch scripts refused to run on any hash mismatch. The record shows four
 departures, none changing a design:
@@ -116,7 +117,7 @@ $\theta=0.5$ rather than the declared 0.626. Because every run stores its team r
 recomputed at $\theta=0.626$; the 0.5 analysis is kept as a sensitivity result (Table~\ref{tab:lbf_theta}).
 The pre-declared predictions that failed are reported in the main text: the Adam-$\epsilon$ route (E2)
 two of three LBF predictions (E4), and in E7 the critic-target attribution (inconclusive), the moment
-control under the plain critic and the moment-matching check. An equality gate run before E1 reproduced the earlier platform's
+control under the plain critic and the moment-matching check, and in E12 the persistence of the default learner's symmetric shift under local observation. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
 \section{Refined Horizon Cohort}
@@ -172,7 +173,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \section{Computational Accounting}
 \label{app:compute}
 
-E1--E8 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+E1--E12 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
 (Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
 the earlier confirmation cohorts were run separately on another platform and are not included.
 
@@ -183,7 +184,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 \label{app:artifact}
 
 The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
-deviation log; the executed source for E1--E8; per-run tables for every E1--E8 trajectory (protocol,
+deviation log; the executed source for E1--E12; per-run tables for every E1--E12 trajectory (protocol,
 label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Labels are never taken from a stored field without
 check: one module (\texttt{analysis/labels.py}) recomputes them from stored evaluation statistics, asserts each

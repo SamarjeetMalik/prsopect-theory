@@ -278,6 +278,36 @@ Cohort & Plain S$-$B & PopArt S$-$B & Change, PopArt$-$plain & \\
 \end{table}
 """)
 
+# ---------------------------------------------------------------- E9-E12
+k9, mech9, k10, k11, mech11, k12, x12 = (pd.read_csv(RES / f) for f in ["E9_contrasts.csv", "E9_mechanism.csv", "E10_contrasts.csv", "E11_contrasts.csv",
+                                                                       "E11_mechanism.csv", "E12_contrasts.csv", "E12_crossings_vs_E1.csv"])
+k9, k10, k11, k12 = (d.set_index("contrast") for d in (k9, k10, k11, k12))
+TAU9 = [("0.5 (E1)", "S-B, tau 0.5 (E1)", "Half", r"0.5 (default; E1)"), ("300", "S-B, tau 300", "Three", "300"),
+        ("3000", "S-B, tau 3000", "ThreeK", "3,000"), ("10000", "S-B, tau 10000", "TenK", "10,000"),
+        ("30000", "S-B, tau 30000", "ThirtyK", "30,000"), ("inf (E1 no clip)", "S-B, tau inf (E1 no clip)", "None", r"$\infty$ (no clip; E1)")]
+mech9 = mech9.assign(tau=mech9.tau.astype(str)).set_index("tau")
+rows = [[tex, f"{mech9.loc[t].applied_ratio_SB:.3f}", cell8(k9.loc[c])] for t, c, _, tex in TAU9]
+rows += [[r"Change, $\tau{=}30{,}000$ minus $0.5$", "", cell8(k9.loc["d(S-B) tau 30000 - tau 0.5"])],
+         [r"Change, $\tau{=}30{,}000$ minus no clip", "", cell8(k9.loc["d(S-B) tau 30000 - no clip"])]]
+table(OUT / "e9_table.tex",
+      r"Clip-threshold dose-response (E9): the default learner (one Adam step, one global gradient-norm clip $\tau$) with raw rewards, arms B and S, the E1 grid, seeds 42--51, 300k. The $\tau=0.5$ and no-clip rows are E1's runs (a gate reproduced an E1 run bit-for-bit at $\tau=0.5$). ``Applied S/B'': seed-paired ratio of S's to B's mean applied actor gradient norm. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.",
+      "tab:e9", "@{}lcc@{}", r"Clip threshold $\tau$ & Applied S/B & S$-$B", rows, size=r"\footnotesize")
+mech11 = mech11.set_index("condition")
+COND11 = [("cleanrl_raw", "Raw rewards, one global clip"), ("cleanrl_group", "Raw rewards, actor and critic clipped separately"),
+          ("cleanrl_default", "Reward normalization, one global clip (CleanRL default)")]
+rows = [[lab, f"{mech11.loc[c].critic_share:.3f}", f"{mech11.loc[c].applied_ratio_SB:.2f}", cell8(k11.loc[f"{c}: S-B"]), cell8(k11.loc[f"{c}: A-S"])] for c, lab in COND11]
+rows += [[r"Change in S$-$B, separate minus global clip (raw)", "", "", cell8(k11.loc["d(S-B) group - raw"]), ""]]
+table(OUT / "e11_table.tex",
+      r"A second PPO implementation (E11): a single-file port of CleanRL's \texttt{ppo\_continuous\_action} with its defaults (network, initialization, clipped value loss, learning-rate annealing, observation normalization, global clip 0.5), on the supply chain with E1's arms, grid, seeds 42--51 and 300k budget. ``Critic share'': the critic's share of the squared joint gradient norm; ``applied S/B'': seed-paired ratio of S's to B's applied actor gradient. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.",
+      "tab:e11", r"@{}p{.34\textwidth}cccc@{}", r"Condition & Critic share & Applied S/B & S$-$B & A$-$S", rows, size=r"\footnotesize")
+xc = x12.set_index(["learner", "arm"])
+LRN12 = [("default", "Default (one Adam, global clip, raw rewards)"), ("decoupled", "Decoupled (separate optimizers, no clip, normalized rewards)")]
+rows = [[lab, cell8(k12.loc[f"{l}: S-B"]), cell8(k12.loc[f"{l}: A-S"])] + [f"{xc.loc[(l, a)].w50_local:.3f} ({xc.loc[(l, a)].w50_global_E1:.3f})" for a in "BAS"]
+        for l, lab in LRN12]
+table(OUT / "e12_table.tex",
+      r"Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-block intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).",
+      "tab:e12", r"@{}p{.25\textwidth}cccccc@{}", r"Learner & S$-$B & A$-$S & $w_{50}$ B & $w_{50}$ A & $w_{50}$ S", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -339,7 +369,9 @@ DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
         "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
         "E7": "Critic-target normalization and moment control, 300k",
-        "E8": "Online moment control; fresh-seed replication, 300k"}
+        "E8": "Online moment control; fresh-seed replication, 300k", "E9": "Clip-threshold dose-response, 300k",
+        "E10": "Critic-target replication, seeds 62--81, 300k", "E11": "Second PPO implementation (CleanRL-style), 300k",
+        "E12": "Local observations with agent identity, 300k"}
 table(OUT / "compute_table.tex",
       r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
@@ -389,5 +421,24 @@ for c, ctag in [("seeds", "B"), ("pooled", "Pool")]:
     for qn, nm in [("plain S-B", "SymPlain"), ("popart S-B", "SymPop"), ("d(S-B) popart - plain", "Change")]:
         x = q8(c, qn); m += mac(f"Veight{ctag}{nm}", f"${num(x.difference, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
     x = q8(c, "d(S-B) popart - plain"); m += mac(f"Veight{ctag}ChangeNine", f"${iv(x.ci_low_99, x.ci_high_99, True)}$")
+civ = lambda x: f"${num(x.difference, True)}$ ${iv(x.ci_low, x.ci_high, True)}$"
+civ9 = lambda x: f"${iv(x.ci_low_99, x.ci_high_99, True)}$"
+for t, c, tag, _ in TAU9:
+    m += mac(f"Vnine{tag}", civ(k9.loc[c])); m += mac(f"VnineRatio{tag}", f"{mech9.loc[t].applied_ratio_SB:.2f}")
+m += mac("VnineDose", civ(k9.loc["d(S-B) tau 30000 - tau 0.5"])); m += mac("VnineDoseNine", civ9(k9.loc["d(S-B) tau 30000 - tau 0.5"]))
+m += mac("VnineEnd", civ(k9.loc["d(S-B) tau 30000 - no clip"]))
+for c, tag in [("primary 62-81", ""), ("pooled 42-81", "Pool")]:
+    for q, nm in [("plain S-B", "SymPlain"), ("popart S-B", "SymPop"), ("d(S-B) popart - plain", "Change")]:
+        m += mac(f"Vten{tag}{nm}", civ(k10.loc[f"{c}: {q}"]))
+    m += mac(f"Vten{tag}ChangeNine", civ9(k10.loc[f"{c}: d(S-B) popart - plain"]))
+for c, tag in [("cleanrl_raw", "Raw"), ("cleanrl_group", "Group"), ("cleanrl_default", "Default")]:
+    m += mac(f"VelevenSym{tag}", civ(k11.loc[f"{c}: S-B"])); m += mac(f"VelevenAsym{tag}", civ(k11.loc[f"{c}: A-S"]))
+    m += mac(f"VelevenShare{tag}", f"{mech11.loc[c].critic_share:.3f}"); m += mac(f"VelevenRatio{tag}", f"{mech11.loc[c].applied_ratio_SB:.2f}")
+    m += mac(f"VelevenEV{tag}", f"{mech11.loc[c].ev_B:.2f} (B) and {mech11.loc[c].ev_S:.2f} (S)")
+m += mac("VelevenGroupChange", civ(k11.loc["d(S-B) group - raw"])); m += mac("VelevenGroupChangeNine", civ9(k11.loc["d(S-B) group - raw"]))
+for l, tag in [("default", "Default"), ("decoupled", "Dec")]:
+    m += mac(f"VtwelveSym{tag}", civ(k12.loc[f"{l}: S-B"])); m += mac(f"VtwelveAsym{tag}", civ(k12.loc[f"{l}: A-S"]))
+    for a in "BAS":
+        m += mac(f"Vtwelve{tag}{a}", f"{xc.loc[(l, a)].w50_local:.3f}"); m += mac(f"Vtwelve{tag}{a}Full", f"{xc.loc[(l, a)].w50_global_E1:.3f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

@@ -20,8 +20,8 @@ leaves the policy-gradient step of PPO~\citep{schulman2017ppo} approximately unc
 rescaling should therefore not move the crossing, whereas a transform that weights losses more than gains
 changes which outcomes the learner prefers and could move it. Practical actor--critic implementations break
 this separation. The critic's regression targets are usually not normalized, so their gradient grows with
-the reward; and Stable-Baselines3 PPO~\citep{raffin2021sb3} by default clips the norm of the \emph{joint}
-actor--critic gradient. When the critic's gradient dominates that joint norm, the clip shrinks
+the reward; and Stable-Baselines3 PPO~\citep{raffin2021sb3}, like CleanRL's~\citep{huang2022cleanrl}, by default clips
+the norm of the \emph{joint} actor--critic gradient. When the critic's gradient dominates that joint norm, the clip shrinks
 the actor's step in proportion to the reward scale. A change in reward magnitude can then change what is
 learned even though it does not change what is optimal.
 
@@ -43,16 +43,21 @@ Table~\ref{tab:hierarchy}). Under default SB3 PPO, symmetric $\times7$ scaling m
 \VfourSymStd{}. Per-minibatch logging shows the critic taking the shared clip: the actor's applied gradient
 under symmetric scaling is \VsixGradGlobal{} of the baseline's and its parameter update \VsixUpdGlobal{}.
 Clipping actor and critic separately restores the update (\VsixUpdGroup{}) and reduces the shift by
-\VsixSymGroupChange{}. The remainder, which clipping does not touch, is not detectable under reward
+\VsixSymGroupChange{}, and raising the clip threshold shrinks it gradually to the no-clip value (E9). A second,
+CleanRL-style implementation reproduces the shift (\VelevenSymRaw{}) and its removal by reward normalization
+(E11). The remainder, which clipping does not touch, is not detectable under reward
 normalization, and in a fresh-seed cohort normalizing only the critic's targets removes it as well
-(change \VeightBChange{}), which attributes it to critic target scale at the declared level.
+(changes \VeightBChange{} and \VtenChange{} in two cohorts), which attributes it to critic target scale at the
+declared level. Under local observation with agent identity (E12) the symmetric shift is no longer detectable,
+so the account is established for the fully observed shared controller.
 (ii)~\emph{a measurement protocol with checked uncertainty} (Sections~\ref{sec:design} and~\ref{sec:robustness}):
 Firth logistic crossings with training-seed-block intervals, pre-registered experiments (\VfourTrajectories{} trajectories,
-of which 3,200 address the optimizer mechanism), and a simulation showing that the nominal 95\% intervals
+of which 5,200 address the optimizer mechanism), and a simulation showing that the nominal 95\% intervals
 cover at \VrvCovRange{}; every principal verdict is unchanged at a coverage-calibrated \VrvCalLevel{} level.
 (iii)~\emph{a conditional asymmetric effect} (Section~\ref{sec:asymmetric}). With the coupling removed and
 rewards normalized, a loss-only multiplier raises the crossing relative to the symmetric control
-(\VfourAsymBoth{}), through 3.6M transitions. Against a symmetric control whose training-reward mean and
+(\VfourAsymBoth{}), through 3.6M transitions, and in the second implementation (\VelevenAsymDefault{}) and under
+local observation (\VtwelveAsymDec{}). Against a symmetric control whose training-reward mean and
 SD track the multiplier arm's under its own policy, the effect remains under both critics, but its size depends
 on the critic: with raw value targets it is small (\VeightAMonPlain{}), because a symmetric reward with the same
 moments reproduces most of the loss-only shift; with normalized value targets it is large (\VeightAMonPop{}). In Level-Based Foraging an asymmetric transform also moves the
@@ -286,7 +291,7 @@ where each intervention acts.
 \input{content/setup_v4}
 
 \begin{table}[!htbp]
-\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals (E8's replication cohort uses seeds 52--61); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
+\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals (E8's replication cohort uses seeds 52--61, E10's seeds 62--81); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs, and E9--E10 and E11--E12 as two pairs. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
 \label{tab:matrix}
 \centering\scriptsize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{.045\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.17\textwidth}>{\raggedright\arraybackslash}p{.06\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}@{}}
@@ -301,16 +306,21 @@ E5 & Does A$-$S persist with budget? & Decoupled learner to 3.6M, 24 checkpoints
 E6 & Is the shared clip the pathway? & Shared vs per-group vs no clipping; update logging & B, A, S; 8 cells; 300k & 720 & Per-group clip restores update, reduces S$-$B & Residual unexplained \\
 E7 & Critic targets? Reward moments? & Plain vs PopArt critic; scale-matched control M & B, A, S, M; 8 cells; 300k & 400 new + 240 E1 & PopArt: inconclusive; A$-$M separable only with PopArt & M's mean unmatched \\
 E8 & Moments or shape? Critic targets, fresh seeds? & Online moment-matched control M$_{\mathrm{on}}$; B, S on seeds 52--61 & M$_{\mathrm{on}}$; B, S; 8 cells; 300k & 480 & A$-$M$_{\mathrm{on}}$ small (plain), large (PopArt); PopArt removes S$-$B & Map nonstationary; 99\% level \\
+E9 & Does S$-$B follow the clip threshold? & Default learner, $\tau\in\{300,3000,10^4,3\cdot10^4\}$ & B, S; 8 cells; 300k & 640 & S$-$B falls as $\tau$ rises, to the no-clip value & Residual not clipping; 99\% level \\
+E10 & Critic targets, second fresh cohort? & Plain vs PopArt critic, seeds 62--81 & B, S; 8 cells; 300k & 640 & PopArt removes S$-$B & 99\% level \\
+E11 & Is the confound SB3-specific? & CleanRL-style PPO: raw, per-group clip, reward normalization & B, A, S; 8 cells; 300k & 720 & S$-$B reproduces; none with normalization; A$-$S positive & Same environment; a port, not CleanRL itself \\
+E12 & Does it hold under local observation? & Local view plus agent identifier; default and decoupled learner & B, A, S; 8 cells; 300k & 480 & A$-$S positive in both; S$-$B not detectable & Predicted S$-$B not met; edge crossings \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Experiments.}
-Table~\ref{tab:matrix} lists the eight pre-registered experiments. Together they comprise \VfourTrajectories{}
-trajectories; the 3,200 in E1, E2, E6, E7 and E8 address the optimizer mechanism, E3 and E5 follow 540 trajectories to 3.6M
-transitions, and E4's 800 run on the second environment. Earlier ``legacy'' sweeps from another platform
+Table~\ref{tab:matrix} lists the twelve pre-registered experiments. Together they comprise \VfourTrajectories{}
+trajectories; the 5,200 in E1, E2 and E6--E11 address the optimizer mechanism (E11's 720 in a second PPO
+implementation), E3 and E5 follow 540 trajectories to 3.6M transitions, E4's 800 run on the second environment, and
+E12's 480 change the information structure. Earlier ``legacy'' sweeps from another platform
 (20 seeds per cell) supply the curvature-versus-multiplier decomposition and the cross-sectional horizon
-fit; they are reported separately and never pooled with E1--E8.
+fit; they are reported separately and never pooled with E1--E12.
 
 \paragraph{Estimation.}
 We fit the logistic curve by Firth's bias-reduced maximum likelihood~\citep{firth1993}, which stays finite
@@ -335,22 +345,24 @@ analysis and report the \VrvCalLevel{} intervals for every principal contrast as
 same \VrvNContrasts{} contrasts, with two-sided seed-block bootstrap $p$-values (resolution $1/2000$), also leaves
 every verdict unchanged: the \VrvHolmKept{} contrasts reported as nonzero all remain so (largest $p$ \VrvHolmMaxP{}),
 and those reported as not detectable are retained. E6's shared-clip cell reproduces E1's runs exactly, so the
-family counts that contrast twice, which makes the adjustment conservative. Both checks were added in revision and
-are not pre-registered. An independent set of
+family counts that contrast twice, which makes the adjustment conservative. The coverage simulation uses ten seeds;
+E10's twenty-seed intervals are reported at the same 99\% level, which is conservative for them. Changes in a contrast
+between conditions (E9's dose-response, the E8, E10 and E11 changes) are reported with their own 95\% and 99\%
+intervals and are not in the Holm family. Both checks were added in revision and are not pre-registered. An independent set of
 10,000 bootstrap draws moves no endpoint by more than \VrvMCShift{}. Intervals are pointwise; we make no
 simultaneous claim across contrasts or checkpoints. An interval that includes zero is reported as no
 detectable effect, never as evidence of no effect; we make equivalence statements only against a stated
 margin.
 
 \paragraph{Pre-registration and platform.}
-Experiments E1--E8 were pre-declared, with source and design hashes frozen before launch; the
+Experiments E1--E12 were pre-declared, with source and design hashes frozen before launch; the
 departures (one pre-execution source fix, a label-threshold fallback corrected from stored data, and
-analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E8 trajectories run on one CPU
+analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E12 trajectories run on one CPU
 platform. An earlier platform does not reproduce trained policies
 bit-for-bit, but collapse labels agree in \VfourAgreeControl{} of matched direct-control runs and
 \VfourAgreeHorizon{} of matched horizon checkpoints, so we make reproducibility claims at the level of
 labels and crossings. The legacy sweeps in Sections~\ref{sec:asymmetric} and~\ref{sec:robustness} (20 seeds
-per cell) come from the earlier platform and are not pooled with E1--E8.
+per cell) come from the earlier platform and are not pooled with E1--E12.
 
 % =======================================================================
 
@@ -372,9 +384,9 @@ evaluation behavior.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/fig_summary.pdf}
-\caption{Principal crossing contrasts across experiments. Thick bars: pre-declared 95\% seed-block intervals; thin bars: coverage-calibrated \VrvCalLevel{} intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, decoupled learner with normalized rewards, and PopArt critic. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the scale-matched symmetric control M, and the LBF replication.}
+\caption{Principal crossing contrasts across experiments. Thick bars: pre-declared 95\% seed-block intervals; thin bars: coverage-calibrated \VrvCalLevel{} intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, the decoupled learner with normalized rewards, the PopArt critic (three cohorts), the second implementation and local observation. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the moment-matched symmetric controls M and M$_{\mathrm{on}}$, and the LBF replication.}
 \label{fig:summary}
-\Description{Dot-and-interval plot of thirteen contrasts; the default symmetric shift is large and positive, the decoupled and PopArt symmetric shifts include zero, asymmetric contrasts are positive, plain-critic A minus M touches zero.}
+\Description{Dot-and-interval plot of twenty-four contrasts; the default symmetric shifts in both implementations are large and positive, the decoupled, normalized and PopArt symmetric shifts include zero, asymmetric contrasts are positive, plain-critic A minus M touches zero.}
 \end{figure}
 
 \input{content/hierarchy_table}
@@ -435,6 +447,18 @@ clipping, accompanies a poorly fitted critic, and disappears under reward normal
 (Section~\ref{sec:optimizer}, E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
 clipping. Figure~\ref{fig:e6} puts the three steps side by side.
 
+\paragraph{The shift follows the clip threshold (E9).}
+If the shared clip carries part of the shift, the shift should shrink as the threshold $\tau$ rises and the clip
+binds less. E9 (640 runs) keeps the default learner and raw rewards and sets $\tau\in\{300,3000,10^4,3\cdot10^4\}$;
+E1 supplies $\tau=0.5$ and no clipping. S's applied actor gradient rises monotonically relative to B's, from
+\VnineRatioHalf{} at $\tau=0.5$ to \VnineRatioThirtyK{} at $\tau=3\cdot10^4$, and the symmetric shift falls with it,
+from \VnineHalf{} to \VnineThirtyK{} (Table~\ref{tab:e9}). The paired change, \VnineDose{}, excludes zero at the
+declared 95\% level but not at the 99\% level (\VnineDoseNine{}). At $\tau=3\cdot10^4$ the shift is indistinguishable
+from the no-clip value (difference \VnineEnd{}). All three pre-declared predictions are met. The clip therefore
+accounts for a graded part of the shift, about 0.2 as in E6, and the remainder of about 0.16 does not depend on it.
+
+\input{generated/v4/e9_table}
+
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/fig_e6_mechanism.pdf}
@@ -462,13 +486,32 @@ The pre-declared criterion is therefore met in the independent cohort, and the r
 attributed to critic target scale. The attribution rests on the declared 95\% intervals. At the
 coverage-calibrated level the fresh cohort's change is \VeightBChangeNine{}, which includes zero; pooling both
 cohorts, a secondary analysis declared in advance, gives \VeightPoolChange{} (\VeightPoolChangeNine{} at the
-calibrated level).
+calibrated level). A second fresh cohort, with twenty seeds (E10, seeds 62--81, 640 runs), repeats the result. S$-$B
+is \VtenSymPlain{} with the plain critic and \VtenSymPop{} with PopArt, and the change, \VtenChange{}, again excludes
+zero at the declared level only (\VtenChangeNine{} at 99\%). Pooling seeds 42--81, the declared secondary analysis,
+gives \VtenPoolChange{} (\VtenPoolChangeNine{} at 99\%).
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
 the other cells (Table~\ref{tab:factorial_crossings}). An absolute $\wcrit$ is therefore a property of
 the learner's optimizer configuration as well as of the reward design; comparisons are valid only
 within a fixed configuration.
+
+\paragraph{The confound is not specific to SB3 (E11).}
+E11 (720 runs) ports CleanRL's single-file continuous-action PPO~\citep{huang2022cleanrl} to the supply chain. It keeps
+CleanRL's defaults (network and initialization, clipped value loss, learning-rate annealing, observation
+normalization, one global clip of 0.5) and matches E1's rollout and minibatch sizes. With raw rewards the critic
+takes \VelevenShareRaw{} of the squared joint gradient norm, S's applied actor gradient is \VelevenRatioRaw{} of
+B's, and symmetric scaling moves the crossing by \VelevenSymRaw{} (Table~\ref{tab:e11}). Clipping actor and critic
+separately restores the applied ratio (\VelevenRatioGroup{}) and changes S$-$B by \VelevenGroupChange{}. That
+interval only just excludes zero, and its 99\% interval does not (\VelevenGroupChangeNine{}). As in SB3, a remainder
+survives without the shared clip (\VelevenSymGroup{}), together with a poorly fitted critic (explained variance
+\VelevenEVGroup{}). With CleanRL's default reward normalization the critic's share falls to \VelevenShareDefault{}
+and no symmetric shift is detectable (\VelevenSymDefault{}), while A$-$S is \VelevenAsymDefault{}. All four
+pre-declared predictions are met. E11 is a port into our environment and evaluation harness, not CleanRL's code
+base, and it uses the same environment as E1.
+
+\input{generated/v4/e11_table}
 
 \input{generated/v4/factorial_crossings}
 \input{generated/v4/factorial_contrasts}
@@ -527,7 +570,8 @@ compares two gain-to-loss ratios (1:7 and 1:1) at matched loss scale, and A$-$B 
 multiplier at fixed gains. A$-$S is positive and excludes zero under normalization (\VfourAsymNorm{}),
 separate optimizers (\VfourAsymSep{}), both together (\VfourAsymBoth{}) and per-group clipping
 (\VsixAsymGroup{}), and A$-$B is \VfourLossBoth{} with both interventions, so the pre-declared criterion for a
-sign-asymmetric effect is met. How much of each reward falls on the loss branch depends on $w$ and on the
+sign-asymmetric effect is met. In the second implementation with reward normalization A$-$S is
+\VelevenAsymDefault{} (E11). How much of each reward falls on the loss branch depends on $w$ and on the
 learned policy, because $z_0$ is fixed; near the crossings both branches are active
 (Table~\ref{tab:loss_occupancy}). The arms also differ in reward mean, not only in scale: A's transformed
 rewards have a negative mean at most $w$, whereas S and R have positive means that grow with $w$
@@ -635,7 +679,9 @@ update with a global clip or with separate optimizers. The local reward is the n
 an effort cost of 0.02 per LOAD attempt; the team reward sums native food rewards; collapse is a native
 team return below $\theta=0.626$ over ten evaluation episodes, the midpoint between collapsed and coordinated team returns in an earlier calibration; the evaluation never includes the effort cost. The arms are
 linear, curvature only, A ($\lambda=4$) and S (both branches $\times4$), on ten mixture cells with ten
-seeds and 2M timesteps (800 trajectories).
+seeds and 2M timesteps (800 trajectories). The transform is applied to each agent's blended reward with reference $z_0=0$ and unit
+input scale, unlike the supply chain's fitted $z_0$. Food shares are therefore gains, and a step falls on the
+loss branch only when its effort cost exceeds its food share.
 
 \paragraph{The asymmetric contrast replicates under both optimizers.}
 A raises the crossing relative to S by \VfourLBFAsymGlobal{} with the global clip and \VfourLBFAsymSep{}
@@ -745,6 +791,22 @@ crossings reflect this relapse at high $w$. Cell-level counts are in Appendix~\r
 \input{generated/v4/horizon_table}
 \input{generated/v4/horizon_stability}
 
+\paragraph{Local observations with agent identity (E12).}
+The supply-chain policy elsewhere is a homogeneous shared controller: every node receives the full state and no
+identifier. In E12 (480 runs) each node observes only its own retail demand, inventory and incoming order
+pipeline, zero-padded, plus a one-hot node identifier, in training and in evaluation, under E1's default and
+decoupled learners (Table~\ref{tab:e12}). A$-$S remains positive under both: \VtwelveAsymDefault{} (default) and
+\VtwelveAsymDec{} (decoupled). The pre-declared prediction that the default learner's symmetric shift persists is
+not met: S$-$B is \VtwelveSymDefault{}. Local observation lowers S's crossing from \VtwelveDefaultSFull{} to
+\VtwelveDefaultS{}, while B's moves from \VtwelveDefaultBFull{} to \VtwelveDefaultB{}. The clip still attenuates S's
+actor: its mean applied gradient is \VtwelveAppliedRatio{} of B's (a descriptive diagnostic, not pre-declared). So
+the attenuation is present but no longer produces a detectable shift; we have no test of why. With the decoupled
+learner S$-$B is \VtwelveSymDec{}, as predicted, but B and S collapse almost only at $w=0$. Their crossings
+(\VtwelveDecB{} and \VtwelveDecS{}) therefore sit at the grid's lower edge, the interval is wide, and this verdict
+carries little information.
+
+\input{generated/v4/e12_table}
+
 \paragraph{Estimators, seeds and intervals.}
 Logistic, probit and isotonic crossings agree within 0.018 on the supply chain
 (Appendix~\ref{app:estimation}); on LBF they differ more, but not in the A$-$S ordering
@@ -760,11 +822,13 @@ evaluation statistics by one module that checks each threshold against the pre-r
 \section{Limitations}
 \label{sec:limitations}
 
-\paragraph{Mechanism.} The shared-clip part of the symmetric shift is isolated by an intervention (E6). The
-remainder is removed by reward normalization and, in an independent fresh-seed cohort, by a critic-only target
-normalization (PopArt), which attributes it to critic target scale at the declared 95\% level. At the
-coverage-calibrated level the fresh cohort's change includes zero, and it excludes zero only when both cohorts are
-pooled. How much of Adam's partial compensation is due to the varying clip factor and how much to $\epsilon$ is not
+\paragraph{Mechanism.} The shared-clip part of the symmetric shift is isolated by an intervention (E6) and
+follows the clip threshold (E9), but it is only part of the shift: about 0.16 of SB3's 0.36 remains without any
+clipping, and 0.19 of 0.29 in the second implementation. That remainder is removed by reward normalization and, in two
+independent fresh-seed cohorts, by a critic-only target normalization (PopArt), which attributes it to critic target
+scale at the declared 95\% level. In each fresh cohort alone the change includes zero at the 99\% level; it excludes
+zero there only when cohorts are pooled. E9's dose-response and E11's per-group change are likewise declared-level
+results. How much of Adam's partial compensation is due to the varying clip factor and how much to $\epsilon$ is not
 isolated.
 
 \paragraph{Reward moments.} A and S differ in the training reward's mean and variance as well as in the
@@ -778,11 +842,13 @@ $\pm0.17$ at 3.6M, and the declared 95\% intervals under-cover at this sample si
 Intervals that include zero are reported as no detectable effect, and none would support equivalence at a
 $\pm0.05$ margin. The 24-checkpoint E5 reading is exploratory and its intervals are pointwise.
 
-\paragraph{Information structure and generality.} The supply-chain policy is a fully observed shared controller
-without agent identity (Section~\ref{sec:method}); the results say nothing about decentralized information.
-Two small environments and one PPO implementation (SB3 2.8.0) are tested; other implementations, clipping
-conventions and value normalizations may couple actor and critic differently, and LBF does not exhibit the
-supply-chain clipping pathway. In LBF the linear arm's crossing under the global clip lies below the sampled
+\paragraph{Information structure and generality.} Apart from E12 the supply-chain policy is a fully observed shared
+controller without agent identity (Section~\ref{sec:method}). Under local observation with an identifier (E12) the
+asymmetric contrast holds, but the default learner's symmetric shift is no longer detectable, contrary to our
+prediction, and we have not explained why; the shared-clip account is therefore established for the fully observed
+controller only. Two small environments and two PPO implementations are tested: SB3 2.8.0 and a CleanRL-style port
+run in the same environment and harness (E11). Other implementations, clipping conventions and value normalizations
+may couple actor and critic differently, and LBF does not exhibit the supply-chain clipping pathway. In LBF the linear arm's crossing under the global clip lies below the sampled
 grid, so contrasts with it are not identified. No condition has a stable crossing by 3.6M, so all readings are
 finite-budget. An earlier ablation on the supply chain found no interior crossing for PPO, QMIX or IQL on a
 coarse 11-level discretization of the base-stock action. Crossings are conditional on the behavioral label and
@@ -810,6 +876,8 @@ budget, does not stabilize by 3.6M transitions, and depends on the optimizer con
 SB3's default PPO a symmetric reward multiplier moves the crossing at least as far as a loss-only multiplier,
 and the shared gradient clip is the identified pathway for part of it: the critic takes the clip, the
 actor's parameter update shrinks, and clipping the two separately restores the update and reduces the shift.
+The shift falls as the clip threshold rises, and the same confound appears in a second, CleanRL-style PPO
+implementation; in both, reward normalization removes it.
 Third, with separate optimizers and
 normalized rewards, a loss-only multiplier moves the crossing relative to a symmetric control on the
 supply chain, through 3.6M transitions, and an asymmetric transform moves it on Level-Based Foraging by a
@@ -827,7 +895,8 @@ these, a change in reward scale can pass for a change in reward shape.
 \paragraph{Implications for actor--critic optimization.}
 The confound needs two ingredients that are SB3 PPO's defaults: an unnormalized critic and one gradient
 clip over actor and critic. Advantages are normalized per minibatch, so the actor's loss is nearly
-scale-free, but the critic's gradient grows with the reward and takes the clip budget. Cooperative PPO
+scale-free, but the critic's gradient grows with the reward and takes the clip budget. CleanRL's default PPO normalizes rewards, and in our port that default removes the
+detectable symmetric shift (E11); without it, the same port reproduces the confound. Cooperative PPO
 implementations that normalize value targets by default~\citep{yu2022surprising} should be less exposed;
 we did not test them.
 
@@ -841,7 +910,7 @@ deployment requirement such as at most 5\% collapse would need its own probabili
 assessment.
 
 \paragraph{Reproducibility.}
-All E1--E8 runs share one platform; trained policies are not bit-reproducible across hardware and software
+All E1--E12 runs share one platform; trained policies are not bit-reproducible across hardware and software
 builds, but labels agree in \VfourAgreeControl{} of matched runs, so we claim reproducibility of labels and
 crossings, not of policies. The artifact rebuilds every reported table, figure and number from per-run
 records with one command (Appendix~\ref{app:artifact}).
@@ -849,10 +918,10 @@ records with one command (Appendix~\ref{app:artifact}).
 \paragraph{Conclusion.}
 Reward centralization is usually treated as a direction: more team signal helps. It also has a measurable
 finite-budget location, $\wcrit$, that moves with reward transforms, training budget and the optimizer.
-Measured with default SB3 PPO, a symmetric reward multiplier and a loss-only multiplier cannot be told
-apart, because a shared gradient clip lets reward scale reach the actor's updates. With that coupling
+Measured with default SB3 PPO, or with a CleanRL-style PPO without reward normalization, a symmetric reward
+multiplier and a loss-only multiplier cannot be told apart, because a shared gradient clip lets reward scale reach the actor's updates. With that coupling
 removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
-no detectable shift, in the tested configurations of two environments. How much of that shift is about sign
+no detectable shift, in the tested configurations of two environments and two PPO implementations. How much of that shift is about sign
 asymmetry rather than the reward's moments depends on the critic. With raw value targets, a symmetric control with
 matched mean and SD reproduces most of it, leaving a small asymmetric remainder; with normalized value targets it
 reproduces almost none. Reward-transform comparisons in

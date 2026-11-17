@@ -1,0 +1,66 @@
+== E9-E12: 1,280 + 720 + 480 runs complete, 300,160 transitions, declared evaluation seeds
+
+== E9 clip-threshold dose-response (default learner, raw rewards)
+  S-B, tau 0.5 (E1)                            +0.357 [+0.249, +0.464]  99% [+0.220, +0.495]  *
+  S-B, tau 300                                 +0.303 [+0.187, +0.397]  99% [+0.147, +0.421]  *
+  S-B, tau 3000                                +0.252 [+0.156, +0.348]  99% [+0.129, +0.374]  *
+  S-B, tau 10000                               +0.176 [+0.102, +0.248]  99% [+0.083, +0.263]  *
+  S-B, tau 30000                               +0.153 [+0.071, +0.244]  99% [+0.054, +0.270]  *
+  S-B, tau inf (E1 no clip)                    +0.160 [+0.078, +0.254]  99% [+0.056, +0.286]  *
+             tau  applied_ratio_SB  critic_share_cellmean  S_minus_B
+        0.5 (E1)             0.121                    1.0      0.357
+             300             0.137                    1.0      0.303
+            3000             0.428                    1.0      0.252
+           10000             0.716                    1.0      0.176
+           30000             0.943                    1.0      0.153
+inf (E1 no clip)             1.087                    1.0      0.160
+  d(S-B) tau 30000 - tau 0.5                   -0.204 [-0.369, -0.032]  99% [-0.417, +0.018]  *
+  d(S-B) tau 30000 - no clip                   -0.007 [-0.075, +0.048]  99% [-0.100, +0.057]
+
+== E10 critic-target replication, seeds 62-81 (primary) and pooled 42-81 (secondary)
+  primary 62-81: plain S-B                     +0.111 [+0.033, +0.194]  99% [+0.007, +0.218]  *
+  primary 62-81: popart S-B                    +0.010 [-0.039, +0.056]  99% [-0.050, +0.068]
+  primary 62-81: d(S-B) popart - plain         -0.101 [-0.199, -0.002]  99% [-0.229, +0.033]  *
+  pooled 42-81: plain S-B                      +0.135 [+0.084, +0.188]  99% [+0.070, +0.205]  *
+  pooled 42-81: popart S-B                     +0.027 [-0.013, +0.066]  99% [-0.025, +0.078]
+  pooled 42-81: d(S-B) popart - plain          -0.108 [-0.174, -0.043]  99% [-0.194, -0.024]  *
+
+== E11 CleanRL-style second implementation
+  cleanrl_raw: S-B                             +0.288 [+0.171, +0.393]  99% [+0.143, +0.421]  *
+  cleanrl_raw: A-S                             +0.298 [+0.161, +0.435]  99% [+0.113, +0.471]  *
+  cleanrl_default: S-B                         +0.000 [-0.057, +0.057]  99% [-0.076, +0.075]
+  cleanrl_default: A-S                         +0.297 [+0.222, +0.382]  99% [+0.204, +0.419]  *
+  cleanrl_group: S-B                           +0.187 [+0.119, +0.250]  99% [+0.099, +0.263]  *
+  cleanrl_group: A-S                           +0.225 [+0.129, +0.339]  99% [+0.102, +0.367]  *
+  d(S-B) group - raw                           -0.101 [-0.207, -0.000]  99% [-0.247, +0.033]  *
+      condition  applied_ratio_SB  critic_share  ev_B  ev_S
+    cleanrl_raw             0.331         0.987 0.470 0.209
+cleanrl_default             1.000         0.014 0.757 0.752
+  cleanrl_group             1.000         0.978 0.483 0.128
+
+== E12 local observations with agent identity
+  default: S-B                                 +0.069 [-0.021, +0.154]  99% [-0.044, +0.171]
+  default: A-S                                 +0.091 [+0.040, +0.146]  99% [+0.025, +0.165]  *
+  decoupled: S-B                               -0.008 [-0.166, +0.264]  99% [-0.238, +0.504]
+  decoupled: A-S                               +0.562 [+0.483, +0.654]  99% [+0.456, +0.709]  *
+  learner arm  w50_local  w50_global_E1
+  default   B      0.582          0.538
+  default   A      0.743          0.821
+  default   S      0.651          0.895
+decoupled   B      0.075          0.414
+decoupled   A      0.629          0.602
+decoupled   S      0.067          0.365
+
+== Pre-declared predictions
+E9 P1 applied S/B ratio monotone in tau and > 0.5 at 30000: [0.121, 0.137, 0.428, 0.716, 0.943, 1.087] -> MET
+E9 P2 d(S-B) 30000 - 0.5 < 0: -0.204 [-0.369, -0.032] -> MET
+E9 P3 d(S-B) 30000 - no clip includes 0: -0.007 [-0.075, +0.048] -> MET
+E10 P5 primary: popart S-B +0.010 [-0.039, +0.056]; change -0.101 [-0.199, -0.002] (99% [-0.229, +0.033]) -> supported at the declared 95% level only
+E10 P6 plain S-B > 0: +0.111 [+0.033, +0.194] -> MET
+E11 P1 raw S-B > 0: +0.288 [+0.171, +0.393] -> MET
+E11 P2 d(S-B) group - raw < 0: -0.101 [-0.207, -0.000] -> MET
+E11 P3 default S-B includes 0: +0.000 [-0.057, +0.057] -> MET
+E11 P4 default A-S > 0: +0.297 [+0.222, +0.382] -> MET
+E12 P5 default S-B > 0: +0.069 [-0.021, +0.154] -> NOT MET
+E12 P6 decoupled S-B includes 0: -0.008 [-0.166, +0.264] -> MET
+E12 P7 decoupled A-S > 0: +0.562 [+0.483, +0.654] -> MET

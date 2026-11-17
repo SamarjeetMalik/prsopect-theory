@@ -1,0 +1,19 @@
+\begin{table}[!htbp]
+\caption{Clip-threshold dose-response (E9): the default learner (one Adam step, one global gradient-norm clip $\tau$) with raw rewards, arms B and S, the E1 grid, seeds 42--51, 300k. The $\tau=0.5$ and no-clip rows are E1's runs (a gate reproduced an E1 run bit-for-bit at $\tau=0.5$). ``Applied S/B'': seed-paired ratio of S's to B's mean applied actor gradient norm. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.}
+\label{tab:e9}
+\centering\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Clip threshold $\tau$ & Applied S/B & S$-$B \\
+\midrule
+0.5 (default; E1) & 0.121 & \begin{tabular}[t]{@{}c@{}}$+0.357$$^{\ast}$\\[-1pt]{\scriptsize $[+0.249,\,+0.464]$}\end{tabular} \\
+300 & 0.137 & \begin{tabular}[t]{@{}c@{}}$+0.303$$^{\ast}$\\[-1pt]{\scriptsize $[+0.187,\,+0.397]$}\end{tabular} \\
+3,000 & 0.428 & \begin{tabular}[t]{@{}c@{}}$+0.252$$^{\ast}$\\[-1pt]{\scriptsize $[+0.156,\,+0.348]$}\end{tabular} \\
+10,000 & 0.716 & \begin{tabular}[t]{@{}c@{}}$+0.176$$^{\ast}$\\[-1pt]{\scriptsize $[+0.102,\,+0.248]$}\end{tabular} \\
+30,000 & 0.943 & \begin{tabular}[t]{@{}c@{}}$+0.153$$^{\ast}$\\[-1pt]{\scriptsize $[+0.071,\,+0.244]$}\end{tabular} \\
+$\infty$ (no clip; E1) & 1.087 & \begin{tabular}[t]{@{}c@{}}$+0.160$$^{\ast}$\\[-1pt]{\scriptsize $[+0.078,\,+0.254]$}\end{tabular} \\
+Change, $\tau{=}30{,}000$ minus $0.5$ &  & \begin{tabular}[t]{@{}c@{}}$-0.204$$^{\ast}$\\[-1pt]{\scriptsize $[-0.369,\,-0.032]$}\end{tabular} \\
+Change, $\tau{=}30{,}000$ minus no clip &  & \begin{tabular}[t]{@{}c@{}}$-0.007$\\[-1pt]{\scriptsize $[-0.075,\,+0.048]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

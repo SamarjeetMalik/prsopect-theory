@@ -43,12 +43,22 @@ META = {  # contrast label -> (display, environment, learner/intervention, readi
     "E8B popart S-B": (r"S$-$B", "Supply", "PopArt critic, raw rewards, seeds 52--61", "none detectable"),
     "E4 global_clip A-S": (r"A$-$S", "LBF", "MAPPO, shared clip", "asymmetric shift"),
     "E4 separate_no_clip A-S": (r"A$-$S", "LBF", "MAPPO, separate optimizers", "asymmetric shift"),
+    "E10 plain S-B": (r"S$-$B", "Supply", "Plain critic, raw rewards, seeds 62--81", "symmetric shift replicates"),
+    "E10 popart S-B": (r"S$-$B", "Supply", "PopArt critic, raw rewards, seeds 62--81", "none detectable"),
+    "E11 cleanrl_raw S-B": (r"S$-$B", "Supply", "CleanRL-style, global clip, raw rewards", "symmetric shift"),
+    "E11 cleanrl_group S-B": (r"S$-$B", "Supply", "CleanRL-style, per-group clip, raw rewards", "symmetric shift reduced"),
+    "E11 cleanrl_default S-B": (r"S$-$B", "Supply", "CleanRL-style, normalized rewards", "none detectable"),
+    "E11 cleanrl_default A-S": (r"A$-$S", "Supply", "CleanRL-style, normalized rewards", "asymmetric shift"),
+    "E12 default S-B": (r"S$-$B", "Supply", "Local observations, default learner", "none detectable (predicted nonzero)"),
+    "E12 decoupled A-S": (r"A$-$S", "Supply", "Local observations, decoupled learner", "asymmetric shift"),
 }
 ORDER = ["E1 global_clip/raw S-B", "E6 groupwise_clip S-B", "E1 separate_no_clip/vecnormalize S-B", "E7 popart S-B", "E8B popart S-B",
+         "E10 plain S-B", "E10 popart S-B", "E11 cleanrl_raw S-B", "E11 cleanrl_group S-B", "E11 cleanrl_default S-B", "E12 default S-B",
          "E1 separate_no_clip/vecnormalize A-S", "E1 separate_no_clip/vecnormalize A-B", "E6 groupwise_clip A-S", "E5 3.6M A-S",
-         "E7 popart A-S", "E7 plain A-M", "E7 popart A-M", "E8 plain A-M_on", "E8 popart A-M_on", "E4 global_clip A-S", "E4 separate_no_clip A-S"]
+         "E7 popart A-S", "E11 cleanrl_default A-S", "E12 decoupled A-S",
+         "E7 plain A-M", "E7 popart A-M", "E8 plain A-M_on", "E8 popart A-M_on", "E4 global_clip A-S", "E4 separate_no_clip A-S"]
 c = CAL.set_index("contrast").loc[ORDER].reset_index()
-fig, ax = plt.subplots(figsize=(6.6, 4.1))
+fig, ax = plt.subplots(figsize=(6.6, 5.4))
 y = np.arange(len(c))[::-1]
 for yi, r in zip(y, c.itertuples()):
     sym = META[r.contrast][0].startswith("S")
@@ -59,7 +69,7 @@ for yi, r in zip(y, c.itertuples()):
 ax.axvline(0, color="0.4", lw=.7, ls="--")
 ax.set_yticks(y); ax.set_yticklabels([f"{r.contrast.split()[0]}  {META[r.contrast][0]}: {META[r.contrast][2]}" for r in c.itertuples()])
 ax.set_xlabel(r"Crossing difference $\Delta w_{50}$")
-for yb in [len(c) - 5.5, len(c) - 10.5, len(c) - 14.5]:
+for yb in [len(c) - 11.5, len(c) - 18.5, len(c) - 22.5]:
     ax.axhline(yb, color="0.85", lw=.6)
 fig.tight_layout(); fig.savefig(OUT / "fig_summary.pdf"); plt.close(fig)
 
@@ -71,11 +81,11 @@ for r in c.itertuples():
     hm = "yes" if HOLM.loc[r.contrast].holm_reject else "no"
     rows.append(" & ".join([exp, env, setting, disp, est, i95, ical, hm, reading]) + r" \\")
 (OUT / "results_table.tex").write_text(r"""\begin{table}[!htbp]
-\caption{Principal crossing contrasts. Each contrast pairs two arms over the same ten training seeds (seeds 42--51) on the experiment's mixture grid; intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all 14 principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81); intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all """ + f"{len(HOLM)}" + r""" principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
 \label{tab:results}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llp{.21\textwidth}lcccc p{.12\textwidth}@{}}
+\begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{.21\textwidth}lcccc >{\raggedright\arraybackslash}p{.12\textwidth}@{}}
 \toprule
 Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval & Holm & Reading \\
 \midrule
@@ -179,5 +189,8 @@ des = next(q for q in [root / "AAMAS2027/optimizer_factorial_source_v2/AAMAS2027
 aff = json.loads(des.read_text())["M_affine"]; e8 = pd.read_csv(RUNS / "E8_runs.csv"); pa8 = e8[e8.part == "A"]
 lo = pa8.apply(lambda r: r.online_a_min <= aff[f"{r.w:g}"]["scale"] / 4 + 1e-9, axis=1)
 m += mac("VeightClamp", f"{int(lo.sum())}"); m += mac("VeightNA", f"{len(pa8)}")
+# E12 (post hoc, descriptive): S's applied actor gradient relative to B's under local observation, default learner
+e12 = pd.read_csv(RUNS / "E12_runs.csv"); g12 = e12[e12.learner == "default"].groupby("arm").mb_post_actor_grad_norm.mean()
+m += mac("VtwelveAppliedRatio", f"{g12['S'] / g12['B']:.2f}")
 (OUT / "revision_numbers.tex").write_text(m)
 print("wrote fig_summary, fig_e7_moments, fig_lbf_sensitivity, results_table, coverage_table, revision_numbers")

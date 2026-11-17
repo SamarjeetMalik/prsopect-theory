@@ -24,6 +24,10 @@ from labels import lbf_label, E4_THETA  # noqa: E402
 SEEDS = list(range(42, 52))
 W2K = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)
 W10K = np.random.default_rng(20261105).multinomial(10, np.full(10, 0.1), size=10000)
+# E10's primary cohort has 20 seeds (62-81): its declared draws (seed 20261108) and an independent 10,000
+W20 = np.random.default_rng(20261108).multinomial(20, np.full(20, 0.05), size=2000)
+W20_10K = np.random.default_rng(20261110).multinomial(20, np.full(20, 0.05), size=10000)
+DRAWS = {(10, 2000): W2K, (10, 10000): W10K, (20, 2000): W20, (20, 10000): W20_10K}
 G1 = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
 G5 = [0.2, 0.4, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1.0]
 G4 = [0.0, 0.1, 0.2, 0.3, 0.5, 0.65, 0.75, 0.85, 0.9, 0.95]
@@ -32,14 +36,15 @@ def say(s=""): print(s); log.append(s)
 
 
 def matrix(frame, grid, col="collapsed"):
-    seeds = sorted(frame.seed.unique()) if frame.seed.min() >= 52 else SEEDS   # E8 part B uses fresh seeds 52-61
-    assert len(seeds) == 10
+    seeds = sorted(frame.seed.unique()) if frame.seed.min() >= 52 else SEEDS   # E8 part B: seeds 52-61; E10: 62-81
+    assert len(seeds) in (10, 20)
     k = frame.assign(w=frame.w.round(4)).pivot(index="seed", columns="w", values=col).reindex(index=seeds, columns=[round(x, 4) for x in grid])
     assert not k.isna().any().any(), "missing cells"
     return k.to_numpy(float)
 
 
 def fit(k, grid, W):
+    W = DRAWS[(k.shape[0], len(W))]   # the declared draws for this cohort size (identity for ten seeds)
     n = np.ones_like(k); w = np.array(grid)
     return firth(w, k.sum(0), n.sum(0))["wcrit"][0], firth(w, W @ k, W @ n)["wcrit"]
 
@@ -76,6 +81,18 @@ for m in ["plain", "popart"]:
     CON.append((f"E8 {m} A-M_on", G1, d[d.arm == "A"], d[d.arm == "M_on"], c8a[(c8a["mode"] == m) & (c8a.contrast == "A-M_on")].iloc[0]))
 d = e8[(e8.part == "B") & (e8.critic_mode == "popart")]
 CON.append(("E8B popart S-B", G1, d[d.arm == "S"], d[d.arm == "B"], c8b[c8b.cohort.str.startswith("seeds") & (c8b.quantity == "popart S-B")].iloc[0]))
+r910 = pd.read_csv(RUNS / "E9E10_runs.csv"); r11 = pd.read_csv(RUNS / "E11_runs.csv"); r12 = pd.read_csv(RUNS / "E12_runs.csv")
+c10, c11, c12 = (pd.read_csv(RES / f).set_index("contrast") for f in ["E10_contrasts.csv", "E11_contrasts.csv", "E12_contrasts.csv"])
+e10 = r910[r910.experiment == "E10"]
+for m in ["plain", "popart"]:
+    d = e10[e10.critic_mode == m]
+    CON.append((f"E10 {m} S-B", G1, d[d.arm == "S"], d[d.arm == "B"], c10.loc[f"primary 62-81: {m} S-B"]))
+for cnd, name in [("cleanrl_raw", "S-B"), ("cleanrl_group", "S-B"), ("cleanrl_default", "S-B"), ("cleanrl_default", "A-S")]:
+    hi, lo = name.split("-"); d = r11[r11.condition_name == cnd]
+    CON.append((f"E11 {cnd} {name}", G1, d[d.arm == hi], d[d.arm == lo], c11.loc[f"{cnd}: {name}"]))
+for ln, name in [("default", "S-B"), ("decoupled", "A-S")]:
+    hi, lo = name.split("-"); d = r12[r12.learner == ln]
+    CON.append((f"E12 {ln} {name}", G1, d[d.arm == hi], d[d.arm == lo], c12.loc[f"{ln}: {name}"]))
 d = e5[e5.checkpoint == 3600000]
 CON.append(("E5 3.6M A-S", G5, d[d.arm == "A"], d[d.arm == "S"], c5[(c5.checkpoint == 3600000) & (c5.contrast == "A-S")].iloc[0]))
 for o in ["global_clip", "separate_no_clip"]:

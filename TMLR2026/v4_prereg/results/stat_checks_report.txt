@@ -13,10 +13,18 @@
   E8 plain A-M_on                        +0.050  2k [+0.020, +0.082]  10k [+0.019, +0.081]  reproduces stored: yes
   E8 popart A-M_on                       +0.246  2k [+0.197, +0.300]  10k [+0.196, +0.296]  reproduces stored: yes
   E8B popart S-B                         +0.006  2k [-0.070, +0.085]  10k [-0.069, +0.083]  reproduces stored: yes
+  E10 plain S-B                          +0.111  2k [+0.033, +0.194]  10k [+0.033, +0.194]  reproduces stored: yes
+  E10 popart S-B                         +0.010  2k [-0.039, +0.056]  10k [-0.036, +0.059]  reproduces stored: yes
+  E11 cleanrl_raw S-B                    +0.288  2k [+0.171, +0.393]  10k [+0.172, +0.396]  reproduces stored: yes
+  E11 cleanrl_group S-B                  +0.187  2k [+0.119, +0.250]  10k [+0.117, +0.249]  reproduces stored: yes
+  E11 cleanrl_default S-B                +0.000  2k [-0.057, +0.057]  10k [-0.057, +0.057]  reproduces stored: yes
+  E11 cleanrl_default A-S                +0.297  2k [+0.222, +0.382]  10k [+0.222, +0.385]  reproduces stored: yes
+  E12 default S-B                        +0.069  2k [-0.021, +0.154]  10k [-0.020, +0.149]  reproduces stored: yes
+  E12 decoupled A-S                      +0.562  2k [+0.483, +0.654]  10k [+0.483, +0.657]  reproduces stored: yes
   E5 3.6M A-S                            +0.154  2k [+0.053, +0.256]  10k [+0.052, +0.256]  reproduces stored: yes
   E4 global_clip A-S                     +0.447  2k [+0.312, +0.559]  10k [+0.311, +0.563]  reproduces stored: yes
   E4 separate_no_clip A-S                +0.490  2k [+0.315, +0.619]  10k [+0.314, +0.619]  reproduces stored: yes
-  largest endpoint shift 0.007; zero-exclusion verdict unchanged in 17/17
+  largest endpoint shift 0.007; zero-exclusion verdict unchanged in 25/25
 
 == 3. Coverage of seed-block percentile intervals (nominal 95%), 1,000 replicates per row
   steep, null contrast     seed SD 0: true w50 0.400, contrast +0.000; nominal 0.950: cover w50 0.923, contrast 0.913, excl. 0 0.087; nominal 0.975: cover w50 0.942, contrast 0.940, excl. 0 0.060; nominal 0.990: cover w50 0.963, contrast 0.955, excl. 0 0.045
@@ -43,25 +51,41 @@
   E8 plain A-M_on                        +0.050  95% [+0.020, +0.082]  99.0% [+0.010, +0.092]
   E8 popart A-M_on                       +0.246  95% [+0.197, +0.300]  99.0% [+0.184, +0.315]
   E8B popart S-B                         +0.006  95% [-0.070, +0.085]  99.0% [-0.090, +0.109]
+  E10 plain S-B                          +0.111  95% [+0.033, +0.194]  99.0% [+0.007, +0.218]
+  E10 popart S-B                         +0.010  95% [-0.039, +0.056]  99.0% [-0.050, +0.068]
+  E11 cleanrl_raw S-B                    +0.288  95% [+0.171, +0.393]  99.0% [+0.143, +0.421]
+  E11 cleanrl_group S-B                  +0.187  95% [+0.119, +0.250]  99.0% [+0.099, +0.263]
+  E11 cleanrl_default S-B                +0.000  95% [-0.057, +0.057]  99.0% [-0.076, +0.075]
+  E11 cleanrl_default A-S                +0.297  95% [+0.222, +0.382]  99.0% [+0.204, +0.419]
+  E12 default S-B                        +0.069  95% [-0.021, +0.154]  99.0% [-0.044, +0.171]
+  E12 decoupled A-S                      +0.562  95% [+0.483, +0.654]  99.0% [+0.456, +0.709]
   E5 3.6M A-S                            +0.154  95% [+0.053, +0.256]  99.0% [+0.018, +0.277]
   E4 global_clip A-S                     +0.447  95% [+0.312, +0.559]  99.0% [+0.260, +0.600]
   E4 separate_no_clip A-S                +0.490  95% [+0.315, +0.619]  99.0% [+0.235, +0.670]
 
 == 5. Holm adjustment across the principal contrasts (two-sided seed-block bootstrap p-values, alpha 0.05)
-  E1 global_clip/raw S-B                 +0.357  p 0.0005  Holm threshold 0.0029  reject
+  E1 global_clip/raw S-B                 +0.357  p 0.0005  Holm threshold 0.0020  reject
+  E12 decoupled A-S                      +0.562  p 0.0005  Holm threshold 0.0021  reject
+  E11 cleanrl_default A-S                +0.297  p 0.0005  Holm threshold 0.0022  reject
+  E11 cleanrl_group S-B                  +0.187  p 0.0005  Holm threshold 0.0023  reject
+  E11 cleanrl_raw S-B                    +0.288  p 0.0005  Holm threshold 0.0024  reject
+  E4 global_clip A-S                     +0.447  p 0.0005  Holm threshold 0.0025  reject
+  E8 plain A-M_on                        +0.050  p 0.0005  Holm threshold 0.0026  reject
+  E7 popart A-M                          +0.268  p 0.0005  Holm threshold 0.0028  reject
+  E7 popart A-S                          +0.207  p 0.0005  Holm threshold 0.0029  reject
   E8 popart A-M_on                       +0.246  p 0.0005  Holm threshold 0.0031  reject
-  E8 plain A-M_on                        +0.050  p 0.0005  Holm threshold 0.0033  reject
-  E7 popart A-M                          +0.268  p 0.0005  Holm threshold 0.0036  reject
-  E7 popart A-S                          +0.207  p 0.0005  Holm threshold 0.0038  reject
-  E4 global_clip A-S                     +0.447  p 0.0005  Holm threshold 0.0042  reject
+  E6 groupwise_clip A-S                  +0.168  p 0.0005  Holm threshold 0.0033  reject
+  E6 groupwise_clip S-B                  +0.150  p 0.0005  Holm threshold 0.0036  reject
+  E6 global_clip S-B                     +0.357  p 0.0005  Holm threshold 0.0038  reject
+  E1 separate_no_clip/vecnormalize A-S   +0.237  p 0.0005  Holm threshold 0.0042  reject
   E4 separate_no_clip A-S                +0.490  p 0.0005  Holm threshold 0.0045  reject
-  E6 groupwise_clip S-B                  +0.150  p 0.0005  Holm threshold 0.0050  reject
-  E6 global_clip S-B                     +0.357  p 0.0005  Holm threshold 0.0056  reject
-  E1 separate_no_clip/vecnormalize A-S   +0.237  p 0.0005  Holm threshold 0.0063  reject
-  E6 groupwise_clip A-S                  +0.168  p 0.0005  Holm threshold 0.0071  reject
-  E1 separate_no_clip/vecnormalize A-B   +0.188  p 0.0010  Holm threshold 0.0083  reject
-  E5 3.6M A-S                            +0.154  p 0.0030  Holm threshold 0.0100  reject
-  E7 plain A-M                           +0.050  p 0.0610  Holm threshold 0.0125  retain
-  E1 separate_no_clip/vecnormalize S-B   -0.049  p 0.1390  Holm threshold 0.0167  retain
-  E7 popart S-B                          +0.075  p 0.1580  Holm threshold 0.0250  retain
-  E8B popart S-B                         +0.006  p 0.9220  Holm threshold 0.0500  retain
+  E1 separate_no_clip/vecnormalize A-B   +0.188  p 0.0010  Holm threshold 0.0050  reject
+  E5 3.6M A-S                            +0.154  p 0.0030  Holm threshold 0.0056  reject
+  E10 plain S-B                          +0.111  p 0.0040  Holm threshold 0.0063  reject
+  E7 plain A-M                           +0.050  p 0.0610  Holm threshold 0.0071  retain
+  E12 default S-B                        +0.069  p 0.1360  Holm threshold 0.0083  retain
+  E1 separate_no_clip/vecnormalize S-B   -0.049  p 0.1390  Holm threshold 0.0100  retain
+  E7 popart S-B                          +0.075  p 0.1580  Holm threshold 0.0125  retain
+  E10 popart S-B                         +0.010  p 0.6730  Holm threshold 0.0167  retain
+  E8B popart S-B                         +0.006  p 0.9220  Holm threshold 0.0250  retain
+  E11 cleanrl_default S-B                +0.000  p 1.0000  Holm threshold 0.0500  retain

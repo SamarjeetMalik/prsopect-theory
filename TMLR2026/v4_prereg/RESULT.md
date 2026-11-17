@@ -240,3 +240,113 @@ through 3.6M, while the gain-to-loss-ratio effect A − S persists at every budg
 
 **Analysis-code fix (no design change):** `c6.mode` resolved to the DataFrame method; it now uses `c6["mode"]`.
 It raised an error before any E6 verdict was printed.
+
+# E7 results (2026-11-05)
+Analysis: `analysis/phase3_e7.py`; output in `results/phase3_e7_report.txt` and `results/E7_*.csv`.
+- **Runs:** 400/400 new runs (main array 4369). The 240 plain-critic B/A/S cells are E1 runs.
+- **Gate (job 4368):** passed. E7 index 120 is bit-identical to E1 run 760; PopArt and M runs completed.
+
+| Critic | S − B | A − S | A − M | M − B |
+|---|---|---|---|---|
+| plain | +0.160 [+0.078, +0.254]* | +0.174* | +0.050 [+0.000, +0.100] | +0.285* |
+| PopArt | +0.075 [−0.032, +0.164] | +0.207* | +0.268 [+0.211, +0.317]* | +0.014 |
+
+- **Change in S − B, PopArt minus plain:** −0.085 [−0.183, +0.006].
+- **Predictions:**
+  - **P1 INCONCLUSIVE.** PopArt S − B includes 0, and so does the change.
+  - **P2 MET.** PopArt explained variance is S 0.69 vs B 0.68.
+  - **P3 MET.**
+  - **P4 NOT MET.** The plain-critic A − M interval touches 0.
+  - **P5 NOT MET.** M's achieved mean is −13.5 vs A's −6.6 (plain).
+  - **P6 MET.**
+
+# E8 results (2026-11-06)
+Analysis: `analysis/phase3_e8.py`; output in `results/phase3_e8_report.txt` and `results/E8*.csv`.
+- **Smoke (job 4944):** passed. Frozen in commit `f64245b`.
+- **Gate (job 4947):** passed. Index 40 `--static` is bit-identical to E7 run 280.
+- **Runs:** 480/480 (main array 4948).
+
+| Critic | A − M_on | M_on − B | M_on − M |
+|---|---|---|---|
+| plain | +0.050 [+0.020, +0.082]* | +0.284* | −0.001 |
+| PopArt | +0.246 [+0.197, +0.300]* | +0.036 | +0.022 |
+
+| Part B | plain S − B | PopArt S − B | Change |
+|---|---|---|---|
+| seeds 52–61 (primary) | +0.162* | +0.006 [−0.070, +0.085] | −0.156 [−0.303, −0.016]* |
+| seeds 42–61 (secondary) | +0.159* | +0.044 | −0.115 [−0.209, −0.032]* |
+
+- **Predictions:**
+  - **P1 MET.** Pooled mean and SD are within 2%/1% (plain) and 5%/1% (PopArt) of A's. 15/160 runs touched the lower
+    scale clamp.
+  - **P2 MET.**
+  - **P3: positive, excluding 0.** The plain-critic asymmetric contrast is not explained by the first two moments.
+    The E7 reading is revised; the residual is small.
+  - **P4:** M_on − M is about 0 under both critics.
+  - **P5 MET.** It is not met at the calibrated 99% level in the primary cohort: [−0.344, +0.025]. The pooled
+    20-seed change excludes 0 at 99%.
+
+## Verdict, updated
+1. **Critic-target-scale part (verdict item 2).** It is attributed to critic target scale at the declared level, in an
+   independent cohort.
+2. **The gain-to-loss contrast.** It survives a symmetric control matched in training-reward mean and SD under both
+   critics. With a raw-target critic, the part not explained by those moments is small.
+
+# E9 and E10 results (runs completed 2026-11-07; analysed 2026-11-17)
+Analysis: `analysis/phase3_e9_e12.py`; output in `results/phase3_e9_e12_report.txt`, `results/E9*.csv` and `results/E10_contrasts.csv`.
+- **Smoke (job 5527):** passed. Frozen in commit `f93cfd2`.
+- **Gate (job 5528):** passed. τ = 0.5 reproduces E1 run 40 and `--critic popart` reproduces E7 run 360 bit-for-bit.
+- **Runs:** 640/640 (E9, array 5529) and 640/640 (E10, array 5530); none failed. Extraction job 9142.
+
+| τ | applied S/B | S − B |
+|---|---|---|
+| 0.5 (E1) | 0.121 | +0.357 [+0.249, +0.464]* |
+| 300 | 0.137 | +0.303* |
+| 3000 | 0.428 | +0.252* |
+| 10000 | 0.716 | +0.176* |
+| 30000 | 0.943 | +0.153 [+0.071, +0.244]* |
+| no clip (E1) | 1.087 | +0.160 [+0.078, +0.254]* |
+
+- **E9 predictions:**
+  - **P1 MET.** The applied S/B ratio rises monotonically and exceeds 0.5 at τ = 30000.
+  - **P2 MET at the declared 95% level.** S − B at τ = 30000 minus τ = 0.5 is −0.204 [−0.369, −0.032]; 99% [−0.417, +0.018].
+  - **P3 MET.** τ = 30000 minus no clip is −0.007 [−0.075, +0.048].
+  - **P4 (descriptive).** S − B falls with the applied ratio; about +0.16 remains without any clipping.
+- **E10 (seeds 62–81, primary):** plain S − B +0.111 [+0.033, +0.194]*; PopArt S − B +0.010 [−0.039, +0.056]; change
+  −0.101 [−0.199, −0.002]* (99% [−0.229, +0.033]). Pooled 42–81 (secondary): change −0.108 [−0.174, −0.043]*, 99%
+  [−0.194, −0.024].
+  - **P5 supported at the declared 95% level only**, as in E8.
+  - **P6 MET.**
+
+# E11 and E12 results (runs completed 2026-11-08; analysed 2026-11-17)
+- **Smoke (job 5531):** passed. Frozen in commit `dcfc32f`.
+- **Gate (job 5532):** passed. E11 index 40 twice bit-identical; E11 440/520 and E12 40/360 complete.
+- **Runs:** 720/720 (E11, array 5533) and 480/480 (E12, array 5534); none failed.
+
+| E11 condition | critic share | applied S/B | S − B | A − S |
+|---|---|---|---|---|
+| cleanrl_raw | 0.987 | 0.33 | +0.288 [+0.171, +0.393]* | +0.298* |
+| cleanrl_group | 0.978 | 1.00 | +0.187 [+0.119, +0.250]* | +0.225* |
+| cleanrl_default | 0.014 | 1.00 | +0.000 [−0.057, +0.057] | +0.297 [+0.222, +0.382]* |
+
+- **E11 predictions:** P1 MET; P2 MET (−0.101 [−0.207, −0.000]; 99% includes 0); P3 MET; P4 MET.
+
+| E12 learner | S − B | A − S | w50 B / A / S (E1 full observation) |
+|---|---|---|---|
+| default | +0.069 [−0.021, +0.154] | +0.091 [+0.040, +0.146]* | 0.582 / 0.743 / 0.651 (0.538 / 0.821 / 0.895) |
+| decoupled | −0.008 [−0.166, +0.264] | +0.562 [+0.483, +0.654]* | 0.075 / 0.629 / 0.067 (0.414 / 0.602 / 0.365) |
+
+- **E12 predictions:**
+  - **P5 NOT MET.** Under local observation the default learner's S − B is not detectable.
+  - **P6 MET, weakly informative.** B and S collapse almost only at w = 0, so their crossings sit at the grid's lower
+    edge and the interval is wide.
+  - **P7 MET.**
+
+## Verdict, updated
+1. **Generality of the confound.** The shared-clip confound reproduces in a second, CleanRL-style implementation, and
+   reward normalization removes it there too.
+2. **Clipping pathway.** S − B follows the clip threshold, and about +0.16 remains without clipping (E9; E11's
+   per-group clip leaves +0.19).
+3. **Critic targets.** A second fresh cohort repeats E8: supported at the declared level only.
+4. **Information structure.** With local observations and agent identity, A − S holds under both learners; the
+   default learner's symmetric shift is no longer detectable.

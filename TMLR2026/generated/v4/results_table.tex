@@ -1,9 +1,9 @@
 \begin{table}[!htbp]
-\caption{Principal crossing contrasts. Each contrast pairs two arms over the same ten training seeds (seeds 42--51) on the experiment's mixture grid; intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The 99\% interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all 14 principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81); intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The 99\% interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all 25 principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
 \label{tab:results}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}llp{.21\textwidth}lcccc p{.12\textwidth}@{}}
+\begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{.21\textwidth}lcccc >{\raggedright\arraybackslash}p{.12\textwidth}@{}}
 \toprule
 Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & 99\% interval & Holm & Reading \\
 \midrule
@@ -12,11 +12,19 @@ E6 & Supply & Per-group clip, raw rewards & S$-$B & $+0.150$ & $[+0.095,\,+0.226
 E1 & Supply & Separate optimizers, normalized rewards & S$-$B & $-0.049$ & $[-0.117,\,+0.017]$ & $[-0.139,\,+0.032]$ & no & none detectable \\
 E7 & Supply & Separate optimizers, PopArt critic, raw rewards & S$-$B & $+0.075$ & $[-0.032,\,+0.164]$ & $[-0.070,\,+0.180]$ & no & none detectable \\
 E8B & Supply & PopArt critic, raw rewards, seeds 52--61 & S$-$B & $+0.006$ & $[-0.070,\,+0.085]$ & $[-0.090,\,+0.109]$ & no & none detectable \\
+E10 & Supply & Plain critic, raw rewards, seeds 62--81 & S$-$B & $+0.111$ & $[+0.033,\,+0.194]$ & $[+0.007,\,+0.218]$ & yes & symmetric shift replicates \\
+E10 & Supply & PopArt critic, raw rewards, seeds 62--81 & S$-$B & $+0.010$ & $[-0.039,\,+0.056]$ & $[-0.050,\,+0.068]$ & no & none detectable \\
+E11 & Supply & CleanRL-style, global clip, raw rewards & S$-$B & $+0.288$ & $[+0.171,\,+0.393]$ & $[+0.143,\,+0.421]$ & yes & symmetric shift \\
+E11 & Supply & CleanRL-style, per-group clip, raw rewards & S$-$B & $+0.187$ & $[+0.119,\,+0.250]$ & $[+0.099,\,+0.263]$ & yes & symmetric shift reduced \\
+E11 & Supply & CleanRL-style, normalized rewards & S$-$B & $+0.000$ & $[-0.057,\,+0.057]$ & $[-0.076,\,+0.075]$ & no & none detectable \\
+E12 & Supply & Local observations, default learner & S$-$B & $+0.069$ & $[-0.021,\,+0.154]$ & $[-0.044,\,+0.171]$ & no & none detectable (predicted nonzero) \\
 E1 & Supply & Separate optimizers, normalized rewards & A$-$S & $+0.237$ & $[+0.136,\,+0.346]$ & $[+0.114,\,+0.378]$ & yes & asymmetric shift \\
 E1 & Supply & Separate optimizers, normalized rewards & A$-$B & $+0.188$ & $[+0.082,\,+0.266]$ & $[+0.047,\,+0.288]$ & yes & loss-only shift \\
 E6 & Supply & Per-group clip, raw rewards & A$-$S & $+0.168$ & $[+0.077,\,+0.240]$ & $[+0.047,\,+0.261]$ & yes & asymmetric shift \\
 E5 & Supply & Separate optimizers, normalized rewards, 3.6M & A$-$S & $+0.154$ & $[+0.053,\,+0.256]$ & $[+0.018,\,+0.277]$ & yes & persists at 3.6M \\
 E7 & Supply & PopArt critic, raw rewards & A$-$S & $+0.207$ & $[+0.141,\,+0.266]$ & $[+0.126,\,+0.280]$ & yes & asymmetric shift \\
+E11 & Supply & CleanRL-style, normalized rewards & A$-$S & $+0.297$ & $[+0.222,\,+0.382]$ & $[+0.204,\,+0.419]$ & yes & asymmetric shift \\
+E12 & Supply & Local observations, decoupled learner & A$-$S & $+0.562$ & $[+0.483,\,+0.654]$ & $[+0.456,\,+0.709]$ & yes & asymmetric shift \\
 E7 & Supply & Plain critic, raw rewards & A$-$M & $+0.050$ & $[+0.000,\,+0.100]$ & $[-0.012,\,+0.112]$ & no & not separable from moments \\
 E7 & Supply & PopArt critic, raw rewards & A$-$M & $+0.268$ & $[+0.211,\,+0.317]$ & $[+0.194,\,+0.327]$ & yes & exceeds scale-matched control \\
 E8 & Supply & Plain critic, raw rewards & A$-$M$_{\mathrm{on}}$ & $+0.050$ & $[+0.020,\,+0.082]$ & $[+0.010,\,+0.092]$ & yes & small, beyond moments \\
