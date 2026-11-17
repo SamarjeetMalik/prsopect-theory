@@ -434,7 +434,7 @@ for c, tag in [("primary 62-81", ""), ("pooled 42-81", "Pool")]:
 for c, tag in [("cleanrl_raw", "Raw"), ("cleanrl_group", "Group"), ("cleanrl_default", "Default")]:
     m += mac(f"VelevenSym{tag}", civ(k11.loc[f"{c}: S-B"])); m += mac(f"VelevenAsym{tag}", civ(k11.loc[f"{c}: A-S"]))
     m += mac(f"VelevenShare{tag}", f"{mech11.loc[c].critic_share:.3f}"); m += mac(f"VelevenRatio{tag}", f"{mech11.loc[c].applied_ratio_SB:.2f}")
-    m += mac(f"VelevenEV{tag}", f"{mech11.loc[c].ev_B:.2f} (B) and {mech11.loc[c].ev_S:.2f} (S)")
+    m += mac(f"VelevenEV{tag}", f"{mech11.loc[c].ev_B:.2f} for B and {mech11.loc[c].ev_S:.2f} for S")
 m += mac("VelevenGroupChange", civ(k11.loc["d(S-B) group - raw"])); m += mac("VelevenGroupChangeNine", civ9(k11.loc["d(S-B) group - raw"]))
 for l, tag in [("default", "Default"), ("decoupled", "Dec")]:
     m += mac(f"VtwelveSym{tag}", civ(k12.loc[f"{l}: S-B"])); m += mac(f"VtwelveAsym{tag}", civ(k12.loc[f"{l}: A-S"]))

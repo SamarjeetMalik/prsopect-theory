@@ -67,7 +67,7 @@ for yi, r in zip(y, c.itertuples()):
     ax.plot([r.ci_low_95, r.ci_high_95], [yi, yi], color=col, lw=3)
     ax.plot(r.difference, yi, "o", color="black", ms=3.5, zorder=3)
 ax.axvline(0, color="0.4", lw=.7, ls="--")
-ax.set_yticks(y); ax.set_yticklabels([f"{r.contrast.split()[0]}  {META[r.contrast][0]}: {META[r.contrast][2]}" for r in c.itertuples()])
+ax.set_yticks(y); ax.set_yticklabels([f"{r.contrast.split()[0]}  {META[r.contrast][0]}: {META[r.contrast][2].replace('--', chr(8211))}" for r in c.itertuples()])
 ax.set_xlabel(r"Crossing difference $\Delta w_{50}$")
 for yb in [len(c) - 11.5, len(c) - 18.5, len(c) - 22.5]:
     ax.axhline(yb, color="0.85", lw=.6)

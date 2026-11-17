@@ -46,8 +46,8 @@ Clipping actor and critic separately restores the update (\VsixUpdGroup{}) and r
 \VsixSymGroupChange{}, and raising the clip threshold shrinks it gradually to the no-clip value (E9). A second,
 CleanRL-style implementation reproduces the shift (\VelevenSymRaw{}) and its removal by reward normalization
 (E11). The remainder, which clipping does not touch, is not detectable under reward
-normalization, and in a fresh-seed cohort normalizing only the critic's targets removes it as well
-(changes \VeightBChange{} and \VtenChange{} in two cohorts), which attributes it to critic target scale at the
+normalization, and in two fresh-seed cohorts normalizing only the critic's targets removes it as well
+(changes \VeightBChange{} and \VtenChange{}), which attributes it to critic target scale at the
 declared level. Under local observation with agent identity (E12) the symmetric shift is no longer detectable,
 so the account is established for the fully observed shared controller.
 (ii)~\emph{a measurement protocol with checked uncertainty} (Sections~\ref{sec:design} and~\ref{sec:robustness}):
@@ -488,8 +488,8 @@ coverage-calibrated level the fresh cohort's change is \VeightBChangeNine{}, whi
 cohorts, a secondary analysis declared in advance, gives \VeightPoolChange{} (\VeightPoolChangeNine{} at the
 calibrated level). A second fresh cohort, with twenty seeds (E10, seeds 62--81, 640 runs), repeats the result. S$-$B
 is \VtenSymPlain{} with the plain critic and \VtenSymPop{} with PopArt, and the change, \VtenChange{}, again excludes
-zero at the declared level only (\VtenChangeNine{} at 99\%). Pooling seeds 42--81, the declared secondary analysis,
-gives \VtenPoolChange{} (\VtenPoolChangeNine{} at 99\%).
+zero at the declared level only (\VtenChangeNine{} at the calibrated level). Pooling seeds 42--81, the declared
+secondary analysis, gives \VtenPoolChange{} (\VtenPoolChangeNine{} at the calibrated level).
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
@@ -509,7 +509,7 @@ survives without the shared clip (\VelevenSymGroup{}), together with a poorly fi
 \VelevenEVGroup{}). With CleanRL's default reward normalization the critic's share falls to \VelevenShareDefault{}
 and no symmetric shift is detectable (\VelevenSymDefault{}), while A$-$S is \VelevenAsymDefault{}. All four
 pre-declared predictions are met. E11 is a port into our environment and evaluation harness, not CleanRL's code
-base, and it uses the same environment as E1.
+base.
 
 \input{generated/v4/e11_table}
 
@@ -858,7 +858,7 @@ the sampled grid; non-bracketed estimates are reported, not clipped.
 declared 0.626 because a calibration file was missing from the frozen source; all E4 results are recomputed
 from the stored team returns (deviation D4). Each stored team return equals the mean of the run's ten stored
 per-episode returns (largest difference $\VdaEMaxDiff{}$, all 800 runs), and the stored labels are exactly the
-0.5-threshold labels. \VdaETies{} run has a return of exactly 0.75, so its label in the $\theta=0.75$ sensitivity
+0.5-threshold labels. Exactly \VdaETies{} run has a return of 0.75, so its label in the $\theta=0.75$ sensitivity
 analysis depends on floating-point summation order; no other threshold is affected. The provenance of 0.626 is an earlier calibration whose raw
 records are not archived, so the threshold itself is taken as declared, not re-derived; Figure~\ref{fig:lbf_sensitivity}
 shows that the A$-$S ordering does not depend on it.
