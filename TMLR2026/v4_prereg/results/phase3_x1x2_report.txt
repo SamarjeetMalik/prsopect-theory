@@ -1,0 +1,52 @@
+== X1/X2: 960 + 640 runs complete, 300,160 transitions, declared evaluation seeds
+
+== X1 (SB3; fresh seeds 82-101 primary; with E6 seeds 42-51 secondary)
+  fresh 82-101           S-B global_clip                          +0.248  jt95 [+0.191, +0.305]  jt99 [+0.170, +0.326]  pct95 [+0.199, +0.300]  *
+  fresh 82-101           S-B groupwise_clip                       +0.275  jt95 [+0.214, +0.336]  jt99 [+0.192, +0.359]  pct95 [+0.220, +0.333]  *
+  fresh 82-101           S-B separate_no_clip                     +0.076  jt95 [-0.013, +0.166]  jt99 [-0.046, +0.199]  pct95 [-0.009, +0.153]
+  fresh 82-101           change S-B, groupwise minus global       +0.027  jt95 [-0.071, +0.125]  jt99 [-0.107, +0.161]  pct95 [-0.062, +0.113]
+  pooled 42-51 + 82-101  S-B global_clip                          +0.285  jt95 [+0.228, +0.341]  jt99 [+0.208, +0.361]  pct95 [+0.237, +0.339]  *
+  pooled 42-51 + 82-101  S-B groupwise_clip                       +0.236  jt95 [+0.184, +0.287]  jt99 [+0.166, +0.305]  pct95 [+0.188, +0.285]  *
+  pooled 42-51 + 82-101  S-B separate_no_clip                     +0.103  jt95 [+0.035, +0.171]  jt99 [+0.012, +0.195]  pct95 [+0.040, +0.160]  *
+  pooled 42-51 + 82-101  change S-B, groupwise minus global       -0.049  jt95 [-0.138, +0.040]  jt99 [-0.169, +0.071]  pct95 [-0.133, +0.036]
+
+== X2 (CleanRL-style; fresh seeds 82-101 primary; with E11 seeds 42-51 secondary)
+  fresh 82-101           S-B cleanrl_raw                          +0.370  jt95 [+0.260, +0.479]  jt99 [+0.220, +0.519]  pct95 [+0.276, +0.477]  *
+  fresh 82-101           S-B cleanrl_group                        +0.258  jt95 [+0.161, +0.355]  jt99 [+0.125, +0.391]  pct95 [+0.170, +0.346]  *
+  fresh 82-101           change S-B, group minus raw              -0.112  jt95 [-0.244, +0.021]  jt99 [-0.293, +0.070]  pct95 [-0.238, +0.003]
+  pooled 42-51 + 82-101  S-B cleanrl_raw                          +0.338  jt95 [+0.259, +0.417]  jt99 [+0.232, +0.445]  pct95 [+0.265, +0.413]  *
+  pooled 42-51 + 82-101  S-B cleanrl_group                        +0.233  jt95 [+0.166, +0.300]  jt99 [+0.142, +0.323]  pct95 [+0.170, +0.297]  *
+  pooled 42-51 + 82-101  change S-B, group minus raw              -0.105  jt95 [-0.194, -0.016]  jt99 [-0.225, +0.015]  pct95 [-0.194, -0.023]  *
+
+== X1 optimizer state, seed-paired S/B ratios over the 160 (seed, w) pairs per mode (geometric mean, jackknife-t over seeds)
+  global_clip       pu_applied_actor_grad_norm       S/B 0.131 [0.121, 0.141]
+  global_clip       pu_actor_update_norm             S/B 0.400 [0.386, 0.414]
+  global_clip       pu_actor_adam_m_norm             S/B 0.161 [0.151, 0.171]
+  global_clip       pu_actor_adam_sqrt_v_norm        S/B 0.160 [0.142, 0.181]
+  global_clip       pu_actor_adam_direction_norm     S/B 0.400 [0.386, 0.414]
+  global_clip       kappa_mean                       S/B 0.150 [0.141, 0.159]
+  global_clip kappa by arm (median over runs):
+     kappa_mean  kappa_median  kappa_p10  kappa_p90  kappa_cv
+arm                                                          
+B      0.000948      0.000540   0.000174   0.001878  1.561504
+S      0.000147      0.000067   0.000018   0.000292  1.667817
+  groupwise_clip    pu_applied_actor_grad_norm       S/B 1.000 [1.000, 1.000]
+  groupwise_clip    pu_actor_update_norm             S/B 0.940 [0.932, 0.949]
+  groupwise_clip    pu_actor_adam_m_norm             S/B 0.995 [0.990, 1.000]
+  groupwise_clip    pu_actor_adam_sqrt_v_norm        S/B 1.000 [1.000, 1.000]
+  groupwise_clip    pu_actor_adam_direction_norm     S/B 0.940 [0.932, 0.949]
+  groupwise_clip    kappa_mean                       S/B 0.148 [0.142, 0.155]
+  separate_no_clip  pu_applied_actor_grad_norm       S/B 1.053 [0.989, 1.120]
+  separate_no_clip  pu_actor_update_norm             S/B 0.957 [0.942, 0.972]
+  separate_no_clip  pu_actor_adam_m_norm             S/B 1.034 [0.983, 1.088]
+  separate_no_clip  pu_actor_adam_sqrt_v_norm        S/B 1.044 [0.986, 1.105]
+  separate_no_clip  pu_actor_adam_direction_norm     S/B 0.957 [0.942, 0.972]
+  separate_no_clip  kappa_mean                       S/B 0.174 [0.153, 0.197]
+
+== Pre-declared predictions (primary: fresh seeds, jackknife-t 95%)
+P1 X1 global S-B > 0: +0.248 -> MET
+P2 X1 change groupwise - global < 0: +0.027 -> NOT MET
+P3 X1 no-clip S-B > 0: +0.076 -> NOT MET
+P4 X1 Adam direction S/B below 1 under the global clip and above it under groupwise: 0.400 [0.386, 0.414], 0.940 [0.932, 0.949] -> MET
+P5 X2 raw S-B > 0: +0.370 -> MET
+P6 X2 change group - raw < 0: -0.112 -> NOT MET

@@ -350,3 +350,52 @@ Analysis: `analysis/phase3_e9_e12.py`; output in `results/phase3_e9_e12_report.t
 3. **Critic targets.** A second fresh cohort repeats E8: supported at the declared level only.
 4. **Information structure.** With local observations and agent identity, A − S holds under both learners; the
    default learner's symmetric shift is no longer detectable.
+
+# X1 and X2 results (runs completed 2026-11-18; analysed the same day)
+Analysis: `analysis/phase3_x1x2.py`, frozen in commit `7e7a9c6`; output in `results/phase3_x1x2_report.txt`,
+`results/X1X2_contrasts.csv` and `results/X1_optimizer_state.csv`.
+- **Smoke (job 9149):** passed.
+- **Gate (job 9150):** passed. X1 reproduces E6 runs 40/280/520 and X2 reproduces E11 runs 40/520 bit-for-bit.
+- **Runs:** 1,600/1,600 (arrays 9151, 9152); none failed. Extraction job 10757.
+
+Fresh seeds 82–101 (primary), jackknife-t 95%:
+
+| Quantity | Fresh 82–101 | Pooled with seeds 42–51 |
+|---|---|---|
+| X1 S − B, global clip | +0.248 [+0.191, +0.305]* | +0.285* |
+| X1 S − B, per-group clip | +0.275 [+0.214, +0.336]* | +0.236* |
+| X1 S − B, no clip | +0.076 [−0.013, +0.166] | +0.103 [+0.035, +0.171]* |
+| X1 change, per-group − global | **+0.027 [−0.071, +0.125]** | −0.049 [−0.138, +0.040] |
+| X2 S − B, raw | +0.370 [+0.260, +0.479]* | +0.338* |
+| X2 change, group − raw | −0.112 [−0.244, +0.021] | −0.105 [−0.194, −0.016]* |
+
+Optimizer state, X1 seed-paired S/B (geometric mean):
+
+| Quantity | Global clip | Per-group clip | No clip |
+|---|---|---|---|
+| applied actor gradient | 0.131 | 1.000 | 1.053 |
+| Adam m̂ | 0.161 | 0.995 | 1.034 |
+| √v̂ | 0.160 | 1.000 | 1.044 |
+| Adam direction / actor update | 0.400 | 0.940 | 0.957 |
+| κ (mean), S/B | 0.150 | — | — |
+
+- **Predictions:**
+  - **P1 MET.**
+  - **P2 NOT MET.** On fresh seeds, per-group clipping restores the actor's update but does not reduce S − B; the
+    point estimate is +0.027.
+  - **P3 NOT MET** on fresh seeds. It is positive when pooled.
+  - **P4 MET.**
+  - **P5 MET.**
+  - **P6 NOT MET** on fresh seeds. It is negative when pooled at 95%, but not at 99%.
+- **Declared consequence (P2 not met, P1 met):** the clipping pathway's share of the shift is not confirmed. The
+  per-group reduction is supported only in the original cohort (E6).
+
+## Verdict, updated
+1. **The symmetric-scaling shift is robust.** It appears on fresh seeds and in both implementations.
+2. **The shared clip attenuates the actor's applied gradient and Adam step for S.** This is directly measured,
+   including Adam's moments, which shrink with κ. In X1, Adam's normalization undoes only part of the attenuation,
+   and the step direction ratio is 0.40.
+3. **Restoring the actor's step (per-group clip) does not remove the behavioural shift on fresh seeds.** Actor
+   attenuation is therefore not shown to cause the crossing shift.
+4. **What removes the shift:** reward normalization (both implementations). PopArt removes the no-clip residual when
+   pooled over 40 seeds.

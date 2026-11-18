@@ -1,0 +1,9 @@
+{
+ "design": "x3-v5",
+ "seeds": [102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121],
+ "arms": ["B", "S"],
+ "modes": ["both", "actor_only", "critic_only", "neither"],
+ "indices": "0-1279",
+ "inference": "seed-level jackknife-t, t(n-1), primary at 95%; equivalence of the actor effect by the 90% jackknife-t interval within +/-0.10; seed-block percentile bootstrap (2,000 draws, seed 20261121) secondary",
+ "gate": "mode 'both' with seed 82 (B, w=0.6) reproduces X1 run 400 (groupwise_clip, B, w=0.6, seed 82) bit-for-bit, evaluation file and per-step update norms; indices 0, 320, 640 and 960 complete"
+}
