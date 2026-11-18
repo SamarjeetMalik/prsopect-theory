@@ -1,0 +1,11 @@
+{
+ "design": "x1-x2-v5",
+ "seeds": [82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101],
+ "arms": ["B", "S"],
+ "x1_modes": ["global_clip", "groupwise_clip", "separate_no_clip"],
+ "x1_indices": "0-959",
+ "x2_conditions": ["cleanrl_raw", "cleanrl_group"],
+ "x2_indices": "960-1599",
+ "inference": "seed-level jackknife-t, t(n-1), primary; seed-block percentile bootstrap (2,000 draws, seed 20261119) secondary",
+ "gate": "runner with --exp X1 --seed 42 (B, w=0.6) in each X1 mode reproduces E6 runs 40, 280 and 520 bit-for-bit (evaluation file); runner with --exp X2 --seed 42 (B, w=0.6) reproduces E11 runs 40 (cleanrl_raw) and 520 (cleanrl_group) bit-for-bit; main-array indices 0 and 960 complete"
+}
