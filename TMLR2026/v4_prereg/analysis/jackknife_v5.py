@@ -92,6 +92,12 @@ record("change", "PopArt minus plain, S-B, pooled seeds 42-81", *change(SB(pop),
 c11 = lambda n: r11[r11.condition_name == n]
 record("change", "E11 per-group minus shared clip, S-B", *change(SB(c11("cleanrl_group")), SB(c11("cleanrl_raw"))))
 
+# ---------------------------------------------------------------- secondary contrasts quoted in tables (not in the Holm family)
+record("secondary", "E1 separate_no_clip/raw S-B", *SB(cell("separate_no_clip", "raw")))
+record("secondary", "E1 global_clip/vecnormalize S-B", *SB(cell("global_clip", "vecnormalize")))
+for t in sorted(e9.max_grad_norm.unique()):
+    record("secondary", f"E9 tau {t:g} S-B", *SB(e9[e9.max_grad_norm == t]))
+
 out = pd.DataFrame(rows)
 # two-sided jackknife-t p-values and a Holm adjustment across the principal contrasts
 out["p_jt"] = 2 * stats.t.sf(np.abs(out.difference / out.se_jack), out.n_seeds - 1)

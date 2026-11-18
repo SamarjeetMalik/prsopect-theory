@@ -286,12 +286,18 @@ TAU9 = [("0.5 (E1)", "S-B, tau 0.5 (E1)", "Half", r"0.5 (default; E1)"), ("300",
         ("3000", "S-B, tau 3000", "ThreeK", "3,000"), ("10000", "S-B, tau 10000", "TenK", "10,000"),
         ("30000", "S-B, tau 30000", "ThirtyK", "30,000"), ("inf (E1 no clip)", "S-B, tau inf (E1 no clip)", "None", r"$\infty$ (no clip; E1)")]
 mech9 = mech9.assign(tau=mech9.tau.astype(str)).set_index("tau")
-rows = [[tex, f"{mech9.loc[t].applied_ratio_SB:.3f}", cell8(k9.loc[c])] for t, c, _, tex in TAU9]
-rows += [[r"Change, $\tau{=}30{,}000$ minus $0.5$", "", cell8(k9.loc["d(S-B) tau 30000 - tau 0.5"])],
-         [r"Change, $\tau{=}30{,}000$ minus no clip", "", cell8(k9.loc["d(S-B) tau 30000 - no clip"])]]
+JKA = pd.read_csv(RES / "jackknife_v5.csv").set_index("contrast")
+JT9 = {"0.5 (E1)": "E1 global_clip/raw S-B", "300": "E9 tau 300 S-B", "3000": "E9 tau 3000 S-B", "10000": "E9 tau 10000 S-B",
+       "30000": "E9 tau 30000 S-B", "inf (E1 no clip)": "E1 separate_no_clip/raw S-B"}
+def jtcell(name, pct):
+    r = JKA.loc[name]; ex = bool(r.jt_low_95 > 0 or r.jt_high_95 < 0)
+    return [f"${num(r.difference, True)}$" + (r"$^{\ast}$" if ex else ""), f"${iv(r.jt_low_95, r.jt_high_95, True)}$", f"${iv(pct.ci_low, pct.ci_high, True)}$"]
+rows = [[tex, f"{mech9.loc[t].applied_ratio_SB:.3f}"] + jtcell(JT9[t], k9.loc[c]) for t, c, _, tex in TAU9]
+rows += [[r"Change, $\tau{=}30{,}000$ minus $0.5$", ""] + jtcell("E9 tau 30000 minus tau 0.5, S-B", k9.loc["d(S-B) tau 30000 - tau 0.5"]),
+         [r"Change, $\tau{=}30{,}000$ minus no clip", ""] + jtcell("E9 tau 30000 minus no clip, S-B", k9.loc["d(S-B) tau 30000 - no clip"])]
 table(OUT / "e9_table.tex",
-      r"Clip-threshold dose-response (E9): the default learner (one Adam step, one global gradient-norm clip $\tau$) with raw rewards, arms B and S, the E1 grid, seeds 42--51, 300k. The $\tau=0.5$ and no-clip rows are E1's runs (a gate reproduced an E1 run bit-for-bit at $\tau=0.5$). ``Applied S/B'': seed-paired ratio of S's to B's mean applied actor gradient norm. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.",
-      "tab:e9", "@{}lcc@{}", r"Clip threshold $\tau$ & Applied S/B & S$-$B", rows, size=r"\footnotesize")
+      r"Clip-threshold dose-response (E9): the default learner (one Adam step, one global gradient-norm clip $\tau$) with raw rewards, arms B and S, the E1 grid, seeds 42--51, 300k. The $\tau=0.5$ and no-clip rows are E1's runs (a gate reproduced an E1 run bit-for-bit at $\tau=0.5$). ``Applied S/B'': seed-paired ratio of S's to B's mean applied actor gradient norm. Calibrated 95\% seed-level jackknife-$t$ intervals (primary) and the pre-declared 95\% seed-block percentile intervals; $^{\ast}$: jackknife-$t$ interval excludes zero.",
+      "tab:e9", "@{}lcccc@{}", r"Clip threshold $\tau$ & Applied S/B & S$-$B & Jackknife-$t$ 95\% & Seed-block 95\%", rows, size=r"\footnotesize")
 mech11 = mech11.set_index("condition")
 COND11 = [("cleanrl_raw", "Raw rewards, one global clip"), ("cleanrl_group", "Raw rewards, actor and critic clipped separately"),
           ("cleanrl_default", "Reward normalization, one global clip (CleanRL default)")]
@@ -496,6 +502,8 @@ m += mac("VxtCritUpdLo", f"{min(cu):.2f}"); m += mac("VxtCritUpdHi", f"{max(cu):
 ex = pd.read_csv(RES / "explore_x13_pooled.csv").set_index("quantity")
 for q, nm in [("S-B noclip", "None"), ("S-B groupclip", "Group"), ("groupclip minus noclip", "Diff")]:
     r = ex.loc[q]; m += mac(f"Vxe{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+for q, nm in [("E1 separate_no_clip/raw S-B", "Sep"), ("E1 global_clip/vecnormalize S-B", "NormGlob"), ("E7 plain A-M", "SevenAMPlain"), ("E7 popart A-M", "SevenAMPop")]:
+    r = JKA.loc[q]; m += mac(f"VjtS{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
 m += mac("VxtCritGradNone", f"{o3.loc[('neither', 'pu_applied_critic_grad_norm')].value:.1f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))
