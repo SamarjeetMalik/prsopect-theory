@@ -1,0 +1,75 @@
+{
+ "design": "x4-v5",
+ "seeds": [
+  122,
+  123,
+  124,
+  125,
+  126,
+  127,
+  128,
+  129,
+  130,
+  131,
+  132,
+  133,
+  134,
+  135,
+  136,
+  137,
+  138,
+  139,
+  140,
+  141,
+  142,
+  143,
+  144,
+  145,
+  146,
+  147,
+  148,
+  149,
+  150,
+  151,
+  152,
+  153,
+  154,
+  155,
+  156,
+  157,
+  158,
+  159,
+  160,
+  161
+ ],
+ "arms": [
+  "B",
+  "S"
+ ],
+ "parts": [
+  "D-plain",
+  "D-pop",
+  "M"
+ ],
+ "indices": "0-1919",
+ "optimizer": "separate actor and critic Adam, no gradient clipping (E1 separate_no_clip / E7), raw rewards",
+ "reference_critic": {
+  "hidden": [
+   64,
+   64
+  ],
+  "activation": "tanh",
+  "lr": 0.001,
+  "epochs_per_rollout": 20,
+  "batch_size": 128,
+  "torch_seed_offset": 7000000,
+  "targets": "discounted Monte-Carlo returns (gamma of the learner) of transitions whose episode ends inside the rollout, standardized by that rollout's mean and SD",
+  "use": "measured out of sample: at rollout k the reference was trained on rollouts 0..k-1 only; its advantages are GAE with the learner's gamma and lambda and the learner's rewards, values replaced by the reference's"
+ },
+ "inference": "seed-level jackknife-t, t(n-1), primary at 95%; equivalence by the 90% jackknife-t interval within the declared margin; seed-block percentile bootstrap (2,000 draws, seed 20261122; 40 seeds) secondary",
+ "gate": "1: D-plain with logging, seed 42 B w=0.6, reproduces E1 run 680 (separate_no_clip/raw) bit-for-bit (evaluation file and every minibatch record in updates.jsonl.gz); 2: M arm B on the same seed reproduces that D-plain run bit-for-bit, including its X4 log; 3: D-pop seed 42 B w=0.6 reproduces E7 run 360 bit-for-bit; 4: indices 0, 640 and 1280 complete with 469 X4 records",
+ "scale_matched": {
+  "part": "M",
+  "rule": "the plain critic's output layer is wrapped as V = c * head(x) with c fixed at the arm's reward scale (B: 1, S: 7); by Adam's invariance to a constant gradient scale, S under M trains as B does apart from Adam's epsilon"
+ }
+}
