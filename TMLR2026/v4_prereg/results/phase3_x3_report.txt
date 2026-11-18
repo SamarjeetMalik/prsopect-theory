@@ -1,0 +1,44 @@
+== X3: 1,280 runs complete, 300,160 transitions, declared evaluation seeds
+  S-B both         +0.213  jt95 [+0.125, +0.301]  jt90 [+0.140, +0.285]  jt99 [+0.093, +0.333]  pct95 [+0.131, +0.291]  *
+  S-B actor_only   +0.172  jt95 [+0.104, +0.239]  jt90 [+0.116, +0.227]  jt99 [+0.079, +0.264]  pct95 [+0.105, +0.236]  *
+  S-B critic_only  +0.176  jt95 [+0.106, +0.246]  jt90 [+0.119, +0.234]  jt99 [+0.081, +0.271]  pct95 [+0.106, +0.234]  *
+  S-B neither      +0.175  jt95 [+0.091, +0.259]  jt90 [+0.106, +0.244]  jt99 [+0.060, +0.290]  pct95 [+0.094, +0.251]  *
+  critic effect    +0.021  jt95 [-0.051, +0.093]  jt90 [-0.038, +0.081]  jt99 [-0.077, +0.120]  pct95 [-0.049, +0.082]
+  actor effect     +0.017  jt95 [-0.050, +0.084]  jt90 [-0.039, +0.072]  jt99 [-0.075, +0.108]  pct95 [-0.046, +0.077]
+  interaction      +0.040  jt95 [-0.097, +0.177]  jt90 [-0.073, +0.153]  jt99 [-0.147, +0.228]  pct95 [-0.081, +0.167]
+
+== optimizer state, seed-paired S/B ratios (geometric mean over cells, jackknife-t over seeds)
+  both         pu_applied_actor_grad_norm     S/B 1.000 [1.000, 1.000]
+  both         pu_actor_update_norm           S/B 0.943 [0.928, 0.958]
+  both         pu_applied_critic_grad_norm    S/B 1.000 [1.000, 1.000]
+  both         pu_critic_update_norm          S/B 0.677 [0.653, 0.702]
+  both         pu_actor_adam_direction_norm   S/B 0.943 [0.928, 0.958]
+  both         pu_critic_adam_direction_norm  S/B 0.677 [0.653, 0.702]
+  both         EV S-B                         -0.394 [-0.421, -0.366]
+  actor_only   pu_applied_actor_grad_norm     S/B 1.000 [1.000, 1.000]
+  actor_only   pu_actor_update_norm           S/B 0.957 [0.944, 0.969]
+  actor_only   pu_applied_critic_grad_norm    S/B 9.496 [8.972, 10.051]
+  actor_only   pu_critic_update_norm          S/B 0.724 [0.695, 0.754]
+  actor_only   pu_actor_adam_direction_norm   S/B 0.957 [0.944, 0.969]
+  actor_only   pu_critic_adam_direction_norm  S/B 0.724 [0.695, 0.754]
+  actor_only   EV S-B                         -0.390 [-0.419, -0.361]
+  critic_only  pu_applied_actor_grad_norm     S/B 1.029 [0.976, 1.085]
+  critic_only  pu_actor_update_norm           S/B 0.952 [0.941, 0.962]
+  critic_only  pu_applied_critic_grad_norm    S/B 1.000 [1.000, 1.000]
+  critic_only  pu_critic_update_norm          S/B 0.685 [0.663, 0.708]
+  critic_only  pu_actor_adam_direction_norm   S/B 0.952 [0.941, 0.962]
+  critic_only  pu_critic_adam_direction_norm  S/B 0.685 [0.663, 0.708]
+  critic_only  EV S-B                         -0.401 [-0.431, -0.370]
+  neither      pu_applied_actor_grad_norm     S/B 1.035 [0.988, 1.083]
+  neither      pu_actor_update_norm           S/B 0.954 [0.940, 0.968]
+  neither      pu_applied_critic_grad_norm    S/B 9.057 [8.578, 9.563]
+  neither      pu_critic_update_norm          S/B 0.715 [0.684, 0.747]
+  neither      pu_actor_adam_direction_norm   S/B 0.954 [0.940, 0.968]
+  neither      pu_critic_adam_direction_norm  S/B 0.715 [0.684, 0.747]
+  neither      EV S-B                         -0.398 [-0.423, -0.372]
+
+== Pre-declared predictions (jackknife-t)
+P1 critic-clipping effect on S-B > 0 (95%): +0.021 [-0.051, +0.093] -> NOT MET
+P2 actor-clipping effect within +/-0.10 (90% interval): +0.017 [-0.039, +0.072] -> MET
+P3 S-B with both groups clipped > 0 (95%): +0.213 [+0.125, +0.301] -> MET
+   interaction (reported, no prediction): +0.040 [-0.097, +0.177]

@@ -19,42 +19,51 @@ positive constant leaves every optimal policy unchanged, and with per-minibatch 
 leaves the policy-gradient step of PPO~\citep{schulman2017ppo} approximately unchanged as well. A symmetric
 rescaling should therefore not move the crossing, whereas a transform that weights losses more than gains
 changes which outcomes the learner prefers and could move it. Practical actor--critic implementations break
-this separation. The critic's regression targets are usually not normalized, so their gradient grows with
-the reward; and Stable-Baselines3 PPO~\citep{raffin2021sb3}, like CleanRL's~\citep{huang2022cleanrl}, by default clips
-the norm of the \emph{joint} actor--critic gradient. When the critic's gradient dominates that joint norm, the clip shrinks
-the actor's step in proportion to the reward scale. A change in reward magnitude can then change what is
+this separation in at least two ways, both because the critic's regression targets are usually not normalized.
+First, at a fixed learning rate and budget the critic must fit returns that grow with the reward, so the quality of
+its fit, from which the actor's advantages are built, can change. Second, the critic's gradient grows with the
+reward, and Stable-Baselines3 PPO~\citep{raffin2021sb3}, like CleanRL's~\citep{huang2022cleanrl}, by default clips
+the norm of the \emph{joint} actor--critic gradient; when the critic's gradient dominates that norm, the clip shrinks
+the actor's step in proportion to the reward scale. Either way, a change in reward magnitude can change what is
 learned even though it does not change what is optimal.
 
 It is known that PPO's results depend on implementation details~\citep{engstrom2020implementation,andrychowicz2021matters,henderson2018matters},
 that value-target scale can be normalized away~\citep{vanhasselt2016popart}, and that cooperative PPO
-implementations normalize value targets~\citep{yu2022surprising}. What has not been shown is that one such
-detail, a global clip shared by an actor and an unnormalized critic, changes the \emph{conclusion} of a
-reward-design comparison in MARL, nor how large that change is on a behavioral threshold measured with paired
-uncertainty. We ask three questions.
-\textbf{RQ1:} Does a symmetric reward rescaling move the finite-budget crossing under default PPO, and through
-which optimizer quantity: pre-clip gradient, applied gradient, or parameter update?
-\textbf{RQ2:} Which interventions remove that shift, and what remains when they are applied?
-\textbf{RQ3:} With the pathway removed, does a loss-only multiplier still move the crossing relative to
-symmetric controls, including one matched to its reward scale?
+implementations normalize value targets~\citep{yu2022surprising}. What has not been shown is that an
+unnormalized critic changes the \emph{conclusion} of a reward-design comparison, how large that change is on a
+behavioral threshold measured with paired uncertainty, and which of the two routes carries it. We pre-registered
+the second, the shared clip, as the mechanism; our experiments do not support it. We ask three questions.
+\textbf{RQ1:} Does a symmetric reward rescaling move the finite-budget crossing under default PPO, and does the
+shared gradient clip carry that shift?
+\textbf{RQ2:} Which interventions remove the shift?
+\textbf{RQ3:} With rewards normalized and clipping removed, does a loss-only multiplier still move the crossing
+relative to symmetric controls, including one matched to its reward scale?
 
 The contributions, each tied to the evidence that supports it, are:
-(i)~\emph{a mechanism for an optimizer confound} (Sections~\ref{sec:mechanism} and~\ref{sec:optimizer};
-Table~\ref{tab:hierarchy}). Under default SB3 PPO, symmetric $\times7$ scaling moves the crossing by
-\VfourSymStd{}. Per-minibatch logging shows the critic taking the shared clip: the actor's applied gradient
-under symmetric scaling is \VsixGradGlobal{} of the baseline's and its parameter update \VsixUpdGlobal{}.
-Clipping actor and critic separately restores the update (\VsixUpdGroup{}) and reduces the shift by
-\VsixSymGroupChange{}, and raising the clip threshold shrinks it gradually to the no-clip value (E9). A second,
-CleanRL-style implementation reproduces the shift (\VelevenSymRaw{}) and its removal by reward normalization
-(E11). The remainder, which clipping does not touch, is not detectable under reward
-normalization, and in two fresh-seed cohorts normalizing only the critic's targets removes it as well
-(changes \VeightBChange{} and \VtenChange{}), which attributes it to critic target scale at the
-declared level. Under local observation with agent identity (E12) the symmetric shift is no longer detectable,
-so the account is established for the fully observed shared controller.
+(i)~\emph{a reward-scale confound, and a mechanism tested and rejected} (Sections~\ref{sec:mechanism}
+and~\ref{sec:optimizer}; Table~\ref{tab:hierarchy}). Under default SB3 PPO, symmetric $\times7$ scaling moves the
+crossing by \VfourSymStd{}, and a CleanRL-style implementation reproduces the shift (\VelevenSymRaw{}, E11).
+Per-minibatch logging confirms the optimizer distortion we pre-registered: the critic takes the shared clip, and the
+actor's applied gradient under symmetric scaling is \VsixGradGlobal{} of the baseline's and its Adam step
+\VxoGlobStep{}. This distortion is not what produces the crossing shift. In one ten-seed cohort, clipping actor and critic
+separately reduced the shift (E6, \VjtChSix{}). On twenty fresh seeds the same intervention restores the actor's step
+and leaves the shift in place (X1, change \VxFCh{}). An actor-by-critic clipping factorial on twenty further seeds finds
+no detectable effect of either group's clip, an actor effect equivalent to zero within $\pm0.10$, and a shift of
+\VxtNeither{} with no clipping at all (X3). Pooling the forty fresh seeds, an exploratory analysis, the shift is
+\VxeNone{} without clipping and \VxeGroup{} with per-group clipping, so clipping may enlarge it, by an amount that differs
+between the two cohorts. Normalization is what removes the shift: with normalized rewards it is not
+detectable in either implementation (E1, E11), and normalizing only the critic's targets reduces it when three cohorts
+are pooled (forty seeds; change \VjtChPool{}), although no single cohort establishes this. In every clipping mode the
+critic fits the scaled returns worse. Under local observation with agent identity (E12) the symmetric shift is no
+longer detectable, so the confound is established for the fully observed shared controller.
 (ii)~\emph{a measurement protocol with checked uncertainty} (Sections~\ref{sec:design} and~\ref{sec:robustness}):
 Firth logistic crossings with training-seed-block intervals, pre-registered experiments (\VfourTrajectories{} trajectories,
-of which 5,200 address the optimizer mechanism), and a simulation showing that the nominal 95\% intervals
-cover at \VrvCovRange{}; every principal verdict is unchanged at a coverage-calibrated \VrvCalLevel{} level.
-(iii)~\emph{a conditional asymmetric effect} (Section~\ref{sec:asymmetric}). With the coupling removed and
+of which \VfourMechTrajectories{} address the optimizer), and a simulation study of interval procedures showing that the
+pre-declared percentile intervals under-cover (\VcalPctCov{}) while a seed-level jackknife-$t$ interval is near
+nominal (\VcalJtCov{}). Every principal verdict holds under the calibrated interval, but several between-condition
+changes do not, and the fresh-seed replications that the calibration prompted overturned the mechanism we had
+pre-registered.
+(iii)~\emph{a conditional asymmetric effect} (Section~\ref{sec:asymmetric}). With clipping removed and
 rewards normalized, a loss-only multiplier raises the crossing relative to the symmetric control
 (\VfourAsymBoth{}), through 3.6M transitions, and in the second implementation (\VelevenAsymDefault{}) and under
 local observation (\VtwelveAsymDec{}). Against a symmetric control whose training-reward mean and
@@ -66,7 +75,8 @@ We use ``boundary'' and ``crossing'' only in this operational, finite-budget sen
 phase-like criticality.
 
 Section~\ref{sec:related} positions the work; Section~\ref{sec:method} defines the reward, transforms,
-label and estimand; Section~\ref{sec:mechanism} derives the shared-clip pathway;
+label and estimand; Section~\ref{sec:mechanism} sets out the routes from reward scale to the policy and the
+shared-clip pathway we pre-registered;
 Section~\ref{sec:design} sets out the experiments and statistics; Sections~\ref{sec:optimizer}
 and~\ref{sec:asymmetric} report symmetric and asymmetric transforms; Section~\ref{sec:lbf} turns to a second
 environment; Section~\ref{sec:robustness} collects robustness checks; Sections~\ref{sec:limitations}
@@ -117,9 +127,15 @@ or value normalization~\citep{vanhasselt2016popart} and gradient-norm clipping, 
 exploding gradients~\citep{pascanu2013difficulty}; cooperative PPO implementations normalize value targets by
 default~\citep{yu2022surprising}. \citet{andrychowicz2021matters} vary, among many choices, whether actor and
 critic share a network and how gradients are clipped, and measure returns. We hold the algorithm fixed and ask a
-narrower question: whether one combination of these defaults, a global clip shared by actor and critic without
-value normalization, changes the answer to a reward-design question, and through which of the gradient,
-applied-gradient and parameter-update quantities it does so.
+narrower question: whether one of these defaults, a critic without value normalization, changes the answer to a
+reward-design question, and whether a second, a global clip shared by actor and critic, is what carries the change.
+Closest to our setting, TOPPO~\citep{li2026toppo} traces PPO's
+multi-task failures to ill-conditioned critic gradients and adds per-task value normalization (PopArt), a critic
+layer normalization and a critic-gradient aggregation rule; its update also rescales actor and critic directions by
+one joint norm clip. Its concern is the balance of critic learning across tasks. Ours is a reward-design comparison
+measured on a behavioral threshold: a critic whose targets grow with reward scale does take the joint clip from the
+actor, but removing the clip does not remove the change in the comparison, whereas normalizing the critic does. We do not claim to be first to identify
+critic-side gradient conditioning as a problem in PPO.
 
 Human preference structure has entered collective learning only narrowly.
 \citet{hughes2018inequity} show inequity aversion improves cooperation within the cooperative-AI
@@ -210,7 +226,7 @@ to reach it. We fit $P(\mathrm{collapse}\mid w)=\sigma(b_0+b_1w)$ and report $\w
 
 % =======================================================================
 
-\section{The Shared-Clip Pathway in PPO}
+\section{How Reward Scale Can Reach the Policy in PPO}
 \label{sec:mechanism}
 
 \paragraph{Learner and optimizer.}
@@ -251,7 +267,11 @@ The argument makes four testable predictions, which Section~\ref{sec:optimizer} 
 not; (b)~the actor's applied gradient, and to a lesser degree its parameter update, shrink under symmetric
 scaling; (c)~per-group clipping restores the actor's update and removes the part of the crossing shift that
 runs through $\kappa$; (d)~what remains after (c) runs through the critic's targets, so normalizing rewards
-or targets should remove it. As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
+or targets should remove it. Predictions (a) and (b), and the optimizer half of (c), are confirmed below. The
+behavioural half of (c) is not: restoring the actor's update reduced the crossing shift in one cohort (E6) but not
+on fresh seeds (X1), and when actor and critic are clipped independently neither clip has a detectable effect on the
+shift (X3). Prediction (d) holds in a stronger form than stated, since normalization removes the shift whether or
+not anything is clipped. As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
 cell. The critic accounts for more than 99.99\% of the squared joint norm in both arms, every minibatch is clipped,
 and the predicted S/B ratio of applied actor gradients, \VeqPred{}, equals the measured \VeqMeas{} (largest
 per-minibatch relative error $\VeqMaxErr{}$); under per-group clipping both are \VeqGroupMeas{}. Because
@@ -260,6 +280,15 @@ is that the clip acts on the joint norm, that $\kappa\approx\tau/\|g_c\|$ throug
 attenuation is fully accounted for by the critic's gradient. Evaluating the formula at cell-mean norms instead gives
 \VrvPredRatio{}, because those norms are heavy-tailed. Figure~\ref{fig:mechanism} summarizes the pathway and
 where each intervention acts.
+
+\paragraph{The other route: the critic's fit.}
+The clip pathway is thus measured link by link, but the crossing shift does not need it, which leaves the first route
+of Section~\ref{sec:intro}. With raw targets, a critic trained at a fixed learning rate must move its output to returns
+that are seven times larger, and at a fixed budget it fits them worse; the actor's advantages are normalized per
+minibatch, but they are computed from that fit, so their relative error can grow with the reward scale. We did not
+pre-register this route and do not isolate it. Its support is indirect: the critic's explained variance is lower under
+symmetric scaling in every clipping mode (E1, X3), and normalizing the rewards, or only the critic's targets, removes or
+reduces the shift (E1, E7, E8, E10, E11).
 
 \begin{figure}[!htbp]
 \centering
@@ -275,10 +304,10 @@ where each intervention acts.
 \node[box, right=of u] (b) {Policy learned at budget $T$; collapse label; $w_{50}$};
 \draw[arr] (r) -- (c); \draw[arr] (r) -- (a); \draw[arr] (c) -- (k); \draw[arr] (a) -- (u); \draw[arr] (k) -- (u); \draw[arr] (u) -- (b);
 \node[inter, above=3mm of c] (i1) {Reward normalization or PopArt: bound $\|g_c\|$ (E1, E7)};
-\node[inter, above=3mm of k] (i2) {Per-group or no clipping: $\kappa\to\kappa_a$ (E1, E6)};
+\node[inter, above=3mm of k] (i2) {Per-group or no clipping: $\kappa\to\kappa_a$ (E1, E6, X1, X3)};
 \draw[dashed, -{Stealth[length=1.5mm]}] (i1) -- (c); \draw[dashed, -{Stealth[length=1.5mm]}] (i2) -- (k);
 \end{tikzpicture}
-\caption{The shared-clip pathway. A reward multiplier enlarges the critic's gradient when value targets are not normalized, but not the actor's, because advantages are normalized per minibatch. A global clip shared by both then shrinks the actor's applied gradient roughly in proportion to $1/\|g_c\|$; Adam partly, but not fully, compensates. Dashed boxes mark where the interventions act and which experiments test them. The measured quantities are, from left to right: pre-clip norms (E1, E6), applied actor gradient and parameter update (E6), and crossing contrasts (all experiments).}
+\caption{The shared-clip pathway we pre-registered. Section~\ref{sec:optimizer} confirms each optimizer link, but removing the clip restores the actor's step without removing the crossing shift (X1, X3). A reward multiplier enlarges the critic's gradient when value targets are not normalized, but not the actor's, because advantages are normalized per minibatch. A global clip shared by both then shrinks the actor's applied gradient roughly in proportion to $1/\|g_c\|$; Adam partly, but not fully, compensates. Dashed boxes mark where the interventions act and which experiments test them. The measured quantities are, from left to right: pre-clip norms (E1, E6), applied actor gradient and parameter update (E6), and crossing contrasts (all experiments).}
 \label{fig:mechanism}
 \Description{Flow diagram from reward multiplier to critic gradient and actor gradient, through a shared clip factor to the applied actor gradient and Adam step, to the learned policy and crossing; two dashed intervention boxes point at the critic gradient and the clip factor.}
 \end{figure}
@@ -291,7 +320,7 @@ where each intervention acts.
 \input{content/setup_v4}
 
 \begin{table}[!htbp]
-\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals (E8's replication cohort uses seeds 52--61, E10's seeds 62--81); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs, and E9--E10 and E11--E12 as two pairs. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
+\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-block bootstrap intervals (E8's replication cohort uses seeds 52--61, E10's seeds 62--81, X1--X3 the seeds shown); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs, E9--E10, E11--E12 and X1--X2 as pairs, and X3 alone; X1--X3 take the jackknife-$t$ interval as primary. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
 \label{tab:matrix}
 \centering\scriptsize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{.045\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.17\textwidth}>{\raggedright\arraybackslash}p{.06\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}@{}}
@@ -303,24 +332,27 @@ E2 & Is Adam's $\epsilon$ the route? & Default with $\epsilon=10^{-8}$ & B, A, S
 E3 & Budget dependence, default learner & Default learner to 3.6M, 24 checkpoints & linear, curvature, $\lambda=7$; 9 cells & 270 & Contrast shrinks; no stable crossing & Includes scale pathway \\
 E4 & Second environment & MAPPO on LBF; shared clip vs separate optimizers & linear, curvature, A, S; 10 cells; 2M & 800 & A$-$S positive in both modes & Label fallback (D4); estimator sensitivity \\
 E5 & Does A$-$S persist with budget? & Decoupled learner to 3.6M, 24 checkpoints & B, A, S; 9 cells & 270 & A$-$S positive at all primary budgets & Pointwise intervals \\
-E6 & Is the shared clip the pathway? & Shared vs per-group vs no clipping; update logging & B, A, S; 8 cells; 300k & 720 & Per-group clip restores update, reduces S$-$B & Residual unexplained \\
+E6 & Is the shared clip the pathway? & Shared vs per-group vs no clipping; update logging & B, A, S; 8 cells; 300k & 720 & Per-group clip restores update, reduces S$-$B & Not replicated (X1, X3) \\
 E7 & Critic targets? Reward moments? & Plain vs PopArt critic; scale-matched control M & B, A, S, M; 8 cells; 300k & 400 new + 240 E1 & PopArt: inconclusive; A$-$M separable only with PopArt & M's mean unmatched \\
 E8 & Moments or shape? Critic targets, fresh seeds? & Online moment-matched control M$_{\mathrm{on}}$; B, S on seeds 52--61 & M$_{\mathrm{on}}$; B, S; 8 cells; 300k & 480 & A$-$M$_{\mathrm{on}}$ small (plain), large (PopArt); PopArt removes S$-$B & Map nonstationary; 99\% level \\
-E9 & Does S$-$B follow the clip threshold? & Default learner, $\tau\in\{300,3000,10^4,3\cdot10^4\}$ & B, S; 8 cells; 300k & 640 & S$-$B falls as $\tau$ rises, to the no-clip value & Residual not clipping; 99\% level \\
+E9 & Does S$-$B follow the clip threshold? & Default learner, $\tau\in\{300,3000,10^4,3\cdot10^4\}$ & B, S; 8 cells; 300k & 640 & S$-$B falls as $\tau$ rises, to the no-clip value & Change not established (jackknife-$t$) \\
 E10 & Critic targets, second fresh cohort? & Plain vs PopArt critic, seeds 62--81 & B, S; 8 cells; 300k & 640 & PopArt removes S$-$B & 99\% level \\
 E11 & Is the confound SB3-specific? & CleanRL-style PPO: raw, per-group clip, reward normalization & B, A, S; 8 cells; 300k & 720 & S$-$B reproduces; none with normalization; A$-$S positive & Same environment; a port, not CleanRL itself \\
 E12 & Does it hold under local observation? & Local view plus agent identifier; default and decoupled learner & B, A, S; 8 cells; 300k & 480 & A$-$S positive in both; S$-$B not detectable & Predicted S$-$B not met; edge crossings \\
+X1 & Does E6's per-group reduction replicate? & E6's three clipping modes, Adam-moment logging & B, S; 8 cells; 300k; seeds 82--101 & 960 & Actor step restored; S$-$B not reduced & Critic still clipped \\
+X2 & Same, second implementation & E11's raw and per-group modes & B, S; 8 cells; 300k; seeds 82--101 & 640 & S$-$B not reduced (fresh); small reduction pooled & Pooled test secondary \\
+X3 & Which clipped group carries S$-$B? & Actor clipped or not $\times$ critic clipped or not, one Adam & B, S; 8 cells; 300k; seeds 102--121 & 1,280 & Neither clip matters; S$-$B without clipping & Critic route not isolated \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Experiments.}
-Table~\ref{tab:matrix} lists the twelve pre-registered experiments. Together they comprise \VfourTrajectories{}
-trajectories; the 5,200 in E1, E2 and E6--E11 address the optimizer mechanism (E11's 720 in a second PPO
-implementation), E3 and E5 follow 540 trajectories to 3.6M transitions, E4's 800 run on the second environment, and
+Table~\ref{tab:matrix} lists the fifteen pre-registered experiments. Together they comprise \VfourTrajectories{}
+trajectories; the \VfourMechTrajectories{} in E1, E2, E6--E11 and X1--X3 address the optimizer mechanism (E11's 720 and
+X2's 640 in a second PPO implementation), E3 and E5 follow 540 trajectories to 3.6M transitions, E4's 800 run on the second environment, and
 E12's 480 change the information structure. Earlier ``legacy'' sweeps from another platform
 (20 seeds per cell) supply the curvature-versus-multiplier decomposition and the cross-sectional horizon
-fit; they are reported separately and never pooled with E1--E12.
+fit; they are reported separately and never pooled with E1--E12 or X1--X3.
 
 \paragraph{Estimation.}
 We fit the logistic curve by Firth's bias-reduced maximum likelihood~\citep{firth1993}, which stays finite
@@ -333,49 +365,56 @@ is 0.018.
 
 \paragraph{Interval calibration.}
 \label{sec:stats}
-The training seed is the independent unit: every interval resamples complete seed blocks, never checkpoints
-or evaluation episodes. With ten seeds a percentile bootstrap is known to be narrow, so we simulated the
-design (ten seeds, the E1 grid, one label per seed and cell) from known logistic curves, with and without a
-per-seed effect shared by paired arms (Appendix~\ref{app:estimation}, Table~\ref{tab:coverage}). The declared
-95\% intervals covered the true crossing and the true contrast in \VrvCovRange{} of 1,000 replicates per
-scenario, and excluded zero for a null contrast in \VrvFalsePos{} of them, rather than 5\%. Nominal
-\VrvCalLevel{} intervals covered at \VrvCalCovMin{} or more. We keep the declared 95\% intervals as the primary
-analysis and report the \VrvCalLevel{} intervals for every principal contrast as a sensitivity check
-(Table~\ref{tab:results}): none of the \VrvNContrasts{} principal verdicts changes. A Holm adjustment across the
-same \VrvNContrasts{} contrasts, with two-sided seed-block bootstrap $p$-values (resolution $1/2000$), also leaves
-every verdict unchanged: the \VrvHolmKept{} contrasts reported as nonzero all remain so (largest $p$ \VrvHolmMaxP{}),
-and those reported as not detectable are retained. E6's shared-clip cell reproduces E1's runs exactly, so the
-family counts that contrast twice, which makes the adjustment conservative. The coverage simulation uses ten seeds;
-E10's twenty-seed intervals are reported at the same 99\% level, which is conservative for them. Changes in a contrast
-between conditions (E9's dose-response, the E8, E10 and E11 changes) are reported with their own 95\% and 99\%
-intervals and are not in the Holm family. Both checks were added in revision and are not pre-registered. An independent set of
-10,000 bootstrap draws moves no endpoint by more than \VrvMCShift{}. Intervals are pointwise; we make no
-simultaneous claim across contrasts or checkpoints. An interval that includes zero is reported as no
-detectable effect, never as evidence of no effect; we make equivalence statements only against a stated
-margin.
+The training seed is the independent unit: every interval resamples or leaves out complete seed blocks, never
+checkpoints or evaluation episodes. The pre-declared intervals are seed-block percentile bootstraps, and with ten
+seeds these are known to be narrow. We therefore simulated the design, added in revision and not pre-registered
+(Appendix~\ref{app:estimation}): ten, twenty or thirty seeds, the E1 grid and one label per seed and cell, across
+\VcalScen{} data-generating scenarios with 10,000 replicates each. The scenarios vary the curve's steepness and link,
+per-seed random intercepts and slopes, how strongly seed effects are shared between paired arms, arm-specific
+heterogeneity, the size of the contrast, and crossings near either edge of the grid. Five interval procedures were
+compared. At ten seeds the pre-declared percentile intervals covered the true contrast in \VcalPctCov{} of
+replicates and excluded zero under a null contrast in \VcalPctFP{} of them, rather than 5\%; their nominal 99\%
+version covered in only \VcalPctCovNine{}, so it is not a calibrated interval, and a BCa correction is no better
+(\VcalBcaCov{}). A hierarchical logistic model and a parametric bootstrap from it covered well when the model held but
+not when seed effects were not shared across arms (false-positive rates up to \VcalGlmmFPMax{} and \VcalPbootFPMax{}).
+One procedure stayed near nominal in every scenario: a seed-level jackknife-$t$ interval, the estimate $\pm
+t_{n-1}$ times the leave-one-seed-out standard error, which covered the contrast in \VcalJtCov{} and the single
+crossing in \VcalJtCovW{} of replicates, with a null false-positive rate of \VcalJtFP{}. It is about
+\VcalWidthRatio{} times as wide; its power for a 0.1 contrast on a steep curve is \VcalPowTen{} at ten seeds,
+\VcalPowTwenty{} at twenty and \VcalPowThirty{} at thirty. We report the jackknife-$t$ interval as the calibrated
+inference throughout and keep the pre-declared percentile interval beside it (Table~\ref{tab:results}). For all
+\VrvNContrasts{} principal contrasts the two give the same zero-exclusion verdict at 95\%. A Holm adjustment of the
+jackknife-$t$ $p$-values across the \VrvNContrasts{} contrasts keeps \VjtHolmKept{} of the \VjtNExcl{} nonzero
+contrasts; three do not survive it (\VjtHolmLost{}), and we say so where they are discussed. The calibration matters
+most for \emph{changes} in a contrast between conditions, which we report with jackknife-$t$ intervals over the
+seeds the two conditions share: several changes that excluded zero under the percentile interval do not under the
+calibrated one (Sections~\ref{sec:optimizer} and~\ref{sec:limitations}). An independent set of 10,000 bootstrap draws
+moves no percentile endpoint by more than \VrvMCShift{}. Intervals are pointwise; we make no simultaneous claim beyond
+the stated Holm family. An interval that includes zero is reported as no detectable effect, never as evidence of no
+effect; we make equivalence statements only against a stated margin.
 
 \paragraph{Pre-registration and platform.}
-Experiments E1--E12 were pre-declared, with source and design hashes frozen before launch; the
+Experiments E1--E12 and X1--X3 were pre-declared, with source and design hashes frozen before launch; the
 departures (one pre-execution source fix, a label-threshold fallback corrected from stored data, and
-analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E12 trajectories run on one CPU
+analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E12 and X1--X3 trajectories run on one CPU
 platform. An earlier platform does not reproduce trained policies
 bit-for-bit, but collapse labels agree in \VfourAgreeControl{} of matched direct-control runs and
 \VfourAgreeHorizon{} of matched horizon checkpoints, so we make reproducibility claims at the level of
 labels and crossings. The legacy sweeps in Sections~\ref{sec:asymmetric} and~\ref{sec:robustness} (20 seeds
-per cell) come from the earlier platform and are not pooled with E1--E12.
+per cell) come from the earlier platform and are not pooled with E1--E12 or X1--X3.
 
 % =======================================================================
 
 \FloatBarrier
 
-\section{Symmetric Reward Scaling and the Shared Clip}
+\section{Symmetric Reward Scaling: the Clip and the Critic}
 \label{sec:optimizer}
 
 Table~\ref{tab:results} and Figure~\ref{fig:summary} collect the principal contrasts of this and the next two
-sections. This section tests predictions (a)--(d) of Section~\ref{sec:mechanism} in six steps, summarized in
-Table~\ref{tab:hierarchy}: an observation, a diagnostic, an intervention that isolates one pathway, a residual
-effect, a test of one interpretation of that residual, and the dependence of the baseline crossing on the
-optimizer. The quantities involved are distinct: the \emph{pre-clip} gradient norm, the \emph{applied}
+sections. This section tests predictions (a)--(d) of Section~\ref{sec:mechanism} in the steps summarized in
+Table~\ref{tab:hierarchy}: an observation, a diagnostic, interventions on the clip and their fresh-seed
+replications, the shift that remains without clipping, a test of the critic-target interpretation, and the
+dependence of the baseline crossing on the optimizer. The quantities involved are distinct: the \emph{pre-clip} gradient norm, the \emph{applied}
 gradient after clipping, the parameter \emph{update} after Adam, and the \emph{crossing} estimated from
 evaluation behavior.
 
@@ -384,7 +423,7 @@ evaluation behavior.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/fig_summary.pdf}
-\caption{Principal crossing contrasts across experiments. Thick bars: pre-declared 95\% seed-block intervals; thin bars: coverage-calibrated \VrvCalLevel{} intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, the decoupled learner with normalized rewards, the PopArt critic (three cohorts), the second implementation and local observation. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the moment-matched symmetric controls M and M$_{\mathrm{on}}$, and the LBF replication.}
+\caption{Principal crossing contrasts across experiments. Thick bars: calibrated 95\% jackknife-$t$ intervals; thin bars, offset upward: pre-declared 95\% seed-block percentile intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, the decoupled learner with normalized rewards, the PopArt critic (three cohorts), the second implementation and local observation. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the moment-matched symmetric controls M and M$_{\mathrm{on}}$, and the LBF replication.}
 \label{fig:summary}
 \Description{Dot-and-interval plot of twenty-four contrasts; the default symmetric shifts in both implementations are large and positive, the decoupled, normalized and PopArt symmetric shifts include zero, asymmetric contrasts are positive, plain-critic A minus M touches zero.}
 \end{figure}
@@ -410,7 +449,7 @@ actor update after clipping is \VfourAppliedActorB{} for B and \VfourAppliedActo
 \VfourSymStd{} relative to B, at least as far as the loss multiplier, and A$-$S is
 \VfourAsymStd{} (Table~\ref{tab:factorial_contrasts}).
 
-\paragraph{Removing the coupling removes the detectable symmetric shift.}
+\paragraph{Normalizing rewards removes the detectable symmetric shift; removing the clip does not.}
 With normalized rewards the critic's gradient falls below the clip norm, the actor carries almost all
 of the gradient energy, and no symmetric shift is detectable (S$-$B \VfourSymNorm{}). With separate
 optimizers alone the symmetric $\times7$ effect shrinks to \VfourSymSep{} and the $\times3.451$ effect is
@@ -441,30 +480,74 @@ clip the actor's applied gradient for S is \VsixGradGlobal{} of B's, but Adam pa
 actor's actual parameter update is \VsixUpdGlobal{} of B's. With per-group clipping or no clipping the ratio
 is \VsixUpdGroup{} and \VsixUpdNone{}, close to but detectably below one, so our pre-declared prediction of
 no difference is not met as stated. Per-group clipping reduces the symmetric effect by \VsixSymGroupChange{}
-to \VsixSymGroup{}, and its crossings are almost identical to those without any clipping. The shared clip
-therefore accounts for part of the artifact, roughly 0.2 of the 0.36 shift. The remainder is unaffected by
-clipping, accompanies a poorly fitted critic, and disappears under reward normalization
-(Section~\ref{sec:optimizer}, E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
-clipping. Figure~\ref{fig:e6} puts the three steps side by side.
+to \VsixSymGroup{} (jackknife-$t$: \VjtChSix{}, which excludes zero at 95\% but not at 99\%, \VjtChSixNine{}), and its
+crossings are almost identical to those without any clipping. In this cohort the shared clip therefore appeared to
+account for roughly 0.2 of the 0.36 shift; on fresh seeds this does not replicate (X1 and X3, below). Without clipping
+the shift accompanies a poorly fitted critic and disappears under reward normalization (E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
+clipping. Figure~\ref{fig:e6} shows the pathway run by run.
 
-\paragraph{The shift follows the clip threshold (E9).}
+\paragraph{Does the shift follow the clip threshold? (E9)}
 If the shared clip carries part of the shift, the shift should shrink as the threshold $\tau$ rises and the clip
 binds less. E9 (640 runs) keeps the default learner and raw rewards and sets $\tau\in\{300,3000,10^4,3\cdot10^4\}$;
 E1 supplies $\tau=0.5$ and no clipping. S's applied actor gradient rises monotonically relative to B's, from
 \VnineRatioHalf{} at $\tau=0.5$ to \VnineRatioThirtyK{} at $\tau=3\cdot10^4$, and the symmetric shift falls with it,
-from \VnineHalf{} to \VnineThirtyK{} (Table~\ref{tab:e9}). The paired change, \VnineDose{}, excludes zero at the
-declared 95\% level but not at the 99\% level (\VnineDoseNine{}). At $\tau=3\cdot10^4$ the shift is indistinguishable
-from the no-clip value (difference \VnineEnd{}). All three pre-declared predictions are met. The clip therefore
-accounts for a graded part of the shift, about 0.2 as in E6, and the remainder of about 0.16 does not depend on it.
+from \VnineHalf{} to \VnineThirtyK{} (Table~\ref{tab:e9}). The pre-declared percentile interval for the paired
+change, \VnineDose{}, excludes zero, so the three pre-declared predictions are met; the calibrated jackknife-$t$
+interval, \VjtChNineDose{}, does not. At $\tau=3\cdot10^4$ the shift is indistinguishable from the no-clip value
+(\VjtChNineEnd{}). The ordering of the six point estimates follows the clip's attenuation, but with ten seeds the
+dose-response is suggestive, not established.
 
 \input{generated/v4/e9_table}
 
+\paragraph{On fresh seeds, restoring the actor's step does not remove the shift (X1, X2).}
+Because the calibrated intervals left E6's reduction resting on one ten-seed cohort, we repeated E6's three modes on
+twenty fresh seeds (X1, seeds 82--101, 960 runs), now also logging Adam's moments for the actor, and E11's two
+clipping conditions likewise (X2, 640 runs); both were pre-registered with the jackknife-$t$ interval as the primary
+analysis (Appendix~\ref{app:prereg}). The optimizer prediction is met (Table~\ref{tab:x1opt}). Under the shared clip
+the clip factor for S is \VxoKappa{} of B's, Adam's first moment and the root of its second moment shrink together
+(\VxoGlobM{} and \VxoGlobV{}), and the resulting Adam step is \VxoGlobStep{} of B's; clipping the groups separately
+restores it to \VxoGroupStep{}. The behavioural prediction is not met (Table~\ref{tab:x1x2}). The symmetric shift
+replicates under the shared clip (\VxFGlob{}), but it is just as large when actor and critic are clipped separately
+(\VxFGroup{}): the change is \VxFCh{}, against E6's \VjtChSix{}. Pooled with E6's seeds the change is \VxPCh{}. In the
+second implementation the separately clipped shift (\VxFTwoGroup{}) is also not detectably smaller than the shared-clip
+one on the fresh seeds (\VxFTwoRaw{}; change \VxFTwoCh{}). Pooled with E11's seeds, a secondary analysis, that change is
+\VxPTwoCh{} and excludes zero, so in the second implementation the shared clip may carry a small part of the shift. Without any clipping the shift is \VxFNone{} on the fresh
+seeds and \VxPNone{} pooled. By the interpretation we declared before the runs, the per-group reduction is supported
+only in E6's cohort, and the shared clip's starving of the actor, although directly measured, is not shown to be what
+moves the crossing. In the separately clipped mode the critic is still clipped, so a separate pre-registered factorial
+(X3) asks which group's clipping carries the shift.
+
+\input{generated/v4/x1_optimizer_table}
+\input{generated/v4/x1x2_table}
+
+\paragraph{Neither group's clip carries the shift (X3).}
+X3 (1,280 runs, seeds 102--121) crosses whether the actor's gradient is clipped with whether the critic's is, under
+one Adam step and raw rewards. It was gated on bit-for-bit reproduction of an X1 run (Appendix~\ref{app:prereg}). The
+clips act as declared: without its clip the critic's applied gradient for S is \VxtCritGradNone{} times B's, and with
+it the ratio is one. The symmetric shift is present in all four modes (Table~\ref{tab:x3}). It is \VxtBoth{} with both
+groups clipped, which replicates X1 (prediction P3 met), \VxtActor{} and \VxtCritic{} with only the actor or only the
+critic clipped, and \VxtNeither{} with neither. The critic-clipping effect, our primary test, is \VxtCEff{}, so P1 is
+not met. The actor-clipping effect is \VxtAEff{}, and its 90\% interval \VxtAEffNinety{} lies within the declared
+$\pm0.10$ margin, so the equivalence of P2 is met. The interaction is \VxtInt{}. In every mode the actor's parameter
+update for S is \VxtActUpdLo{}--\VxtActUpdHi{} of B's, the critic's \VxtCritUpdLo{}--\VxtCritUpdHi{}, and the critic's
+explained variance is lower for S by \VxtEVLo{}--\VxtEVHi{}. By the reading declared before the runs, neither group's
+clipping is shown to carry the shift, and normalization of rewards or value targets is the only located factor. X3 also
+revises X1's no-clip estimate, which had motivated its hypothesis: on X1's seeds the no-clip shift was \VxFNone{}, an
+interval that includes zero, whereas on X3's it is \VxtNeither{}. Pooled with E6's seeds, X1's estimate was already
+\VxPNone{}. The two fresh cohorts disagree on whether clipping adds to the shift: per-group clipping minus no clipping is
+0.20 on X1's seeds and 0.04 on X3's (differences of the point estimates above). Pooling X1 and X3 (forty seeds; exploratory, written after X3's
+results) gives \VxeNone{} without clipping, \VxeGroup{} with per-group clipping and a difference of \VxeDiff{}. Clipping is
+therefore not necessary for the shift, and may enlarge it; restoring the actor's step under the shared clip does not
+reduce it (X1).
+
+\input{generated/v4/x3_table}
+
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=\textwidth]{generated/v4/fig_e6_mechanism.pdf}
-\caption{The shared-clip pathway. Left: in the default E1 cell (log scale) the critic's pre-clip gradient norm rises from \VrevCritB{} (B) to \VrevCritS{} (S) while the actor's stays near 2, so one global clip to 0.5 shrinks the actor's applied gradient more for S. Middle: E6 seed-paired S/B ratios of the actor's applied gradient and of its actual parameter update, with 95\% intervals; a parameter-update ratio is not a gradient ratio, because Adam rescales. Right: E6 crossing contrasts. Per-group clipping restores the actor update and removes part of the symmetric shift; A$-$S becomes positive.}
+\includegraphics[width=\textwidth]{generated/v4/fig_mechanism6.pdf}
+\caption{The shared-clip pathway, run by run. (A) In the default cell the critic's pre-clip gradient norm grows with the reward multiplier (B $\times1$, R $\times3.45$, S $\times7$; one point per run). (B) The actor's applied-to-pre-clip ratio against the joint pre-clip norm, for every clip threshold $\tau$ of E1 and E9; lines are $\min(1,\tau/\|g\|)$. (C) Seed-paired S/B ratios: the actor's applied gradient against the critic's norm, by $\tau$. (D) E6 seed-paired S/B ratios of the actor's applied gradient and of its actual parameter update, by clipping mode; Adam undoes part, not all, of the attenuation. (E) S$-$B against the measured S/B applied-gradient ratio across the six thresholds (E9 and E1). (F) S$-$B under each intervention. E and F show the pre-declared 95\% percentile intervals; calibrated intervals are in Table~\ref{tab:results} and the text. Panels A--D are descriptive; the causal evidence is the interventions in E, F and E6.}
 \label{fig:e6}
-\Description{Three panels: bar chart of gradient norms on a log scale; dot plot of S over B ratios near 0.4 and 0.1 under the shared clip and near one otherwise; dot plot of crossing contrasts by clipping mode.}
+\Description{Six panels: critic gradient rising roughly in proportion to the reward multiplier; attenuation following the clip curves for five thresholds; paired S over B applied-gradient ratios near one over the critic ratio under the default clip; parameter-update ratios near 0.4 under the shared clip and near one otherwise; S minus B falling as the applied ratio rises; S minus B under nine interventions, positive with the shared clip and near zero with reward or target normalization.}
 \end{figure}
 
 \paragraph{Prediction (d): critic-only target normalization (E7).}
@@ -479,17 +562,15 @@ rewards, advantages and loss are untouched. PopArt repairs the critic's fit: exp
 critic. The symmetric shift falls from \VsevenSymPlain{} to \VsevenSymPop{}, but the change, \VsevenSymChange{},
 does not exclude zero. Our pre-declared criterion for attributing the residual to critic target scale required
 both, so this reading is inconclusive: the point estimate is a partial reduction, and ten seeds cannot
-separate it from none (Table~\ref{tab:e7}). A fresh cohort pre-registered after E7 (E8, seeds 52--61, both
-critics, Table~\ref{tab:e8}) repeated the comparison. There the symmetric shift is \VeightBSymPlain{} with the
-plain critic, replicating E7, and \VeightBSymPop{} with PopArt, and the change, \VeightBChange{}, excludes zero.
-The pre-declared criterion is therefore met in the independent cohort, and the residual of prediction (d) is
-attributed to critic target scale. The attribution rests on the declared 95\% intervals. At the
-coverage-calibrated level the fresh cohort's change is \VeightBChangeNine{}, which includes zero; pooling both
-cohorts, a secondary analysis declared in advance, gives \VeightPoolChange{} (\VeightPoolChangeNine{} at the
-calibrated level). A second fresh cohort, with twenty seeds (E10, seeds 62--81, 640 runs), repeats the result. S$-$B
-is \VtenSymPlain{} with the plain critic and \VtenSymPop{} with PopArt, and the change, \VtenChange{}, again excludes
-zero at the declared level only (\VtenChangeNine{} at the calibrated level). Pooling seeds 42--81, the declared
-secondary analysis, gives \VtenPoolChange{} (\VtenPoolChangeNine{} at the calibrated level).
+separate it from none (Table~\ref{tab:e7}). Two fresh cohorts pre-registered after E7 repeated the comparison: E8
+(seeds 52--61, Table~\ref{tab:e8}) and E10 (twenty seeds, 62--81, 640 runs). In both, the plain critic keeps a
+symmetric shift (\VeightBSymPlain{}; \VtenSymPlain{}) and PopArt leaves none detectable (\VeightBSymPop{};
+\VtenSymPop{}). The change met the pre-declared criterion under the pre-declared percentile intervals in each cohort
+(\VeightBChange{}; \VtenChange{}), but under the calibrated jackknife-$t$ interval neither cohort alone excludes zero
+(\VjtChEight{}; \VjtChTen{}). Pooling the three cohorts, forty seeds in all, a secondary analysis declared in advance
+for E10, gives \VjtChPool{}, which excludes zero also at 99\% (\VjtChPoolNine{}). We therefore attribute the residual
+of prediction (d), the shift that remains without clipping, to critic target scale on the pooled evidence, not on any
+single cohort.
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
@@ -504,7 +585,7 @@ normalization, one global clip of 0.5) and matches E1's rollout and minibatch si
 takes \VelevenShareRaw{} of the squared joint gradient norm, S's applied actor gradient is \VelevenRatioRaw{} of
 B's, and symmetric scaling moves the crossing by \VelevenSymRaw{} (Table~\ref{tab:e11}). Clipping actor and critic
 separately restores the applied ratio (\VelevenRatioGroup{}) and changes S$-$B by \VelevenGroupChange{}. That
-interval only just excludes zero, and its 99\% interval does not (\VelevenGroupChangeNine{}). As in SB3, a remainder
+pre-declared interval only just excludes zero, and the calibrated one does not (\VjtChEleven{}). As in SB3, a remainder
 survives without the shared clip (\VelevenSymGroup{}), together with a poorly fitted critic (explained variance
 \VelevenEVGroup{}). With CleanRL's default reward normalization the critic's share falls to \VelevenShareDefault{}
 and no symmetric shift is detectable (\VelevenSymDefault{}), while A$-$S is \VelevenAsymDefault{}. All four
@@ -564,7 +645,7 @@ linear null maps to 330k $[275,406]$ (Table~\ref{tab:decomposition}). This mappi
 and it is consistent with Section~\ref{sec:optimizer}: under the default optimizer the loss multiplier
 behaves like a smaller training budget.
 
-\paragraph{With the coupling removed, the loss multiplier still moves the crossing (E1, E6).}
+\paragraph{With clipping removed or rewards normalized, the loss multiplier still moves the crossing (E1, E6).}
 Because A and S apply the same multiplier to losses and differ only in whether gains are also scaled, A$-$S
 compares two gain-to-loss ratios (1:7 and 1:1) at matched loss scale, and A$-$B isolates the loss-branch
 multiplier at fixed gains. A$-$S is positive and excludes zero under normalization (\VfourAsymNorm{}),
@@ -629,7 +710,7 @@ feature an asymmetric transform is meant to change. The training-reward logs con
 difference (Table~\ref{tab:dist}, Appendix~\ref{app:factorial}). A's per-rollout reward is left-skewed (quantile
 skewness \VdaSkewA{}), M's is not (\VdaSkewM{}). With the plain critic, M's critic targets are also larger than
 A's (mean return \VdaRetMeanM{} against \VdaRetMeanA{}, SD \VdaRetSdM{} against \VdaRetSdA{}). Larger target
-scale is the pathway with which the residual symmetric shift is consistent (Section~\ref{sec:optimizer}), so with
+scale is the factor with which the symmetric shift is consistent (Section~\ref{sec:optimizer}), so with
 a raw-target critic M is exposed to it at least as much as A. This is consistent with, but does not establish, a
 target-scale explanation of the near-null plain-critic A$-$M.
 
@@ -643,7 +724,8 @@ and within \VeightMatchMeanPop{} and \VeightMatchSdPop{} with PopArt; \VeightCla
 reached the declared lower bound on the scale at some rollout. Matching the mean leaves the control where it
 was: M$_{\mathrm{on}}-$M is \VeightMonMPlain{} (plain) and \VeightMonMPop{} (PopArt), so E7's mean mismatch was
 not driving its result. With PopArt, A$-$M$_{\mathrm{on}}$ is \VeightAMonPop{}. With the plain critic it is
-\VeightAMonPlain{}, and it also excludes zero at the calibrated level (\VeightAMonPlainNine{}). By the
+\VeightAMonPlain{}; the calibrated jackknife-$t$ interval, \VjtEightAMon{}, also excludes zero, but the contrast
+does not survive the Holm adjustment across the principal family (Section~\ref{sec:stats}). By the
 pre-declared rule, the plain-critic asymmetric contrast is therefore not explained by the training reward's first
 two moments, and the E7 reading above is revised. The part that is not explained is small, however.
 M$_{\mathrm{on}}-$B is \VeightMonBPlain{}, most of A$-$B (\VsevenABPlain{}). So with a raw-target critic, most of
@@ -812,8 +894,8 @@ Logistic, probit and isotonic crossings agree within 0.018 on the supply chain
 (Appendix~\ref{app:estimation}); on LBF they differ more, but not in the A$-$S ordering
 (Figure~\ref{fig:lbf_sensitivity}). Leaving out any one of the ten training seeds changes the sign of none of
 the principal contrasts (Table~\ref{tab:loso}). An independent 10,000-draw bootstrap reproduces every
-principal interval to within \VrvMCShift{}, and a coverage-calibrated \VrvCalLevel{} interval changes none of
-the \VrvNContrasts{} principal verdicts (Table~\ref{tab:results}). Stored labels are recomputed from the stored
+principal interval to within \VrvMCShift{}, and the calibrated jackknife-$t$ interval changes none of the
+\VrvNContrasts{} principal verdicts (Table~\ref{tab:results}). Stored labels are recomputed from the stored
 evaluation statistics by one module that checks each threshold against the pre-registration text
 (Appendix~\ref{app:artifact}).
 
@@ -822,14 +904,18 @@ evaluation statistics by one module that checks each threshold against the pre-r
 \section{Limitations}
 \label{sec:limitations}
 
-\paragraph{Mechanism.} The shared-clip part of the symmetric shift is isolated by an intervention (E6) and
-follows the clip threshold (E9), but it is only part of the shift: about 0.16 of SB3's 0.36 remains without any
-clipping, and 0.19 of 0.29 in the second implementation. That remainder is removed by reward normalization and, in two
-independent fresh-seed cohorts, by a critic-only target normalization (PopArt), which attributes it to critic target
-scale at the declared 95\% level. In each fresh cohort alone the change includes zero at the 99\% level; it excludes
-zero there only when cohorts are pooled. E9's dose-response and E11's per-group change are likewise declared-level
-results. How much of Adam's partial compensation is due to the varying clip factor and how much to $\epsilon$ is not
-isolated.
+\paragraph{Mechanism.} The mechanism we pre-registered, the shared clip starving the actor, is measured but not
+shown to move the crossing: the per-group reduction held in one ten-seed cohort (E6) and not on fresh seeds (X1), and
+neither group's clip has a detectable effect in the factorial (X3). The shift persists without any clipping, but an
+exploratory pool of the two fresh cohorts finds that clipping enlarges it (\VxeDiff{}), and the cohorts disagree on
+this, so the clip's contribution is unresolved. In the CleanRL-style implementation a small per-group reduction
+appears only when cohorts are pooled, a secondary analysis. Intervals that include zero do not
+exclude a small clip effect; only the actor-clipping effect in X3 is bounded, within $\pm0.10$. The account that
+remains, critic target scale, rests on normalization interventions (rewards in E1 and E11, value targets alone in
+E7, E8 and E10, established only when those three cohorts are pooled) and on the critic's lower explained variance;
+we have not isolated how a worse value fit changes the actor's normalized advantages or the learned policy. How much
+of Adam's partial compensation under the shared clip is due to the varying clip factor and how much to $\epsilon$ is
+not isolated.
 
 \paragraph{Reward moments.} A and S differ in the training reward's mean and variance as well as in the
 gain-to-loss ratio. The online control matches A's training-reward mean and SD but not its shape, and its map is
@@ -845,7 +931,7 @@ $\pm0.05$ margin. The 24-checkpoint E5 reading is exploratory and its intervals 
 \paragraph{Information structure and generality.} Apart from E12 the supply-chain policy is a fully observed shared
 controller without agent identity (Section~\ref{sec:method}). Under local observation with an identifier (E12) the
 asymmetric contrast holds, but the default learner's symmetric shift is no longer detectable, contrary to our
-prediction, and we have not explained why; the shared-clip account is therefore established for the fully observed
+prediction, and we have not explained why; the symmetric shift is therefore established for the fully observed
 controller only. Two small environments and two PPO implementations are tested: SB3 2.8.0 and a CleanRL-style port
 run in the same environment and harness (E11). Other implementations, clipping conventions and value normalizations
 may couple actor and critic differently, and LBF does not exhibit the supply-chain clipping pathway. In LBF the linear arm's crossing under the global clip lies below the sampled
@@ -873,11 +959,11 @@ Three findings are supported at the level of evidence stated in Table~\ref{tab:h
 Sections~\ref{sec:asymmetric} and~\ref{sec:lbf}. First, a finite-budget crossing along the reward-weighting
 dial can be estimated with seed-paired intervals of roughly $\pm0.03$--$0.1$, but it moves with training
 budget, does not stabilize by 3.6M transitions, and depends on the optimizer configuration. Second, under
-SB3's default PPO a symmetric reward multiplier moves the crossing at least as far as a loss-only multiplier,
-and the shared gradient clip is the identified pathway for part of it: the critic takes the clip, the
-actor's parameter update shrinks, and clipping the two separately restores the update and reduces the shift.
-The shift falls as the clip threshold rises, and the same confound appears in a second, CleanRL-style PPO
-implementation; in both, reward normalization removes it.
+SB3's default PPO a symmetric reward multiplier moves the crossing at least as far as a loss-only multiplier, and
+the same confound appears in a second, CleanRL-style implementation. The shared gradient clip measurably starves
+the actor's update, but on fresh seeds removing that starvation does not remove the shift, and the shift is as large
+with no clipping at all, although clipping may enlarge it. Normalizing rewards removes it in both implementations,
+and normalizing only the critic's targets reduces it on pooled evidence.
 Third, with separate optimizers and
 normalized rewards, a loss-only multiplier moves the crossing relative to a symmetric control on the
 supply chain, through 3.6M transitions, and an asymmetric transform moves it on Level-Based Foraging by a
@@ -893,12 +979,15 @@ whether actor and critic share a gradient clip and whether rewards or value targ
 these, a change in reward scale can pass for a change in reward shape.
 
 \paragraph{Implications for actor--critic optimization.}
-The confound needs two ingredients that are SB3 PPO's defaults: an unnormalized critic and one gradient
-clip over actor and critic. Advantages are normalized per minibatch, so the actor's loss is nearly
-scale-free, but the critic's gradient grows with the reward and takes the clip budget. CleanRL's default PPO normalizes rewards, and in our port that default removes the
-detectable symmetric shift (E11); without it, the same port reproduces the confound. Cooperative PPO
-implementations that normalize value targets by default~\citep{yu2022surprising} should be less exposed;
-we did not test them.
+The confound needs an unnormalized critic, which is SB3 PPO's default. Advantages are normalized per minibatch,
+so the actor's loss is nearly scale-free, yet the crossing still moves with the reward scale, and the critic fits
+the scaled returns worse whether or not gradients are clipped. CleanRL's default PPO normalizes rewards, and in our
+port that default removes the detectable symmetric shift (E11); without it, the same port reproduces the confound.
+Cooperative PPO implementations that normalize value targets by default~\citep{yu2022surprising} should be less
+exposed; we did not test them. A methodological lesson concerns the evidence for a mechanism: a large, directly
+measured optimizer distortion (the actor's Adam step at \VxoGlobStep{} of baseline) and an intervention in one
+cohort both pointed to the clip, and only pre-registered replications on fresh seeds showed that undoing the distortion
+does not undo the behavioral effect.
 
 \paragraph{Interpreting finite-budget crossings.}
 $\wcrit$ is a 50\% point of a fitted response curve at a stated budget, learner, reward unit and label. It is
@@ -910,7 +999,7 @@ deployment requirement such as at most 5\% collapse would need its own probabili
 assessment.
 
 \paragraph{Reproducibility.}
-All E1--E12 runs share one platform; trained policies are not bit-reproducible across hardware and software
+All E1--E12 and X1--X3 runs share one platform; trained policies are not bit-reproducible across hardware and software
 builds, but labels agree in \VfourAgreeControl{} of matched runs, so we claim reproducibility of labels and
 crossings, not of policies. The artifact rebuilds every reported table, figure and number from per-run
 records with one command (Appendix~\ref{app:artifact}).
@@ -919,14 +1008,16 @@ records with one command (Appendix~\ref{app:artifact}).
 Reward centralization is usually treated as a direction: more team signal helps. It also has a measurable
 finite-budget location, $\wcrit$, that moves with reward transforms, training budget and the optimizer.
 Measured with default SB3 PPO, or with a CleanRL-style PPO without reward normalization, a symmetric reward
-multiplier and a loss-only multiplier cannot be told apart, because a shared gradient clip lets reward scale reach the actor's updates. With that coupling
-removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
+multiplier and a loss-only multiplier cannot be told apart. The shared gradient clip, the obvious route by which
+reward scale reaches the actor's updates, is not needed for this and undoing it does not remove it; normalizing the
+critic does. With
+clipping removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
 no detectable shift, in the tested configurations of two environments and two PPO implementations. How much of that shift is about sign
 asymmetry rather than the reward's moments depends on the critic. With raw value targets, a symmetric control with
 matched mean and SD reproduces most of it, leaving a small asymmetric remainder; with normalized value targets it
 reproduces almost none. Reward-transform comparisons in
-actor--critic MARL should therefore include symmetric-scaling controls and report the optimizer coupling,
-gradient clipping, reward or value normalization and training budget under which they were run.
+actor--critic MARL should therefore include symmetric-scaling controls and report the reward or value
+normalization, gradient clipping and training budget under which they were run.
 
 % =======================================================================
 \section*{Ethical Statement}

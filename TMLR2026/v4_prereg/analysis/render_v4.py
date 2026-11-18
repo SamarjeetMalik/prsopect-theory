@@ -308,6 +308,40 @@ table(OUT / "e12_table.tex",
       r"Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-block intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).",
       "tab:e12", r"@{}p{.25\textwidth}cccccc@{}", r"Learner & S$-$B & A$-$S & $w_{50}$ B & $w_{50}$ A & $w_{50}$ S", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- X1/X2 (fresh-seed replication)
+kx = pd.read_csv(RES / "X1X2_contrasts.csv"); ox = pd.read_csv(RES / "X1_optimizer_state.csv")
+gx = lambda c, q: kx[(kx.cohort == c) & (kx.quantity == q)].iloc[0]
+jcell = lambda r: (f"${num(r.difference, True)}$" + (r"$^{\ast}$" if r.jt_excludes_zero_95 else "") + f" ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+FR, PO = "fresh 82-101", "pooled 42-51 + 82-101"
+XROWS = [("SB3: shared clip", "S-B global_clip"), ("SB3: actor and critic clipped separately", "S-B groupwise_clip"), ("SB3: no clipping", "S-B separate_no_clip"),
+         (r"SB3: change, separate $-$ shared clip", "change S-B, groupwise minus global"),
+         ("CleanRL-style: shared clip", "S-B cleanrl_raw"), ("CleanRL-style: separately clipped", "S-B cleanrl_group"),
+         (r"CleanRL-style: change, separate $-$ shared", "change S-B, group minus raw")]
+rows = [[lab, jcell(gx(FR, q)), jcell(gx(PO, q))] for lab, q in XROWS]
+table(OUT / "x1x2_table.tex",
+      r"Fresh-seed replication of the clipping intervention (X1, SB3, 960 runs; X2, CleanRL-style, 640 runs): raw rewards, arms B and S, the E1 grid, seeds 82--101 (pre-declared primary), and pooled with E6's and E11's seeds 42--51 (secondary). Symmetric-scaling contrasts S$-$B with calibrated 95\% jackknife-$t$ intervals; $^{\ast}$: interval excludes zero.",
+      "tab:x1x2", r"@{}>{\raggedright\arraybackslash}p{.38\textwidth}cc@{}", r"Learner / clipping & Seeds 82--101 & Seeds 42--51 and 82--101", rows, size=r"\footnotesize")
+oq = ox.set_index(["mode", "quantity"])
+OQ = [("Applied actor gradient", "pu_applied_actor_grad_norm"), (r"Adam first moment $\|\hat m\|$", "pu_actor_adam_m_norm"),
+      (r"Adam $\|\sqrt{\hat v}\|$", "pu_actor_adam_sqrt_v_norm"), (r"Adam step $\|\hat m/(\sqrt{\hat v}+\epsilon)\|$", "pu_actor_adam_direction_norm")]
+rows = [[lab] + [f"{oq.loc[(m, q)].ratio:.3f} {{\\scriptsize [{oq.loc[(m, q)].low_95:.3f},\\,{oq.loc[(m, q)].high_95:.3f}]}}" for m in ["global_clip", "groupwise_clip", "separate_no_clip"]]
+        for lab, q in OQ]
+table(OUT / "x1_optimizer_table.tex",
+      r"The actor's optimizer state in X1 (seeds 82--101): seed-paired S/B ratios, geometric mean over each seed's eight cells, with 95\% jackknife-$t$ intervals over seeds. Under the shared clip, Adam's two moments shrink together with the clip factor, and the resulting step is 0.4 of B's; clipping the groups separately restores it.",
+      "tab:x1opt", r"@{}lccc@{}", r"Actor quantity, S/B & Shared clip & Separately clipped & No clipping", rows, size=r"\footnotesize")
+
+# ---------------------------------------------------------------- X3 (actor/critic clipping factorial)
+k3 = pd.read_csv(RES / "X3_contrasts.csv").set_index("quantity"); o3 = pd.read_csv(RES / "X3_optimizer_state.csv").set_index(["mode", "quantity"])
+X3ROWS = [("Both groups clipped separately", "S-B both"), ("Actor clipped only", "S-B actor_only"), ("Critic clipped only", "S-B critic_only"),
+          ("No clipping", "S-B neither"), ("Critic-clipping effect (P1)", "critic effect"), ("Actor-clipping effect (P2)", "actor effect"),
+          ("Interaction", "interaction")]
+x3c = lambda r, lo, hi: f"${iv(r[lo], r[hi], True)}$"
+rows = [[lab, f"${num(k3.loc[q].difference, True)}$" + (r"$^{\ast}$" if k3.loc[q].jt_excludes_zero_95 else ""), x3c(k3.loc[q], "jt_low_95", "jt_high_95"),
+         x3c(k3.loc[q], "jt_low_90", "jt_high_90"), x3c(k3.loc[q], "pct_low_95", "pct_high_95")] for lab, q in X3ROWS]
+table(OUT / "x3_table.tex",
+      r"Which clipped group carries the symmetric shift (X3, 1,280 runs): one Adam step, raw rewards, the actor's and the critic's gradients each clipped to 0.5 or not, arms B and S, the E1 grid, fresh seeds 102--121. Rows 1--4: S$-$B in each mode; rows 5--7: factorial effects on S$-$B. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. P2 is an equivalence test: its 90\% interval must lie within $\pm0.10$.",
+      "tab:x3", r"@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}", r"Mode or effect & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\%", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -364,16 +398,17 @@ m += mac("VfourAgreeControl", f"{a.agree}/{a.total} ({100 * a.agree / a.total:.1
 m += mac("VfourBitControl", f"{int(a.bit_identical_profit)}/{a.total}")
 m += mac("VfourAgreeHorizon", f"{b.agree:,}/{b.total:,} ({100 * b.agree / b.total:.1f}\\%)")
 cp = pd.read_csv(RES / "compute_v4.csv")
-m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
+m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
         "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
         "E7": "Critic-target normalization and moment control, 300k",
         "E8": "Online moment control; fresh-seed replication, 300k", "E9": "Clip-threshold dose-response, 300k",
         "E10": "Critic-target replication, seeds 62--81, 300k", "E11": "Second PPO implementation (CleanRL-style), 300k",
-        "E12": "Local observations with agent identity, 300k"}
+        "E12": "Local observations with agent identity, 300k", "X1": "Fresh-seed clipping replication, SB3, 300k",
+        "X2": "Fresh-seed clipping replication, CleanRL-style, 300k", "X3": "Actor/critic clipping factorial, 300k"}
 table(OUT / "compute_table.tex",
-      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. Runs were executed at most eight concurrently.",
+      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X3 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per run throughout).",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
       + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
@@ -440,5 +475,27 @@ for l, tag in [("default", "Default"), ("decoupled", "Dec")]:
     m += mac(f"VtwelveSym{tag}", civ(k12.loc[f"{l}: S-B"])); m += mac(f"VtwelveAsym{tag}", civ(k12.loc[f"{l}: A-S"]))
     for a in "BAS":
         m += mac(f"Vtwelve{tag}{a}", f"{xc.loc[(l, a)].w50_local:.3f}"); m += mac(f"Vtwelve{tag}{a}Full", f"{xc.loc[(l, a)].w50_global_E1:.3f}")
+for c, ctag in [(FR, "F"), (PO, "P")]:
+    for q, nm in [("S-B global_clip", "Glob"), ("S-B groupwise_clip", "Group"), ("S-B separate_no_clip", "None"), ("change S-B, groupwise minus global", "Ch"),
+                  ("S-B cleanrl_raw", "TwoRaw"), ("S-B cleanrl_group", "TwoGroup"), ("change S-B, group minus raw", "TwoCh")]:
+        r = gx(c, q); m += mac(f"Vx{ctag}{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+for mo, t in [("global_clip", "Glob"), ("groupwise_clip", "Group"), ("separate_no_clip", "None")]:
+    for q, nm in [("pu_applied_actor_grad_norm", "Grad"), ("pu_actor_adam_direction_norm", "Step"), ("pu_actor_adam_m_norm", "M"), ("pu_actor_adam_sqrt_v_norm", "V")]:
+        m += mac(f"Vxo{t}{nm}", f"{oq.loc[(mo, q)].ratio:.2f}")
+m += mac("VxoKappa", f"{oq.loc[('global_clip', 'kappa_mean')].ratio:.2f}")
+for q, nm in [("S-B both", "Both"), ("S-B actor_only", "Actor"), ("S-B critic_only", "Critic"), ("S-B neither", "Neither"),
+              ("critic effect", "CEff"), ("actor effect", "AEff"), ("interaction", "Int")]:
+    r = k3.loc[q]; m += mac(f"Vxt{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+    m += mac(f"Vxt{nm}Ninety", f"${iv(r.jt_low_90, r.jt_high_90, True)}$")
+ev3 = [o3.loc[(mo, "EV S-B")].value for mo in ["both", "actor_only", "critic_only", "neither"]]
+m += mac("VxtEVLo", f"{-max(ev3):.2f}"); m += mac("VxtEVHi", f"{-min(ev3):.2f}")
+au = [o3.loc[(mo, "pu_actor_update_norm")].value for mo in ["both", "actor_only", "critic_only", "neither"]]
+m += mac("VxtActUpdLo", f"{min(au):.2f}"); m += mac("VxtActUpdHi", f"{max(au):.2f}")
+cu = [o3.loc[(mo, "pu_critic_update_norm")].value for mo in ["both", "actor_only", "critic_only", "neither"]]
+m += mac("VxtCritUpdLo", f"{min(cu):.2f}"); m += mac("VxtCritUpdHi", f"{max(cu):.2f}")
+ex = pd.read_csv(RES / "explore_x13_pooled.csv").set_index("quantity")
+for q, nm in [("S-B noclip", "None"), ("S-B groupclip", "Group"), ("groupclip minus noclip", "Diff")]:
+    r = ex.loc[q]; m += mac(f"Vxe{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+m += mac("VxtCritGradNone", f"{o3.loc[('neither', 'pu_applied_critic_grad_norm')].value:.1f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

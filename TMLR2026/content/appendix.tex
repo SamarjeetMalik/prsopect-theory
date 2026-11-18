@@ -73,13 +73,20 @@ Intervals are pointwise; no simultaneous statement across checkpoints or cells i
 
 \paragraph{Interval coverage and bootstrap stability.}
 These checks were added in revision; they are not pre-registered and change no reported estimate
-(\texttt{analysis/stat\_checks.py}). First, each principal contrast is re-derived from the per-run tables and
-asserted equal to the stored result. Second, an independent set of 10,000 draws (seed 20261105) moves no interval
-endpoint by more than \VrvMCShift{}. Third, Table~\ref{tab:coverage} simulates the design from two logistic
-curves, steep ($b_1=-20$) and shallow ($b_1=-8$), as found in the E1 and E7 fits, with a null contrast or a
-contrast of the size observed, with and without a per-seed logit intercept (SD 1) shared by both arms. The
-percentile intervals under-cover at ten seeds, as percentile bootstraps do at small sample sizes; nominal
-\VrvCalLevel{} intervals reach at least \VrvCalCovMin{}. Table~\ref{tab:results} reports both levels.
+(\texttt{analysis/stat\_checks.py}, \texttt{analysis/calibration\_v5.py}, \texttt{analysis/jackknife\_v5.py}). First,
+each principal contrast is re-derived from the per-run tables and asserted equal to the stored result. Second, an
+independent set of 10,000 draws (seed 20261105) moves no percentile endpoint by more than \VrvMCShift{}. Third,
+Table~\ref{tab:calibration} simulates the design in \VcalScen{} scenarios with 10,000 replicates each (2,000
+seed-block draws and 500 parametric draws per replicate). The truth for each arm is the 50\% crossing of the
+population-averaged collapse curve, computed numerically. The procedures are the pre-declared seed-block percentile
+bootstrap; its bias-corrected and accelerated version, with the acceleration from the leave-one-seed-out jackknife;
+the seed-level jackknife-$t$; a hierarchical logistic model (arm-specific intercept and slope, one per-seed random
+intercept shared by both arms, Gauss--Hermite marginal likelihood) with a delta-method Wald interval; and a parametric
+bootstrap from that model refitted with the pooled Firth estimator. The hierarchical model and its parametric
+bootstrap assume seed effects shared across arms, and fail when they are not (``$\rho$'' rows). The earlier,
+smaller simulation of the pre-declared intervals is kept as Table~\ref{tab:coverage}.
+
+\input{generated/v4/calibration_table}
 
 \input{generated/v4/coverage_table}
 
@@ -117,7 +124,14 @@ $\theta=0.5$ rather than the declared 0.626. Because every run stores its team r
 recomputed at $\theta=0.626$; the 0.5 analysis is kept as a sensitivity result (Table~\ref{tab:lbf_theta}).
 The pre-declared predictions that failed are reported in the main text: the Adam-$\epsilon$ route (E2)
 two of three LBF predictions (E4), and in E7 the critic-target attribution (inconclusive), the moment
-control under the plain critic and the moment-matching check, and in E12 the persistence of the default learner's symmetric shift under local observation. An equality gate run before E1 reproduced the earlier platform's
+control under the plain critic and the moment-matching check, and in E12 the persistence of the default learner's symmetric shift under local observation. After the calibration
+study, three further experiments were pre-registered and frozen before their gates: X1 and X2, which repeat E6's and
+E11's clipping comparisons on fresh seeds 82--101 with jackknife-$t$ as the primary analysis and add logging of the
+actor's Adam moments, and X3, an actor-by-critic clipping factorial on seeds 102--121. X1 and X2 were gated on
+bit-for-bit reproduction of E6 and E11 runs, X3 on reproduction of an X1 run. In X1 and X2 the per-group reductions
+(the primary tests) and the fresh-seed no-clip shift were not confirmed. In X3 the primary test, a critic-clipping
+effect on S$-$B, was not confirmed; the actor-clipping equivalence and the replication of the shift with both groups
+clipped were. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
 \section{Refined Horizon Cohort}

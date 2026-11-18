@@ -57,14 +57,15 @@ ORDER = ["E1 global_clip/raw S-B", "E6 groupwise_clip S-B", "E1 separate_no_clip
          "E1 separate_no_clip/vecnormalize A-S", "E1 separate_no_clip/vecnormalize A-B", "E6 groupwise_clip A-S", "E5 3.6M A-S",
          "E7 popart A-S", "E11 cleanrl_default A-S", "E12 decoupled A-S",
          "E7 plain A-M", "E7 popart A-M", "E8 plain A-M_on", "E8 popart A-M_on", "E4 global_clip A-S", "E4 separate_no_clip A-S"]
-c = CAL.set_index("contrast").loc[ORDER].reset_index()
+JK = pd.read_csv(RES / "jackknife_v5.csv"); JKP = JK[JK.kind == "principal"].set_index("contrast")
+c = CAL.set_index("contrast").loc[ORDER].join(JKP[["jt_low_95", "jt_high_95", "jt_excludes_zero_95", "holm_jt_reject"]]).reset_index()
 fig, ax = plt.subplots(figsize=(6.6, 5.4))
 y = np.arange(len(c))[::-1]
 for yi, r in zip(y, c.itertuples()):
     sym = META[r.contrast][0].startswith("S")
     col = "#009E73" if sym else ("#CC79A7" if "M" in META[r.contrast][0] else "#D55E00")
-    ax.plot([r.ci_low_cal, r.ci_high_cal], [yi, yi], color=col, lw=1, alpha=.55)
-    ax.plot([r.ci_low_95, r.ci_high_95], [yi, yi], color=col, lw=3)
+    ax.plot([r.ci_low_95, r.ci_high_95], [yi + .18, yi + .18], color=col, lw=1, alpha=.6)
+    ax.plot([r.jt_low_95, r.jt_high_95], [yi, yi], color=col, lw=3)
     ax.plot(r.difference, yi, "o", color="black", ms=3.5, zorder=3)
 ax.axvline(0, color="0.4", lw=.7, ls="--")
 ax.set_yticks(y); ax.set_yticklabels([f"{r.contrast.split()[0]}  {META[r.contrast][0]}: {META[r.contrast][2].replace('--', chr(8211))}" for r in c.itertuples()])
@@ -73,21 +74,23 @@ for yb in [len(c) - 11.5, len(c) - 18.5, len(c) - 22.5]:
     ax.axhline(yb, color="0.85", lw=.6)
 fig.tight_layout(); fig.savefig(OUT / "fig_summary.pdf"); plt.close(fig)
 
-SEEDS = {"E1": 10, "E4": 10, "E5": 10, "E6": 10, "E7": 10}
+assert (c.jt_excludes_zero_95 == ((c.ci_low_95 > 0) | (c.ci_high_95 < 0))).all(), "caption claims the two 95% intervals agree"
 rows = []
 for r in c.itertuples():
     disp, env, setting, reading = META[r.contrast]; exp = r.contrast.split()[0]
-    est = f"${r.difference:+.3f}$"; i95 = f"$[{r.ci_low_95:+.3f},\\,{r.ci_high_95:+.3f}]$"; ical = f"$[{r.ci_low_cal:+.3f},\\,{r.ci_high_cal:+.3f}]$"
-    hm = "yes" if HOLM.loc[r.contrast].holm_reject else "no"
-    rows.append(" & ".join([exp, env, setting, disp, est, i95, ical, hm, reading]) + r" \\")
+    est = f"${r.difference:+.3f}$"; i95 = f"$[{r.ci_low_95:+.3f},\\,{r.ci_high_95:+.3f}]$"; ijt = f"$[{r.jt_low_95:+.3f},\\,{r.jt_high_95:+.3f}]$"
+    hm = "yes" if r.holm_jt_reject else "no"
+    if r.jt_excludes_zero_95 and not r.holm_jt_reject:
+        reading += "; not after Holm"
+    rows.append(" & ".join([exp, env, setting, disp, est, i95, ijt, hm, reading]) + r" \\")
 (OUT / "results_table.tex").write_text(r"""\begin{table}[!htbp]
-\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81); intervals resample complete training-seed blocks (2,000 draws). The 95\% interval is the pre-declared one. The """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval is the coverage-calibrated sensitivity of Section~\ref{sec:stats}, whose simulated coverage is at least 0.94. ``Holm'': whether the contrast remains nonzero after a Holm adjustment across all """ + f"{len(HOLM)}" + r""" principal contrasts (two-sided seed-block bootstrap $p$-values, family-wise $\alpha=0.05$; Section~\ref{sec:stats}). No principal verdict differs among the three.}
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81). ``Seed-block'': the pre-declared 95\% percentile interval from 2,000 resamples of complete training seeds, which under-covers at this sample size. ``Jackknife-$t$'': the calibrated 95\% interval of Section~\ref{sec:stats} (leave-one-seed-out standard error, $t_{n-1}$ quantiles), whose simulated coverage is near nominal. ``Holm'': whether the contrast remains nonzero after a Holm adjustment of the jackknife-$t$ $p$-values across all """ + f"{len(JKP)}" + r""" principal contrasts (family-wise $\alpha=0.05$). The two 95\% intervals agree on every zero-exclusion verdict.}
 \label{tab:results}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{@{}ll>{\raggedright\arraybackslash}p{.21\textwidth}lcccc >{\raggedright\arraybackslash}p{.12\textwidth}@{}}
 \toprule
-Exp. & Env. & Learner / intervention & Contrast & Estimate & 95\% interval & """ + f"{LEVEL:.0%}".replace("%", r"\%") + r""" interval & Holm & Reading \\
+Exp. & Env. & Learner / intervention & Contrast & Estimate & Seed-block 95\% & Jackknife-$t$ 95\% & Holm & Reading \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
@@ -112,6 +115,34 @@ for r in COV.itertuples():
 & & & & \multicolumn{3}{c}{Coverage of $w_{50}$} & \multicolumn{3}{c}{Coverage of contrast} & \multicolumn{3}{c}{Interval excludes 0} \\
 \cmidrule(lr){5-7}\cmidrule(lr){8-10}\cmidrule(l){11-13}
 Scenario & Seed SD & True $w_{50}$ & True contrast & 95 & 97.5 & 99 & 95 & 97.5 & 99 & 95 & 97.5 & 99 \\
+\midrule
+""" + "\n".join(rows) + r"""
+\bottomrule
+\end{tabular}
+\end{table}
+""")
+
+# ---------------------------------------------------------------- calibration study table (calibration_v5.py)
+CAL5 = pd.read_csv(RES.parent / "results_v5/calibration_summary.csv")
+def scen(nm):
+    parts = nm.split("-"); out = []
+    for q in parts:
+        out.append({"iid": "no seed effect", "u1": "seed SD 1", "u2": "seed SD 2", "v": "+ random slope", "rho0.5": r"$\rho=0.5$", "rho0": r"$\rho=0$",
+                    "het2": "arm-2 SD $\\times2$", "cloglog": "cloglog link", "n20": "", "n30": "", "low": "low", "high": "high"}.get(q, q))
+    return ", ".join(x for x in out if x)
+rows = []
+for r in CAL5.itertuples():
+    rows.append(" & ".join([scen(r.name), f"{r.n}", f"${r.true_d:+.2f}$"] + [f"{getattr(r, mm + '_d95'):.3f}" for mm in ["pct", "bca", "jt", "glmm", "pboot"]]
+                           + [f"{getattr(r, mm + '_x95'):.3f}" for mm in ["pct", "jt"]]) + r" \\")
+(OUT / "calibration_table.tex").write_text(r"""\begin{table}[H]
+\caption{Calibration study of interval procedures for a paired crossing contrast (\texttt{calibration\_v5.py}): 10,000 replicates per row, nominal 95\%. ``Seed SD'' is the SD of a per-seed logit intercept; $\rho$ is its correlation between the two arms (1 unless stated); ``edge'' rows put the crossing near $w=0.1$ or $0.95$. Coverage is of the true contrast $\Delta$; ``excludes 0'' is the false-positive rate when $\Delta=0$ and the power otherwise. Pct: pre-declared seed-block percentile; BCa: bias-corrected and accelerated; J-$t$: seed-level jackknife-$t$; HLM: hierarchical logistic model, Wald; PB: parametric bootstrap from it.}
+\label{tab:calibration}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lcccccccccc@{}}
+\toprule
+& & & \multicolumn{5}{c}{Coverage of $\Delta$} & \multicolumn{2}{c}{Excludes 0} \\
+\cmidrule(lr){4-8}\cmidrule(l){9-10}
+Scenario & Seeds & $\Delta$ & Pct & BCa & J-$t$ & HLM & PB & Pct & J-$t$ \\
 \midrule
 """ + "\n".join(rows) + r"""
 \bottomrule
@@ -192,5 +223,30 @@ m += mac("VeightClamp", f"{int(lo.sum())}"); m += mac("VeightNA", f"{len(pa8)}")
 # E12 (post hoc, descriptive): S's applied actor gradient relative to B's under local observation, default learner
 e12 = pd.read_csv(RUNS / "E12_runs.csv"); g12 = e12[e12.learner == "default"].groupby("arm").mb_post_actor_grad_norm.mean()
 m += mac("VtwelveAppliedRatio", f"{g12['S'] / g12['B']:.2f}")
+# ---------------------------------------------------------------- calibration study (calibration_v5.py) and jackknife-t
+CS = pd.read_csv(RES.parent / "results_v5/calibration_summary.csv"); c10 = CS[CS.n == 10]; nul = c10[c10.true_d.abs() < 1e-9]
+rng_ = lambda col, d=c10: f"{d[col].min():.2f}--{d[col].max():.2f}"
+m += mac("VcalScen", f"{len(CS)}"); m += mac("VcalScenTen", f"{len(c10)}")
+m += mac("VcalPctCov", rng_("pct_d95")); m += mac("VcalPctCovNine", rng_("pct_d99")); m += mac("VcalPctFP", rng_("pct_x95", nul))
+m += mac("VcalBcaCov", rng_("bca_d95")); m += mac("VcalJtCov", rng_("jt_d95")); m += mac("VcalJtFP", rng_("jt_x95", nul))
+m += mac("VcalJtCovW", rng_("jt_w95")); m += mac("VcalPctCovWMin", f"{c10.pct_w95.min():.2f}")
+m += mac("VcalGlmmCov", rng_("glmm_d95")); m += mac("VcalGlmmFPMax", f"{nul.glmm_x95.max():.3f}"); m += mac("VcalPbootFPMax", f"{nul.pboot_x95.max():.3f}")
+m += mac("VcalWidthRatio", f"{(c10.jt_wid / c10.pct_wid).median():.2f}")
+pw = lambda n, nm: CS[(CS.n == n) & (CS.name.str.startswith(nm))].jt_x95.iloc[0]
+m += mac("VcalPowTen", f"{c10[c10.name == 'steep-effect-u1'].jt_x95.iloc[0]:.2f}"); m += mac("VcalPowTwenty", f"{pw(20, 'steep-effect-u1'):.2f}"); m += mac("VcalPowThirty", f"{pw(30, 'steep-effect-u1'):.2f}")
+JC = JK[JK.kind == "change"].set_index("contrast")
+for lab, nm in [("E6 per-group minus shared clip, S-B", "Six"), ("E9 tau 30000 minus tau 0.5, S-B", "NineDose"), ("E9 tau 30000 minus no clip, S-B", "NineEnd"),
+                ("E7 PopArt minus plain, S-B", "Seven"), ("E8 PopArt minus plain, S-B (seeds 52-61)", "Eight"), ("E10 PopArt minus plain, S-B (seeds 62-81)", "Ten"),
+                ("PopArt minus plain, S-B, pooled seeds 42-81", "Pool"), ("E11 per-group minus shared clip, S-B", "Eleven")]:
+    x = JC.loc[lab]
+    m += mac(f"VjtCh{nm}", f"${x.difference:+.3f}$ $[{x.jt_low_95:+.3f},\\,{x.jt_high_95:+.3f}]$"); m += mac(f"VjtCh{nm}Nine", f"$[{x.jt_low_99:+.3f},\\,{x.jt_high_99:+.3f}]$")
+for lab, nm in [("E8 plain A-M_on", "EightAMon"), ("E10 plain S-B", "TenPlain"), ("E5 3.6M A-S", "FiveEnd"), ("E1 global_clip/raw S-B", "OneSym")]:
+    x = JKP.loc[lab]; m += mac(f"Vjt{nm}", f"$[{x.jt_low_95:+.3f},\\,{x.jt_high_95:+.3f}]$")
+for lab, nm in [("E1 global_clip/raw S-B", "Std"), ("E1 separate_no_clip/vecnormalize S-B", "SymBoth"), ("E1 separate_no_clip/vecnormalize A-S", "AsymBoth"),
+                ("E11 cleanrl_raw S-B", "ElevenRaw"), ("E11 cleanrl_default S-B", "ElevenDefault"), ("E11 cleanrl_default A-S", "ElevenAsym"),
+                ("E8 plain A-M_on", "AMonPlain"), ("E8 popart A-M_on", "AMonPop"), ("E12 decoupled A-S", "TwelveAsym")]:
+    x = JKP.loc[lab]; m += mac(f"VjtP{nm}", f"${x.difference:+.3f}$ $[{x.jt_low_95:+.3f},\\,{x.jt_high_95:+.3f}]$")
+m += mac("VjtHolmKept", f"{int(JKP.holm_jt_reject.sum())}"); m += mac("VjtNExcl", f"{int(JKP.jt_excludes_zero_95.sum())}")
+m += mac("VjtHolmLost", ", ".join(sorted(JKP[JKP.jt_excludes_zero_95 & ~JKP.holm_jt_reject.astype(bool)].index)).replace("_", r"\_"))
 (OUT / "revision_numbers.tex").write_text(m)
 print("wrote fig_summary, fig_e7_moments, fig_lbf_sensitivity, results_table, coverage_table, revision_numbers")

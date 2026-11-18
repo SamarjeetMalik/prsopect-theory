@@ -399,3 +399,42 @@ Optimizer state, X1 seed-paired S/B (geometric mean):
    attenuation is therefore not shown to cause the crossing shift.
 4. **What removes the shift:** reward normalization (both implementations). PopArt removes the no-clip residual when
    pooled over 40 seeds.
+
+## X3 (pre-registered 2026-11-18, frozen 08:20:40Z before the gate; analysed with the frozen `phase3_x3.py`)
+1,280 of 1,280 runs complete (Slurm arrays 10760 and 10761). Actor clipped (0.5) or not × critic clipped (0.5) or
+not, one Adam step, raw rewards, arms B and S, the E1 grid, fresh seeds 102–121. Output: `results/phase3_x3_report.txt`,
+`results/X3_contrasts.csv`, `results/X3_optimizer_state.csv`.
+
+| Quantity | Estimate | Jackknife-t 95% | Jackknife-t 90% |
+|---|---|---|---|
+| S − B, both clipped | +0.213 | [+0.125, +0.301] | [+0.140, +0.285] |
+| S − B, actor only | +0.172 | [+0.104, +0.239] | [+0.116, +0.227] |
+| S − B, critic only | +0.176 | [+0.106, +0.246] | [+0.119, +0.234] |
+| S − B, neither | +0.175 | [+0.091, +0.259] | [+0.106, +0.244] |
+| critic effect | +0.021 | [−0.051, +0.093] | [−0.038, +0.081] |
+| actor effect | +0.017 | [−0.050, +0.084] | [−0.039, +0.072] |
+| interaction | +0.040 | [−0.097, +0.177] | [−0.073, +0.153] |
+
+- **Predictions:**
+  - **P1 NOT MET** (primary): the critic-clipping effect's 95% interval includes zero.
+  - **P2 MET:** the actor-clipping effect's 90% interval lies within ±0.10.
+  - **P3 MET:** S − B with both groups clipped excludes zero.
+- **Descriptive:** in every mode the critic's explained variance is lower for S by 0.39–0.40; the actor's update S/B
+  is 0.94–0.96 and the critic's 0.68–0.72; without its clip the critic's applied gradient S/B is about 9.
+- **Declared consequence (P1 not met, critic effect near 0):** neither group's clipping is shown to carry the shift.
+  The no-clip shift on fresh seeds, and reward/target normalization, are the only located factors.
+- X1's no-clip estimate on seeds 82–101 (+0.076, interval including 0) motivated X3's hypothesis; on seeds 102–121
+  the no-clip shift is +0.175 and excludes zero.
+
+## Verdict after X3
+The symmetric-scaling shift is a property of PPO with an unnormalized critic. It is present with or without
+gradient clipping. The shared clip measurably starves the actor but is not shown to move the crossing (E6's reduction
+did not replicate in X1, and neither group's clip matters in X3). In the CleanRL-style implementation a small per-group
+reduction appears only in the pooled secondary analysis (−0.105 [−0.194, −0.016]). Normalizing rewards removes the
+shift in both implementations; normalizing only the critic's targets reduces it on the pooled 40-seed evidence.
+
+**Exploratory addendum (not pre-registered; `analysis/explore_x13_pooled.py`, written after X3's results).** Pooling
+X1 and X3 (seeds 82–121) for the configurations they share: S − B without clipping +0.126 [+0.065, +0.188], with
+per-group clipping +0.244 [+0.193, +0.295], difference +0.118 [+0.049, +0.187]. The cohorts disagree (per-group minus
+no clip ≈ 0.20 on X1's seeds, 0.04 on X3's). Reading: clipping is not necessary for the shift and may enlarge it; its
+contribution is unresolved.

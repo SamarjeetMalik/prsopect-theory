@@ -1,0 +1,15 @@
+\begin{table}[!htbp]
+\caption{The actor's optimizer state in X1 (seeds 82--101): seed-paired S/B ratios, geometric mean over each seed's eight cells, with 95\% jackknife-$t$ intervals over seeds. Under the shared clip, Adam's two moments shrink together with the clip factor, and the resulting step is 0.4 of B's; clipping the groups separately restores it.}
+\label{tab:x1opt}
+\centering\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Actor quantity, S/B & Shared clip & Separately clipped & No clipping \\
+\midrule
+Applied actor gradient & 0.131 {\scriptsize [0.121,\,0.141]} & 1.000 {\scriptsize [1.000,\,1.000]} & 1.053 {\scriptsize [0.989,\,1.120]} \\
+Adam first moment $\|\hat m\|$ & 0.161 {\scriptsize [0.151,\,0.171]} & 0.995 {\scriptsize [0.990,\,1.000]} & 1.034 {\scriptsize [0.983,\,1.088]} \\
+Adam $\|\sqrt{\hat v}\|$ & 0.160 {\scriptsize [0.142,\,0.181]} & 1.000 {\scriptsize [1.000,\,1.000]} & 1.044 {\scriptsize [0.986,\,1.105]} \\
+Adam step $\|\hat m/(\sqrt{\hat v}+\epsilon)\|$ & 0.400 {\scriptsize [0.386,\,0.414]} & 0.940 {\scriptsize [0.932,\,0.949]} & 0.957 {\scriptsize [0.942,\,0.972]} \\
+\bottomrule
+\end{tabular}
+\end{table}

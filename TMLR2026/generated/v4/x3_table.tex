@@ -1,0 +1,18 @@
+\begin{table}[!htbp]
+\caption{Which clipped group carries the symmetric shift (X3, 1,280 runs): one Adam step, raw rewards, the actor's and the critic's gradients each clipped to 0.5 or not, arms B and S, the E1 grid, fresh seeds 102--121. Rows 1--4: S$-$B in each mode; rows 5--7: factorial effects on S$-$B. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. P2 is an equivalence test: its 90\% interval must lie within $\pm0.10$.}
+\label{tab:x3}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}}
+\toprule
+Mode or effect & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\% \\
+\midrule
+Both groups clipped separately & $+0.213$$^{\ast}$ & $[+0.125,\,+0.301]$ & $[+0.140,\,+0.285]$ & $[+0.131,\,+0.291]$ \\
+Actor clipped only & $+0.172$$^{\ast}$ & $[+0.104,\,+0.239]$ & $[+0.116,\,+0.227]$ & $[+0.105,\,+0.236]$ \\
+Critic clipped only & $+0.176$$^{\ast}$ & $[+0.106,\,+0.246]$ & $[+0.119,\,+0.234]$ & $[+0.106,\,+0.234]$ \\
+No clipping & $+0.175$$^{\ast}$ & $[+0.091,\,+0.259]$ & $[+0.106,\,+0.244]$ & $[+0.094,\,+0.251]$ \\
+Critic-clipping effect (P1) & $+0.021$ & $[-0.051,\,+0.093]$ & $[-0.038,\,+0.081]$ & $[-0.049,\,+0.082]$ \\
+Actor-clipping effect (P2) & $+0.017$ & $[-0.050,\,+0.084]$ & $[-0.039,\,+0.072]$ & $[-0.046,\,+0.077]$ \\
+Interaction & $+0.040$ & $[-0.097,\,+0.177]$ & $[-0.073,\,+0.153]$ & $[-0.081,\,+0.167]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

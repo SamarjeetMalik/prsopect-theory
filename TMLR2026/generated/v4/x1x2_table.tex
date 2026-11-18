@@ -1,0 +1,18 @@
+\begin{table}[!htbp]
+\caption{Fresh-seed replication of the clipping intervention (X1, SB3, 960 runs; X2, CleanRL-style, 640 runs): raw rewards, arms B and S, the E1 grid, seeds 82--101 (pre-declared primary), and pooled with E6's and E11's seeds 42--51 (secondary). Symmetric-scaling contrasts S$-$B with calibrated 95\% jackknife-$t$ intervals; $^{\ast}$: interval excludes zero.}
+\label{tab:x1x2}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.38\textwidth}cc@{}}
+\toprule
+Learner / clipping & Seeds 82--101 & Seeds 42--51 and 82--101 \\
+\midrule
+SB3: shared clip & \begin{tabular}[t]{@{}c@{}}$+0.248$$^{\ast}$\\[-1pt]{\scriptsize $[+0.191,\,+0.305]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.285$$^{\ast}$\\[-1pt]{\scriptsize $[+0.228,\,+0.341]$}\end{tabular} \\
+SB3: actor and critic clipped separately & \begin{tabular}[t]{@{}c@{}}$+0.275$$^{\ast}$\\[-1pt]{\scriptsize $[+0.214,\,+0.336]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.236$$^{\ast}$\\[-1pt]{\scriptsize $[+0.184,\,+0.287]$}\end{tabular} \\
+SB3: no clipping & \begin{tabular}[t]{@{}c@{}}$+0.076$\\[-1pt]{\scriptsize $[-0.013,\,+0.166]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.103$$^{\ast}$\\[-1pt]{\scriptsize $[+0.035,\,+0.171]$}\end{tabular} \\
+SB3: change, separate $-$ shared clip & \begin{tabular}[t]{@{}c@{}}$+0.027$\\[-1pt]{\scriptsize $[-0.071,\,+0.125]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.049$\\[-1pt]{\scriptsize $[-0.138,\,+0.040]$}\end{tabular} \\
+CleanRL-style: shared clip & \begin{tabular}[t]{@{}c@{}}$+0.370$$^{\ast}$\\[-1pt]{\scriptsize $[+0.260,\,+0.479]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.338$$^{\ast}$\\[-1pt]{\scriptsize $[+0.259,\,+0.417]$}\end{tabular} \\
+CleanRL-style: separately clipped & \begin{tabular}[t]{@{}c@{}}$+0.258$$^{\ast}$\\[-1pt]{\scriptsize $[+0.161,\,+0.355]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.233$$^{\ast}$\\[-1pt]{\scriptsize $[+0.166,\,+0.300]$}\end{tabular} \\
+CleanRL-style: change, separate $-$ shared & \begin{tabular}[t]{@{}c@{}}$-0.112$\\[-1pt]{\scriptsize $[-0.244,\,+0.021]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.105$$^{\ast}$\\[-1pt]{\scriptsize $[-0.194,\,-0.016]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

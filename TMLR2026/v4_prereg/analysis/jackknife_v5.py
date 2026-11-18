@@ -92,7 +92,14 @@ record("change", "PopArt minus plain, S-B, pooled seeds 42-81", *change(SB(pop),
 c11 = lambda n: r11[r11.condition_name == n]
 record("change", "E11 per-group minus shared clip, S-B", *change(SB(c11("cleanrl_group")), SB(c11("cleanrl_raw"))))
 
-out = pd.DataFrame(rows); out.to_csv(RES / "jackknife_v5.csv", index=False)
+out = pd.DataFrame(rows)
+# two-sided jackknife-t p-values and a Holm adjustment across the principal contrasts
+out["p_jt"] = 2 * stats.t.sf(np.abs(out.difference / out.se_jack), out.n_seeds - 1)
+pr = out[out.kind == "principal"].sort_values("p_jt"); m_ = len(pr); still = True; rej = {}
+for i, (ix, r) in enumerate(pr.iterrows()):
+    still = still and r.p_jt <= 0.05 / (m_ - i); rej[ix] = still
+out["holm_jt_reject"] = out.index.map(rej)
+out.to_csv(RES / "jackknife_v5.csv", index=False)
 pd.set_option("display.width", 220)
 show = out.assign(jt95=lambda d: d.apply(lambda r: f"[{r.jt_low_95:+.3f}, {r.jt_high_95:+.3f}]", axis=1),
                   jt99=lambda d: d.apply(lambda r: f"[{r.jt_low_99:+.3f}, {r.jt_high_99:+.3f}]", axis=1))
