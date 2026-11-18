@@ -28,7 +28,7 @@ LEVEL = float(CAL.level.iloc[0])
 # ---------------------------------------------------------------- principal contrasts
 META = {  # contrast label -> (display, environment, learner/intervention, reading)
     "E1 global_clip/raw S-B": (r"S$-$B", "Supply", "Shared clip, raw rewards (default)", "symmetric shift"),
-    "E6 groupwise_clip S-B": (r"S$-$B", "Supply", "Per-group clip, raw rewards", "symmetric shift reduced"),
+    "E6 groupwise_clip S-B": (r"S$-$B", "Supply", "Per-group clip, raw rewards", "shift reduced; not replicated (X1)"),
     "E1 separate_no_clip/vecnormalize S-B": (r"S$-$B", "Supply", "Separate optimizers, normalized rewards", "none detectable"),
     "E7 popart S-B": (r"S$-$B", "Supply", "Separate optimizers, PopArt critic, raw rewards", "none detectable"),
     "E1 separate_no_clip/vecnormalize A-S": (r"A$-$S", "Supply", "Separate optimizers, normalized rewards", "asymmetric shift"),
@@ -46,7 +46,7 @@ META = {  # contrast label -> (display, environment, learner/intervention, readi
     "E10 plain S-B": (r"S$-$B", "Supply", "Plain critic, raw rewards, seeds 62--81", "symmetric shift replicates"),
     "E10 popart S-B": (r"S$-$B", "Supply", "PopArt critic, raw rewards, seeds 62--81", "none detectable"),
     "E11 cleanrl_raw S-B": (r"S$-$B", "Supply", "CleanRL-style, global clip, raw rewards", "symmetric shift"),
-    "E11 cleanrl_group S-B": (r"S$-$B", "Supply", "CleanRL-style, per-group clip, raw rewards", "symmetric shift reduced"),
+    "E11 cleanrl_group S-B": (r"S$-$B", "Supply", "CleanRL-style, per-group clip, raw rewards", "shift persists; reduction not established (X2)"),
     "E11 cleanrl_default S-B": (r"S$-$B", "Supply", "CleanRL-style, normalized rewards", "none detectable"),
     "E11 cleanrl_default A-S": (r"A$-$S", "Supply", "CleanRL-style, normalized rewards", "asymmetric shift"),
     "E12 default S-B": (r"S$-$B", "Supply", "Local observations, default learner", "none detectable (predicted nonzero)"),
@@ -84,7 +84,7 @@ for r in c.itertuples():
         reading += "; not after Holm"
     rows.append(" & ".join([exp, env, setting, disp, est, i95, ijt, hm, reading]) + r" \\")
 (OUT / "results_table.tex").write_text(r"""\begin{table}[!htbp]
-\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81). ``Seed-block'': the pre-declared 95\% percentile interval from 2,000 resamples of complete training seeds, which under-covers at this sample size. ``Jackknife-$t$'': the calibrated 95\% interval of Section~\ref{sec:stats} (leave-one-seed-out standard error, $t_{n-1}$ quantiles), whose simulated coverage is near nominal. ``Holm'': whether the contrast remains nonzero after a Holm adjustment of the jackknife-$t$ $p$-values across all """ + f"{len(JKP)}" + r""" principal contrasts (family-wise $\alpha=0.05$). The two 95\% intervals agree on every zero-exclusion verdict.}
+\caption{Principal crossing contrasts. Each contrast pairs two arms over the same training seeds on the experiment's mixture grid (ten seeds, 42--51, except E8's 52--61 and E10's twenty, 62--81). ``Seed-block'': the pre-declared 95\% percentile interval from 2,000 resamples of complete training seeds, which under-covers at this sample size. ``Jackknife-$t$'': the calibrated 95\% interval of Section~\ref{sec:stats} (leave-one-seed-out standard error, $t_{n-1}$ quantiles), whose simulated coverage is near nominal. ``Holm'': whether the contrast remains nonzero after a Holm adjustment of the jackknife-$t$ $p$-values across all """ + f"{len(JKP)}" + r""" principal contrasts (family-wise $\alpha=0.05$); E1's and E6's shared-clip S$-$B are the same runs, shown once but counted twice, which is conservative. The two 95\% intervals agree on every zero-exclusion verdict. The fresh-seed experiments X1--X3, which did not replicate the per-group reductions of E6 and E11, are reported in Tables~\ref{tab:x1x2} and~\ref{tab:x3} and are not in this family.}
 \label{tab:results}
 \centering\scriptsize
 \setlength{\tabcolsep}{4pt}

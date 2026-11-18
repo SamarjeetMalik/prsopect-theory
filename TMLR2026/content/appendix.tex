@@ -67,7 +67,7 @@ report $w_{50}=-b_0/b_1$. A point estimate is reported only with an identified n
 proportions are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use 2,000
 percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
 random seed 20261015 for E1--E12; E8's fresh-seed cohort uses the same weights over seeds 52--61, and E10's
-twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). The same weight vector is used for every condition in an experiment,
+twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). X1 and X2 use draws over seeds 82--101 (random seed 20261119) and, pooled with seeds 42--51, over thirty seeds (20261120); X3 uses draws over seeds 102--121 (20261121). The same weight vector is used for every condition in an experiment,
 so differences are seed-paired. Fits outside the grid and non-converged draws are retained and counted.
 Intervals are pointwise; no simultaneous statement across checkpoints or cells is made.
 
@@ -187,7 +187,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \section{Computational Accounting}
 \label{app:compute}
 
-E1--E12 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+E1--E12 and X1--X3 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
 (Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
 the earlier confirmation cohorts were run separately on another platform and are not included.
 
