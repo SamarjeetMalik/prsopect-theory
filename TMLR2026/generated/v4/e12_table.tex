@@ -1,13 +1,13 @@
 \begin{table}[!htbp]
-\caption{Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-block intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).}
+\caption{Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-level jackknife-$t$ intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).}
 \label{tab:e12}
 \centering\footnotesize
 \begin{tabular}{@{}p{.25\textwidth}cccccc@{}}
 \toprule
 Learner & S$-$B & A$-$S & $w_{50}$ B & $w_{50}$ A & $w_{50}$ S \\
 \midrule
-Default (one Adam, global clip, raw rewards) & \begin{tabular}[t]{@{}c@{}}$+0.069$\\[-1pt]{\scriptsize $[-0.021,\,+0.154]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.091$$^{\ast}$\\[-1pt]{\scriptsize $[+0.040,\,+0.146]$}\end{tabular} & 0.582 (0.538) & 0.743 (0.821) & 0.651 (0.895) \\
-Decoupled (separate optimizers, no clip, normalized rewards) & \begin{tabular}[t]{@{}c@{}}$-0.008$\\[-1pt]{\scriptsize $[-0.166,\,+0.264]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.562$$^{\ast}$\\[-1pt]{\scriptsize $[+0.483,\,+0.654]$}\end{tabular} & 0.075 (0.414) & 0.629 (0.602) & 0.067 (0.365) \\
+Default (one Adam, global clip, raw rewards) & \begin{tabular}[t]{@{}c@{}}$+0.069$\\[-1pt]{\scriptsize $[-0.036,\,+0.174]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.091$$^{\ast}$\\[-1pt]{\scriptsize $[+0.028,\,+0.155]$}\end{tabular} & 0.582 (0.538) & 0.743 (0.821) & 0.651 (0.895) \\
+Decoupled (separate optimizers, no clip, normalized rewards) & \begin{tabular}[t]{@{}c@{}}$-0.008$\\[-1pt]{\scriptsize $[-0.213,\,+0.196]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.562$$^{\ast}$\\[-1pt]{\scriptsize $[+0.471,\,+0.652]$}\end{tabular} & 0.075 (0.414) & 0.629 (0.602) & 0.067 (0.365) \\
 \bottomrule
 \end{tabular}
 \end{table}

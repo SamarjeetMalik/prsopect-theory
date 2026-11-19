@@ -1,15 +1,15 @@
 \begin{table}[!htbp]
-\caption{A second PPO implementation (E11): a single-file port of CleanRL's \texttt{ppo\_continuous\_action} with its defaults (network, initialization, clipped value loss, learning-rate annealing, observation normalization, global clip 0.5), on the supply chain with E1's arms, grid, seeds 42--51 and 300k budget. ``Critic share'': the critic's share of the squared joint gradient norm; ``applied S/B'': seed-paired ratio of S's to B's applied actor gradient. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.}
+\caption{A second PPO implementation (E11): a single-file port of CleanRL's \texttt{ppo\_continuous\_action} with its defaults (network, initialization, clipped value loss, learning-rate annealing, observation normalization, global clip 0.5), on the supply chain with E1's arms, grid, seeds 42--51 and 300k budget. ``Critic share'': the critic's share of the squared joint gradient norm; ``applied S/B'': seed-paired ratio of S's to B's applied actor gradient. Paired 95\% seed-level jackknife-$t$ intervals; $^{\ast}$: interval excludes zero.}
 \label{tab:e11}
 \centering\footnotesize
 \begin{tabular}{@{}p{.34\textwidth}cccc@{}}
 \toprule
 Condition & Critic share & Applied S/B & S$-$B & A$-$S \\
 \midrule
-Raw rewards, one global clip & 0.987 & 0.33 & \begin{tabular}[t]{@{}c@{}}$+0.288$$^{\ast}$\\[-1pt]{\scriptsize $[+0.171,\,+0.393]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.298$$^{\ast}$\\[-1pt]{\scriptsize $[+0.161,\,+0.435]$}\end{tabular} \\
-Raw rewards, actor and critic clipped separately & 0.978 & 1.00 & \begin{tabular}[t]{@{}c@{}}$+0.187$$^{\ast}$\\[-1pt]{\scriptsize $[+0.119,\,+0.250]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.225$$^{\ast}$\\[-1pt]{\scriptsize $[+0.129,\,+0.339]$}\end{tabular} \\
-Reward normalization, one global clip (CleanRL default) & 0.014 & 1.00 & \begin{tabular}[t]{@{}c@{}}$+0.000$\\[-1pt]{\scriptsize $[-0.057,\,+0.057]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.297$$^{\ast}$\\[-1pt]{\scriptsize $[+0.222,\,+0.382]$}\end{tabular} \\
-Change in S$-$B, separate minus global clip (raw) &  &  & \begin{tabular}[t]{@{}c@{}}$-0.101$$^{\ast}$\\[-1pt]{\scriptsize $[-0.207,\,-0.000]$}\end{tabular} &  \\
+Raw rewards, one global clip & 0.987 & 0.33 & \begin{tabular}[t]{@{}c@{}}$+0.288$$^{\ast}$\\[-1pt]{\scriptsize $[+0.151,\,+0.424]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.298$$^{\ast}$\\[-1pt]{\scriptsize $[+0.129,\,+0.467]$}\end{tabular} \\
+Raw rewards, actor and critic clipped separately & 0.978 & 1.00 & \begin{tabular}[t]{@{}c@{}}$+0.187$$^{\ast}$\\[-1pt]{\scriptsize $[+0.106,\,+0.268]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.225$$^{\ast}$\\[-1pt]{\scriptsize $[+0.096,\,+0.355]$}\end{tabular} \\
+Reward normalization, one global clip (CleanRL default) & 0.014 & 1.00 & \begin{tabular}[t]{@{}c@{}}$+0.000$\\[-1pt]{\scriptsize $[-0.065,\,+0.065]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.297$$^{\ast}$\\[-1pt]{\scriptsize $[+0.200,\,+0.394]$}\end{tabular} \\
+Change in S$-$B, separate minus global clip (raw) &  &  & \begin{tabular}[t]{@{}c@{}}$-0.101$\\[-1pt]{\scriptsize $[-0.224,\,+0.022]$}\end{tabular} &  \\
 \bottomrule
 \end{tabular}
 \end{table}

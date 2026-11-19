@@ -82,7 +82,7 @@ dd.set_ylabel("S/B, same seed and $w$"); dd.set_title("D  update vs. gradient (E
 
 # E
 e = ax[1, 1]
-k9 = pd.read_csv(RES / "E9_contrasts.csv").set_index("contrast"); m9 = pd.read_csv(RES / "E9_mechanism.csv")
+k9 = pd.read_csv(RES.parent / "results_jt/E9_contrasts.csv").set_index("contrast"); m9 = pd.read_csv(RES / "E9_mechanism.csv")
 m9 = m9.assign(tau=m9.tau.astype(str)).set_index("tau")
 LAB = [("0.5 (E1)", "S-B, tau 0.5 (E1)", "0.5"), ("300", "S-B, tau 300", "300"), ("3000", "S-B, tau 3000", "3000"),
        ("10000", "S-B, tau 10000", "$10^4$"), ("30000", "S-B, tau 30000", r"$3{\cdot}10^4$"), ("inf (E1 no clip)", "S-B, tau inf (E1 no clip)", "none")]
@@ -95,9 +95,9 @@ e.set_title(r"E  clip threshold (E9)"); e.set_xlim(0, 1.25)
 
 # F
 f = ax[1, 2]
-g = lambda fn, **kw: pd.read_csv(RES / fn).pipe(lambda d: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0])
-k10 = pd.read_csv(RES / "E10_contrasts.csv").set_index("contrast"); k11 = pd.read_csv(RES / "E11_contrasts.csv").set_index("contrast")
-k8 = pd.read_csv(RES / "E8B_contrasts.csv")
+g = lambda fn, **kw: pd.read_csv((RES.parent / "results_jt" / fn) if (RES.parent / "results_jt" / fn).exists() else RES / fn).pipe(lambda d: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0])
+k10 = pd.read_csv(RES.parent / "results_jt/E10_contrasts.csv").set_index("contrast"); k11 = pd.read_csv(RES.parent / "results_jt/E11_contrasts.csv").set_index("contrast")
+k8 = pd.read_csv(RES.parent / "results_jt/E8B_contrasts.csv")
 ROWS = [("SB3: shared clip (default)", g("E1E2_contrasts.csv", cell="global_clip/raw", contrast="S-B")),
         ("SB3: per-group clip", g("E6_contrasts.csv", mode="groupwise_clip", contrast="S-B")),
         ("SB3: no clip", g("E1E2_contrasts.csv", cell="separate_no_clip/raw", contrast="S-B")),

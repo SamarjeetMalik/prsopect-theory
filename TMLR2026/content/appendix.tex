@@ -64,7 +64,12 @@ on one cell and seed, the global-clip runner reproduced the legacy LBF runner's 
 
 For each fixed configuration we fit $P(Y=1\mid w)=\sigma(b_0+b_1w)$ by Firth logistic regression and
 report $w_{50}=-b_0/b_1$. A point estimate is reported only with an identified nonzero slope; observed
-proportions are inspected separately for adjacent cells bracketing $.5$. Confidence intervals use 2,000
+proportions are inspected separately for adjacent cells bracketing $.5$. The reported intervals are seed-level
+jackknife-$t$ intervals: the estimate $\pm t_{n-1}$ times the leave-one-seed-out standard error, with the same seed left out
+of every condition in an experiment, so differences are seed-paired. For E1--E12 they are obtained by re-executing each
+frozen analysis script with its bootstrap weight matrix replaced by the leave-one-seed-out matrix
+(\texttt{analysis/jackknife\_all.py}, revision, not pre-registered); on every contrast that \texttt{jackknife\_v5.py}
+computes independently, the two agree. The pre-declared confidence intervals use 2,000
 percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
 random seed 20261015 for E1--E12; E8's fresh-seed cohort uses the same weights over seeds 52--61, and E10's
 twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). X1 and X2 use draws over seeds 82--101 (random seed 20261119) and, pooled with seeds 42--51, over thirty seeds (20261120); X3 uses draws over seeds 102--121 (20261121), X4 over seeds 122--161 (20261122). The same weight vector is used for every condition in an experiment,
@@ -89,6 +94,8 @@ smaller simulation of the pre-declared intervals is kept as Table~\ref{tab:cover
 \input{generated/v4/calibration_table}
 
 \input{generated/v4/coverage_table}
+
+\input{generated/v4/pct_sensitivity}
 
 Logistic, probit and decreasing isotonic fits are sensitivity estimators on the same rows. The isotonic
 fit is weighted pool-adjacent-violators; its crossing is linear interpolation between the last cell with
@@ -153,7 +160,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \begin{figure}[H]
 \centering
 \includegraphics[width=.78\textwidth]{generated/v4/horizon_curves.pdf}
-\caption{E3 crossings at every checkpoint (lines) with pointwise 95\% seed-block bands. Default optimizer; nine mixture cells, ten seeds per cell and condition.}
+\caption{E3 crossings at every checkpoint (lines) with pointwise 95\% jackknife-$t$ bands. Default optimizer; nine mixture cells, ten seeds per cell and condition.}
 \label{fig:horizon}
 \Description{Three crossing curves over training budget: lambda seven decreasing throughout; linear and curvature-only falling to 900k and rising afterwards.}
 \end{figure}

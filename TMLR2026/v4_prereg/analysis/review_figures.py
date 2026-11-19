@@ -29,6 +29,8 @@ from isotonic import isotonic_crossing  # noqa: E402
 
 SEEDS = list(range(42, 52))
 WEIGHTS = np.random.default_rng(20261015).multinomial(10, np.full(10, 0.1), size=2000)   # as phase3.py
+JW = 1 - np.eye(10)                                   # leave-one-seed-out weights (revision v6: jackknife-t is the reported interval)
+JT = RES.parent / "results_jt"; JT.mkdir(exist_ok=True)
 G1 = [0.0, 0.2, 0.4, 0.5, 0.6, 0.7, 0.85, 1.0]
 G3 = [0.2, 0.4, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 1.0]
 G4 = [0.0, 0.1, 0.2, 0.3, 0.5, 0.65, 0.75, 0.85, 0.9, 0.95]
@@ -54,7 +56,16 @@ def fit(k, grid, boot=True):
     out = dict(w50=p["wcrit"][0], b0=p["b0"][0], b1=p["b1"][0], in_grid=bool(p["in_grid"][0]), cells=k.sum(0))
     if boot:
         out["boot"] = firth(w, WEIGHTS @ k, WEIGHTS @ n)["wcrit"]
+        out["jack"] = firth(w, JW @ k, JW @ n)["wcrit"]
     return out
+
+
+def jt(est, jv, level=0.95):
+    """Seed-level jackknife-t interval, est +/- t_{n-1} * se_jack, as in jackknife_v5.py."""
+    from scipy import stats
+    v = np.asarray(jv, float); v = v[np.isfinite(v)]; n = len(v)
+    se = np.sqrt((n - 1) / n * ((v - v.mean()) ** 2).sum()); h = stats.t.ppf(1 - (1 - level) / 2, n - 1) * se
+    return est - h, est + h
 
 
 def ci(z):
@@ -82,17 +93,24 @@ CK = sorted(e5.checkpoint.unique()); rows = []
 for ck in CK:
     g = e5[e5.checkpoint == ck]; f = {a: fit(counts(g[g.arm == a], G3), G3) for a in "BAS"}
     for a in "BAS":
-        lo, hi = ci(f[a]["boot"]); rows.append(dict(kind="crossing", name=a, checkpoint=ck, value=f[a]["w50"], ci_low=lo, ci_high=hi))
+        lo, hi = ci(f[a]["boot"]); jl, jh = jt(f[a]["w50"], f[a]["jack"])
+        rows.append(dict(kind="crossing", name=a, checkpoint=ck, value=f[a]["w50"], ci_low=lo, ci_high=hi, jt_low=jl, jt_high=jh))
     for name, x, y in [("A-S", "A", "S"), ("A-B", "A", "B"), ("S-B", "S", "B")]:
-        lo, hi = ci(f[x]["boot"] - f[y]["boot"])
-        rows.append(dict(kind="contrast", name=name, checkpoint=ck, value=f[x]["w50"] - f[y]["w50"], ci_low=lo, ci_high=hi))
+        lo, hi = ci(f[x]["boot"] - f[y]["boot"]); d = f[x]["w50"] - f[y]["w50"]; jl, jh = jt(d, f[x]["jack"] - f[y]["jack"])
+        rows.append(dict(kind="contrast", name=name, checkpoint=ck, value=d, ci_low=lo, ci_high=hi, jt_low=jl, jt_high=jh))
 e3rows = []
 for ck in CK:
     g = e3[e3.checkpoint == ck]; f = {c: fit(counts(g[g.condition == c], G3), G3) for c in ("lambda7", "curvature")}
-    lo, hi = ci(f["lambda7"]["boot"] - f["curvature"]["boot"])
-    e3rows.append(dict(checkpoint=ck, value=f["lambda7"]["w50"] - f["curvature"]["w50"], ci_low=lo, ci_high=hi))
-r5 = pd.DataFrame(rows); r5.to_csv(RES / "E5_all_checkpoints.csv", index=False)
-r3 = pd.DataFrame(e3rows); r3.to_csv(RES / "E3_all_checkpoints_contrast.csv", index=False)
+    lo, hi = ci(f["lambda7"]["boot"] - f["curvature"]["boot"]); d = f["lambda7"]["w50"] - f["curvature"]["w50"]
+    jl, jh = jt(d, f["lambda7"]["jack"] - f["curvature"]["jack"])
+    e3rows.append(dict(checkpoint=ck, value=d, ci_low=lo, ci_high=hi, jt_low=jl, jt_high=jh))
+r5 = pd.DataFrame(rows); r5.drop(columns=["jt_low", "jt_high"]).to_csv(RES / "E5_all_checkpoints.csv", index=False)
+r3 = pd.DataFrame(e3rows); r3.drop(columns=["jt_low", "jt_high"]).to_csv(RES / "E3_all_checkpoints_contrast.csv", index=False)
+# the figure and macros use the jackknife-t interval; the percentile one is kept as pct_*
+for frame, name in [(r5, "E5_all_checkpoints"), (r3, "E3_all_checkpoints_contrast")]:
+    frame.rename(columns={"ci_low": "pct_ci_low", "ci_high": "pct_ci_high"}, inplace=True)
+    frame.rename(columns={"jt_low": "ci_low", "jt_high": "ci_high"}, inplace=True)
+    frame.insert(0, "interval", "jackknife-t"); frame.to_csv(JT / f"{name}.csv", index=False)
 
 fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.7))
 for a in "BAS":

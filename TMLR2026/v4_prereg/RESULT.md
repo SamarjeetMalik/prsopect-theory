@@ -481,3 +481,24 @@ The symmetric-scaling shift in the no-clip SB3 learner runs through the scale of
 Removing the scale, with a fixed-scale head or with PopArt, removes the shift on forty fresh seeds (equivalent to zero
 within ±0.10). With the plain critic, S fits the returns worse and builds worse advantages. X4 does not isolate the
 critic's fit as the mediator: both interventions that equalize the fit also remove the target scale.
+
+## Revision v6 (19 Nov 2026): jackknife-t as the reported interval throughout (not pre-registered)
+`analysis/jackknife_all.py` re-executes the frozen E1–E12 analysis scripts with their bootstrap weight matrices
+replaced by leave-one-seed-out weights. It writes `results_jt/`, with `ci_*` holding the jackknife-t interval and
+`pct_*` the pre-declared percentile interval. `results/` is unchanged.
+
+- **Agreement check.** The jackknife-t intervals agree exactly with `jackknife_v5.py` wherever both compute one;
+  `render_v4.py` asserts this.
+- **Verdict differences.** Sixteen reported zero-exclusion verdicts differ between the two procedures. In every case
+  the percentile interval excludes zero and the jackknife-t interval does not (paper Table `tab:pct_sensitivity`).
+  The new ones are:
+  - the change in S − B from removing the clip (E1/E6, −0.197);
+  - the Adam-ε change in A − S (E2);
+  - two non-identified E4 curvature contrasts;
+  - eight non-primary E5 checkpoints. E5's A − S now excludes zero at 18/24 checkpoints, against 23/24 before.
+- **Already reported as calibration-sensitive:** the E8, E9, E10 and E11 changes.
+- **Other effects:**
+  - E7's plain-critic A − M now clearly includes zero (it touched zero before).
+  - E8's plain-critic A − M_on excludes zero at 95% but not at 99%.
+- **Pre-declared verdicts are unchanged.** They are judged with the intervals they were declared with; the paper
+  says where the two differ.

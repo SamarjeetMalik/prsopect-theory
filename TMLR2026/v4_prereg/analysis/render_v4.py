@@ -13,6 +13,12 @@ import pandas as pd  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 RES, OUT = ROOT / "v4_prereg/results", ROOT / "generated/v4"
+JT = ROOT / "v4_prereg/results_jt"   # jackknife-t versions of the per-experiment intervals (jackknife_all.py); pct_* columns keep the percentile ones
+
+
+def rd(name, **kw):
+    """Read a result table, preferring its jackknife-t version: every interval in the main text is jackknife-t (revision v6)."""
+    return pd.read_csv(JT / name if (JT / name).exists() else RES / name, **kw)
 OUT.mkdir(parents=True, exist_ok=True)
 CELLS = ["global_clip/raw", "global_clip/vecnormalize", "separate_no_clip/raw", "separate_no_clip/vecnormalize", "eps1e-8/raw"]
 CELL_TEX = {"global_clip/raw": "Global clip, raw (default)", "global_clip/vecnormalize": "Global clip, normalized reward",
@@ -58,8 +64,8 @@ def table(path, caption, label, colspec, header, rows, size=r"\small", fit=False
 
 
 # ---------------------------------------------------------------- E1/E2
-cr = pd.read_csv(RES / "E1E2_crossings.csv"); co = pd.read_csv(RES / "E1E2_contrasts.csv")
-it = pd.read_csv(RES / "E1E2_interactions.csv"); dg = pd.read_csv(RES / "E1E2_diagnostics.csv")
+cr = rd("E1E2_crossings.csv"); co = rd("E1E2_contrasts.csv")
+it = rd("E1E2_interactions.csv"); dg = rd("E1E2_diagnostics.csv")
 rows = []
 for c in CELLS:
     r = [CELL_TEX[c]]
@@ -67,7 +73,7 @@ for c in CELLS:
         x = cr[(cr.cell == c) & (cr.arm == a)].iloc[0]; r.append(f"${num(x.w50)}$ ${iv(x.ci_low, x.ci_high)}$")
     rows.append(r)
 table(OUT / "factorial_crossings.tex",
-      r"Optimizer $\times$ reward-normalization factorial (E1) and Adam-$\epsilon$ addendum (E2): crossings $w_{50}$ at 300k with 95\% seed-block intervals. B: curvature only; A: losses $\times7$; S: both branches $\times7$; R: both branches $\times3.451$ (A's pooled RMS ratio). Ten seeds per cell, eight mixture cells, one platform.",
+      r"Optimizer $\times$ reward-normalization factorial (E1) and Adam-$\epsilon$ addendum (E2): crossings $w_{50}$ at 300k with 95\% seed-level jackknife-$t$ intervals. B: curvature only; A: losses $\times7$; S: both branches $\times7$; R: both branches $\times3.451$ (A's pooled RMS ratio). Ten seeds per cell, eight mixture cells, one platform.",
       "tab:factorial_crossings", "@{}lcccc@{}", r"Optimizer / reward & B & A & S & R", rows, size=r"\footnotesize")
 rows = []
 for c in CELLS:
@@ -77,7 +83,7 @@ for c in CELLS:
         r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
     rows.append(r)
 table(OUT / "factorial_contrasts.tex",
-      r"Paired seed-block contrasts within each optimizer cell. $^{\ast}$: 95\% interval excludes zero. A$-$S is the pre-declared asymmetry contrast; S$-$B and R$-$B are symmetric-scaling effects.",
+      r"Paired contrasts within each optimizer cell, with 95\% seed-level jackknife-$t$ intervals. $^{\ast}$: 95\% interval excludes zero. A$-$S is the pre-declared asymmetry contrast; S$-$B and R$-$B are symmetric-scaling effects.",
       "tab:factorial_contrasts", "@{}lcccc@{}", r"Optimizer / reward & A$-$S & A$-$B & S$-$B & R$-$B", rows, size=r"\footnotesize")
 rows = []
 for c in CELLS[1:]:
@@ -87,7 +93,7 @@ for c in CELLS[1:]:
         r.append(f"${num(x.change_vs_standard, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
     rows.append(r)
 table(OUT / "factorial_interactions.tex",
-      r"Change in each contrast relative to the default cell (global clip, raw reward), paired by seed. $^{\ast}$: interval excludes zero.",
+      r"Change in each contrast relative to the default cell (global clip, raw reward), paired by seed, with 95\% seed-level jackknife-$t$ intervals. $^{\ast}$: interval excludes zero.",
       "tab:factorial_interactions", "@{}lcccc@{}", r"Intervention & $\Delta$(A$-$S) & $\Delta$(A$-$B) & $\Delta$(S$-$B) & $\Delta$(R$-$B)", rows, size=r"\footnotesize", pos="H")
 rows = []
 for c in CELLS:
@@ -111,8 +117,8 @@ axes[0].set_yticks(np.arange(len(CELLS))[::-1]); axes[0].set_yticklabels([CELL_T
 fig.tight_layout(); fig.savefig(OUT / "factorial_contrasts.pdf"); plt.close(fig)
 
 # ---------------------------------------------------------------- E3
-h = pd.read_csv(RES / "E3_crossings.csv", keep_default_na=False, na_values=[""]); hc = pd.read_csv(RES / "E3_contrasts.csv")
-st = pd.read_csv(RES / "E3_stability.csv", keep_default_na=False, na_values=[""]); rc = pd.read_csv(RES / "E3_recovery.csv", keep_default_na=False, na_values=[""])
+h = rd("E3_crossings.csv", keep_default_na=False, na_values=[""]); hc = rd("E3_contrasts.csv")
+st = rd("E3_stability.csv", keep_default_na=False, na_values=[""]); rc = rd("E3_recovery.csv", keep_default_na=False, na_values=[""])
 COND_TEX = {"null": "Linear", "curvature": "Curvature only", "lambda7": r"$\lambda=7$"}
 PRIMARY = [300000, 900000, 1800000, 3600000]; BUD = {300000: "300k", 900000: "900k", 1800000: "1.8M", 3600000: "3.6M"}
 rows = []
@@ -126,7 +132,7 @@ for ck in PRIMARY:
     x = hc[(hc.checkpoint == ck) & (hc.contrast == "lambda7-curvature")].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
 rows.append(r)
 table(OUT / "horizon_table.tex",
-      r"Refined single-platform horizon cohort (E3), default optimizer configuration (global clip, raw rewards): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-block intervals; last row is the paired contrast.",
+      r"Refined single-platform horizon cohort (E3), default optimizer configuration (global clip, raw rewards): nine mixture cells $\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$, ten seeds, 270 trajectories trained to 3.6M and evaluated every 150k. Crossings with 95\% seed-level jackknife-$t$ intervals; last row is the paired contrast.",
       "tab:horizon", "@{}lcccc@{}", r"Condition & 300k & 900k & 1.8M & 3.6M", rows, size=r"\footnotesize")
 rows = []
 for _, x in st.iterrows():
@@ -134,7 +140,7 @@ for _, x in st.iterrows():
     rows.append([COND_TEX[x.condition], f"${num(x.change_3p6M_minus_1p8M, True)}$ ${iv(x.ci_low, x.ci_high, True)}$", "yes" if x.stable_pm05 else "no",
                  f"{y.recovered_3p6M}/{y.collapsed_300k}", f"{y.relapsed_3p6M}/{y.noncollapsed_300k}"])
 table(OUT / "horizon_stability.tex",
-      r"Late-budget change and within-policy outcomes (E3). Stability requires the 3.6M$-$1.8M interval to lie within $\pm.05$ (pre-declared for v4). Recovery: collapsed at 300k, not collapsed at 3.6M; relapse: the reverse.",
+      r"Late-budget change and within-policy outcomes (E3). Stability requires the 3.6M$-$1.8M interval (95\% seed-level jackknife-$t$) to lie within $\pm.05$ (pre-declared for v4, with the percentile interval, which gives the same verdicts). Recovery: collapsed at 300k, not collapsed at 3.6M; relapse: the reverse.",
       "tab:horizon_stability", "@{}lcccc@{}", r"Condition & 3.6M$-$1.8M & Stable & Recovered & Relapsed", rows)
 fig, ax = plt.subplots(figsize=(6.0, 3.0))
 for cond, m in [("null", "o"), ("curvature", "s"), ("lambda7", "^")]:
@@ -144,7 +150,7 @@ ax.set_xlabel("requested agent transitions (millions)", fontsize=10); ax.set_yla
 fig.tight_layout(); fig.savefig(OUT / "horizon_curves.pdf"); plt.close(fig)
 
 # ---------------------------------------------------------------- E4
-c4 = pd.read_csv(RES / "E4_crossings.csv"); k4 = pd.read_csv(RES / "E4_contrasts.csv"); d4 = pd.read_csv(RES / "E4_diagnostics.csv")
+c4 = rd("E4_crossings.csv"); k4 = rd("E4_contrasts.csv"); d4 = rd("E4_diagnostics.csv")
 OPT_TEX = {"global_clip": "Global clip", "separate_no_clip": "Separate, no clip"}
 ARM4 = {"linear": "Linear", "curvature": "Curvature", "A": r"A ($\lambda{=}4$)", "S": r"S ($\times4$)"}
 def star_id(x):
@@ -164,10 +170,10 @@ for opt in ["global_clip", "separate_no_clip"]:
         x = k4[(k4.optimizer == opt) & (k4.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star_id(x)} ${iv(x.ci_low, x.ci_high, True)}$")
     rows.append(r)
 table(OUT / "lbf_table.tex",
-      r"MAPPO on Level-Based Foraging (E4) at the pre-declared label $\theta=0.626$: crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. A$-$S compares the gain-to-loss ratio at matched loss scale; A$-$curvature isolates the loss-branch multiplier. $^{\dagger}$: point estimate outside the sampled grid (the linear crossing under the global clip), so contrasts that use it are not identified. $^{\ast}$: identified contrast whose interval excludes zero. Threshold sensitivity is in Table~\ref{tab:lbf_theta}.",
+      r"MAPPO on Level-Based Foraging (E4) at the pre-declared label $\theta=0.626$: crossings and paired contrasts. Ten seeds, ten mixture cells, 2M timesteps, 800 trajectories. A$-$S compares the gain-to-loss ratio at matched loss scale; A$-$curvature isolates the loss-branch multiplier. $^{\dagger}$: point estimate outside the sampled grid (the linear crossing under the global clip), so contrasts that use it are not identified. Intervals: 95\% seed-level jackknife-$t$. $^{\ast}$: identified contrast whose interval excludes zero. Threshold sensitivity is in Table~\ref{tab:lbf_theta}.",
       "tab:lbf", "@{}lcccccc@{}", r"Optimizer & Linear & Curvature & A & S & A$-$S & A$-$curvature", rows, size=r"\footnotesize")
 
-ts = pd.read_csv(RES / "E4_theta_sensitivity.csv")
+ts = rd("E4_theta_sensitivity.csv")
 rows = []
 for th in sorted(ts.theta.unique()):
     for opt in ["global_clip", "separate_no_clip"]:
@@ -178,10 +184,10 @@ for th in sorted(ts.theta.unique()):
         x = ts[(ts.theta == th) & (ts.optimizer == opt) & (ts.quantity == "A-S")].iloc[0]; r.append(f"${num(x.isotonic, True)}$")
         rows.append(r)
 table(OUT / "lbf_theta.tex",
-      r"E4 sensitivity to the collapse threshold $\theta$ (native team return) and to the estimator. The stored run labels used $\theta=0.5$ (deviation D4); the pre-declared $\theta=0.626$ is primary. Last column: difference of decreasing-isotonic crossings.",
+      r"E4 sensitivity to the collapse threshold $\theta$ (native team return) and to the estimator. The stored run labels used $\theta=0.5$ (deviation D4); the pre-declared $\theta=0.626$ is primary. Intervals: 95\% seed-level jackknife-$t$. Last column: difference of decreasing-isotonic crossings.",
       "tab:lbf_theta", "@{}llcccc@{}", r"$\theta$ & Optimizer & A & S & A$-$S (Firth) & A$-$S (isotonic)", rows, size=r"\footnotesize", pos="H")
 
-oc1 = pd.read_csv(RES / "E1E2_loss_occupancy.csv"); oc4 = pd.read_csv(RES / "E4_loss_occupancy.csv")
+oc1 = rd("E1E2_loss_occupancy.csv"); oc4 = rd("E4_loss_occupancy.csv")
 wcols1 = [c for c in oc1.columns if c not in ("cell", "arm")]
 rows = [[CELL_TEX[r.cell] if r.arm == "B" else "", r.arm] + [f"{getattr(r, '_' + str(i + 3)):.2f}" for i in range(len(wcols1))]
         for r in oc1[oc1.cell.isin(["global_clip/raw", "separate_no_clip/vecnormalize"]) & oc1.arm.isin(["B", "A", "S"])].itertuples()]
@@ -206,7 +212,7 @@ table(OUT / "isotonic_agreement.tex",
 
 
 # ---------------------------------------------------------------- E5 / E6
-c5r = pd.read_csv(RES / "E5_crossings.csv"); k5 = pd.read_csv(RES / "E5_contrasts.csv")
+c5r = rd("E5_crossings.csv"); k5 = rd("E5_contrasts.csv")
 rows = []
 for a, lab in [("B", "B (curvature)"), ("A", r"A (losses $\times7$)"), ("S", r"S (both $\times7$)")]:
     r = [lab]
@@ -219,9 +225,9 @@ for name in ["A-S", "A-B", "S-B"]:
         x = k5[(k5.checkpoint == ck) & (k5.contrast == name)].iloc[0]; r.append(f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$")
     rows.append(r)
 table(OUT / "e5_table.tex",
-      r"Decoupled horizon cohort (E5): separate actor and critic optimizers without clipping and normalized rewards; arms B, A, S; the nine E3 cells; ten seeds; 270 trajectories to 3.6M. Crossings, then paired contrasts. $^{\ast}$: interval excludes zero.",
+      r"Decoupled horizon cohort (E5): separate actor and critic optimizers without clipping and normalized rewards; arms B, A, S; the nine E3 cells; ten seeds; 270 trajectories to 3.6M. Crossings, then paired contrasts, with 95\% seed-level jackknife-$t$ intervals. $^{\ast}$: interval excludes zero.",
       "tab:e5", "@{}lcccc@{}", r"Arm or contrast & 300k & 900k & 1.8M & 3.6M", rows, size=r"\footnotesize")
-c6r = pd.read_csv(RES / "E6_crossings.csv"); k6 = pd.read_csv(RES / "E6_contrasts.csv"); ur = pd.read_csv(RES / "E6_update_ratios.csv")
+c6r = rd("E6_crossings.csv"); k6 = rd("E6_contrasts.csv"); ur = rd("E6_update_ratios.csv")
 MODE_TEX = {"global_clip": "Global clip (default)", "groupwise_clip": "Per-group clip", "separate_no_clip": "No clip"}
 rows = []
 for mo in ["global_clip", "groupwise_clip", "separate_no_clip"]:
@@ -232,11 +238,11 @@ for mo in ["global_clip", "groupwise_clip", "separate_no_clip"]:
         x = ur[(ur["mode"] == mo) & (ur.ratio == "S/B") & (ur.quantity == q)].iloc[0]; r.append(f"${x.point:.3f}$ $[{x.ci_low:.3f},\\,{x.ci_high:.3f}]$")
     rows.append(r)
 table(OUT / "e6_table.tex",
-      r"Clipping isolation (E6): one Adam step with a global clip, actor and critic clipped separately, or no clipping; raw rewards; arms B, A, S on the E1 grid; ten seeds; 720 runs at 300k. Crossing contrasts, and seed-paired S/B ratios of the actor's applied (post-clip) gradient norm and of the norm of its actual parameter update. $^{\ast}$: interval excludes zero.",
+      r"Clipping isolation (E6): one Adam step with a global clip, actor and critic clipped separately, or no clipping; raw rewards; arms B, A, S on the E1 grid; ten seeds; 720 runs at 300k. Crossing contrasts, and seed-paired S/B ratios of the actor's applied (post-clip) gradient norm and of the norm of its actual parameter update, with 95\% seed-level jackknife-$t$ intervals. $^{\ast}$: interval excludes zero.",
       "tab:e6", "@{}lcccc@{}", r"Mode & S$-$B & A$-$S & Applied actor gradient S/B & Actor update S/B", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- E7
-k7, i7, g7 = (pd.read_csv(RES / f"E7_{n}.csv") for n in ["contrasts", "interactions", "diagnostics"])
+k7, i7, g7 = (rd(f"E7_{n}.csv") for n in ["contrasts", "interactions", "diagnostics"])
 PAIRS7 = ["S-B", "A-S", "A-M", "M-B", "A-B"]
 MODE7 = {"plain": "Plain", "popart": "PopArt"}
 rows = []
@@ -246,11 +252,11 @@ for mo in ["plain", "popart"]:
 rows.append([r"PopArt$-$plain"] + [f"${num(x.change, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$"
                                           for x in (i7[i7.contrast == n].iloc[0] for n in PAIRS7[:3])] + ["", ""])
 table(OUT / "e7_table.tex",
-      r"Critic-target normalization and a moment-matched control (E7): separate actor and critic optimizers without clipping, raw rewards, the E1 grid, ten seeds, 300k. M is the affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward with constants frozen to give A's E1 training-reward mean and SD. The plain-critic B, A and S runs are E1's. Crossing contrasts with paired 95\% seed-block intervals; the bottom row is the change in each contrast from the plain to the PopArt critic. $^{\ast}$: interval excludes zero.",
+      r"Critic-target normalization and a moment-matched control (E7): separate actor and critic optimizers without clipping, raw rewards, the E1 grid, ten seeds, 300k. M is the affine map $a_w r_{\mathrm{B}}+b_w$ of B's reward with constants frozen to give A's E1 training-reward mean and SD. The plain-critic B, A and S runs are E1's. Crossing contrasts with paired 95\% seed-level jackknife-$t$ intervals; the bottom row is the change in each contrast from the plain to the PopArt critic. $^{\ast}$: interval excludes zero.",
       "tab:e7", "@{}lccccc@{}", r"Critic & S$-$B & A$-$S & A$-$M & M$-$B & A$-$B", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- E8
-k8a, k8b, m8 = (pd.read_csv(RES / f) for f in ["E8A_contrasts.csv", "E8B_contrasts.csv", "E8A_matching.csv"])
+k8a, k8b, m8 = (rd(f) for f in ["E8A_contrasts.csv", "E8B_contrasts.csv", "E8A_matching.csv"])
 cell8 = lambda x: f"${num(x.difference, True)}${star(x)} ${iv(x.ci_low, x.ci_high, True)}$"
 rows = []
 for mo in ["plain", "popart"]:
@@ -261,7 +267,7 @@ rowsb = [[lab] + [cell8(f[f.quantity == q].iloc[0]) for q in ["plain S-B", "popa
 body = "\n".join(" & ".join(stack(c) for c in r) + r" \\" for r in rows)
 bodyb = "\n".join(" & ".join(stack(c) for c in r) + r" \\" for r in rowsb)
 (OUT / "e8_table.tex").write_text(r"""\begin{table}[!htbp]
-\caption{Online moment-matched control and fresh-seed replication (E8): separate optimizers without clipping, raw rewards, the E1 grid, 300k. Top: M$_{\mathrm{on}}$ is an affine map of B's reward whose constants are reset every rollout so that its training-reward mean and SD track A's under its own policy; A, B, S and the static control M are the E1 and E7 runs on the same seeds (42--51). Bottom: S$-$B with fresh seeds 52--61 (pre-declared primary) and pooled with E1/E7's seeds 42--51 (secondary), and its change from the plain to the PopArt critic. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.}
+\caption{Online moment-matched control and fresh-seed replication (E8): separate optimizers without clipping, raw rewards, the E1 grid, 300k. Top: M$_{\mathrm{on}}$ is an affine map of B's reward whose constants are reset every rollout so that its training-reward mean and SD track A's under its own policy; A, B, S and the static control M are the E1 and E7 runs on the same seeds (42--51). Bottom: S$-$B with fresh seeds 52--61 (pre-declared primary) and pooled with E1/E7's seeds 42--51 (secondary), and its change from the plain to the PopArt critic. Paired 95\% seed-level jackknife-$t$ intervals; $^{\ast}$: interval excludes zero.}
 \label{tab:e8}
 \centering\footnotesize
 \begin{tabular}{@{}lcccc@{}}
@@ -279,19 +285,19 @@ Cohort & Plain S$-$B & PopArt S$-$B & Change, PopArt$-$plain & \\
 """)
 
 # ---------------------------------------------------------------- E9-E12
-k9, mech9, k10, k11, mech11, k12, x12 = (pd.read_csv(RES / f) for f in ["E9_contrasts.csv", "E9_mechanism.csv", "E10_contrasts.csv", "E11_contrasts.csv",
+k9, mech9, k10, k11, mech11, k12, x12 = (rd(f) for f in ["E9_contrasts.csv", "E9_mechanism.csv", "E10_contrasts.csv", "E11_contrasts.csv",
                                                                        "E11_mechanism.csv", "E12_contrasts.csv", "E12_crossings_vs_E1.csv"])
 k9, k10, k11, k12 = (d.set_index("contrast") for d in (k9, k10, k11, k12))
 TAU9 = [("0.5 (E1)", "S-B, tau 0.5 (E1)", "Half", r"0.5 (default; E1)"), ("300", "S-B, tau 300", "Three", "300"),
         ("3000", "S-B, tau 3000", "ThreeK", "3,000"), ("10000", "S-B, tau 10000", "TenK", "10,000"),
         ("30000", "S-B, tau 30000", "ThirtyK", "30,000"), ("inf (E1 no clip)", "S-B, tau inf (E1 no clip)", "None", r"$\infty$ (no clip; E1)")]
 mech9 = mech9.assign(tau=mech9.tau.astype(str)).set_index("tau")
-JKA = pd.read_csv(RES / "jackknife_v5.csv").set_index("contrast")
+JKA = rd("jackknife_v5.csv").set_index("contrast")
 JT9 = {"0.5 (E1)": "E1 global_clip/raw S-B", "300": "E9 tau 300 S-B", "3000": "E9 tau 3000 S-B", "10000": "E9 tau 10000 S-B",
        "30000": "E9 tau 30000 S-B", "inf (E1 no clip)": "E1 separate_no_clip/raw S-B"}
 def jtcell(name, pct):
     r = JKA.loc[name]; ex = bool(r.jt_low_95 > 0 or r.jt_high_95 < 0)
-    return [f"${num(r.difference, True)}$" + (r"$^{\ast}$" if ex else ""), f"${iv(r.jt_low_95, r.jt_high_95, True)}$", f"${iv(pct.ci_low, pct.ci_high, True)}$"]
+    return [f"${num(r.difference, True)}$" + (r"$^{\ast}$" if ex else ""), f"${iv(r.jt_low_95, r.jt_high_95, True)}$", f"${iv(pct.pct_ci_low, pct.pct_ci_high, True)}$"]
 rows = [[tex, f"{mech9.loc[t].applied_ratio_SB:.3f}"] + jtcell(JT9[t], k9.loc[c]) for t, c, _, tex in TAU9]
 rows += [[r"Change, $\tau{=}30{,}000$ minus $0.5$", ""] + jtcell("E9 tau 30000 minus tau 0.5, S-B", k9.loc["d(S-B) tau 30000 - tau 0.5"]),
          [r"Change, $\tau{=}30{,}000$ minus no clip", ""] + jtcell("E9 tau 30000 minus no clip, S-B", k9.loc["d(S-B) tau 30000 - no clip"])]
@@ -304,18 +310,18 @@ COND11 = [("cleanrl_raw", "Raw rewards, one global clip"), ("cleanrl_group", "Ra
 rows = [[lab, f"{mech11.loc[c].critic_share:.3f}", f"{mech11.loc[c].applied_ratio_SB:.2f}", cell8(k11.loc[f"{c}: S-B"]), cell8(k11.loc[f"{c}: A-S"])] for c, lab in COND11]
 rows += [[r"Change in S$-$B, separate minus global clip (raw)", "", "", cell8(k11.loc["d(S-B) group - raw"]), ""]]
 table(OUT / "e11_table.tex",
-      r"A second PPO implementation (E11): a single-file port of CleanRL's \texttt{ppo\_continuous\_action} with its defaults (network, initialization, clipped value loss, learning-rate annealing, observation normalization, global clip 0.5), on the supply chain with E1's arms, grid, seeds 42--51 and 300k budget. ``Critic share'': the critic's share of the squared joint gradient norm; ``applied S/B'': seed-paired ratio of S's to B's applied actor gradient. Paired 95\% seed-block intervals; $^{\ast}$: interval excludes zero.",
+      r"A second PPO implementation (E11): a single-file port of CleanRL's \texttt{ppo\_continuous\_action} with its defaults (network, initialization, clipped value loss, learning-rate annealing, observation normalization, global clip 0.5), on the supply chain with E1's arms, grid, seeds 42--51 and 300k budget. ``Critic share'': the critic's share of the squared joint gradient norm; ``applied S/B'': seed-paired ratio of S's to B's applied actor gradient. Paired 95\% seed-level jackknife-$t$ intervals; $^{\ast}$: interval excludes zero.",
       "tab:e11", r"@{}p{.34\textwidth}cccc@{}", r"Condition & Critic share & Applied S/B & S$-$B & A$-$S", rows, size=r"\footnotesize")
 xc = x12.set_index(["learner", "arm"])
 LRN12 = [("default", "Default (one Adam, global clip, raw rewards)"), ("decoupled", "Decoupled (separate optimizers, no clip, normalized rewards)")]
 rows = [[lab, cell8(k12.loc[f"{l}: S-B"]), cell8(k12.loc[f"{l}: A-S"])] + [f"{xc.loc[(l, a)].w50_local:.3f} ({xc.loc[(l, a)].w50_global_E1:.3f})" for a in "BAS"]
         for l, lab in LRN12]
 table(OUT / "e12_table.tex",
-      r"Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-block intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).",
+      r"Local observations with agent identity (E12): each node observes its own retail demand, inventory and incoming order pipeline, zero-padded, plus a one-hot node identifier, in training and evaluation; E1's learners, arms, grid, seeds 42--51 and 300k budget. Contrasts with paired 95\% seed-level jackknife-$t$ intervals ($^{\ast}$: interval excludes zero); crossings $w_{50}$ under local observation, with E1's full-observation crossing in parentheses (descriptive, no test).",
       "tab:e12", r"@{}p{.25\textwidth}cccccc@{}", r"Learner & S$-$B & A$-$S & $w_{50}$ B & $w_{50}$ A & $w_{50}$ S", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- X1/X2 (fresh-seed replication)
-kx = pd.read_csv(RES / "X1X2_contrasts.csv"); ox = pd.read_csv(RES / "X1_optimizer_state.csv")
+kx = rd("X1X2_contrasts.csv"); ox = rd("X1_optimizer_state.csv")
 gx = lambda c, q: kx[(kx.cohort == c) & (kx.quantity == q)].iloc[0]
 jcell = lambda r: (f"${num(r.difference, True)}$" + (r"$^{\ast}$" if r.jt_excludes_zero_95 else "") + f" ${iv(r.jt_low_95, r.jt_high_95, True)}$")
 FR, PO = "fresh 82-101", "pooled 42-51 + 82-101"
@@ -337,7 +343,7 @@ table(OUT / "x1_optimizer_table.tex",
       "tab:x1opt", r"@{}lccc@{}", r"Actor quantity, S/B & Shared clip & Separately clipped & No clipping", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- X3 (actor/critic clipping factorial)
-k3 = pd.read_csv(RES / "X3_contrasts.csv").set_index("quantity"); o3 = pd.read_csv(RES / "X3_optimizer_state.csv").set_index(["mode", "quantity"])
+k3 = rd("X3_contrasts.csv").set_index("quantity"); o3 = rd("X3_optimizer_state.csv").set_index(["mode", "quantity"])
 X3ROWS = [("Both groups clipped separately", "S-B both"), ("Actor clipped only", "S-B actor_only"), ("Critic clipped only", "S-B critic_only"),
           ("No clipping", "S-B neither"), ("Critic-clipping effect (P1)", "critic effect"), ("Actor-clipping effect (P2)", "actor effect"),
           ("Interaction", "interaction")]
@@ -349,7 +355,7 @@ table(OUT / "x3_table.tex",
       "tab:x3", r"@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}", r"Mode or effect & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\%", rows, size=r"\footnotesize")
 
 # ---------------------------------------------------------------- X4 (critic target scale and fit)
-k4x = pd.read_csv(RES / "X4_contrasts.csv").set_index("quantity"); q4x = pd.read_csv(RES / "X4_advantage_quality.csv").set_index(["part", "metric", "scale"])
+k4x = rd("X4_contrasts.csv").set_index("quantity"); q4x = rd("X4_advantage_quality.csv").set_index(["part", "metric", "scale"])
 X4PART = {"D-plain": "Plain critic", "D-pop": "PopArt critic", "M": "Fixed-scale head"}
 X4ROWS = [("Plain critic", "S-B D-plain"), ("PopArt critic", "S-B D-pop"), (r"Fixed-scale head, $V=c\,h(x)$", "S-B M"),
           (r"Change, PopArt $-$ plain", "change D-pop - D-plain"), (r"Change, fixed-scale head $-$ plain", "change M - D-plain")]
@@ -366,6 +372,67 @@ rows = [[lab] + [qc(q4x.loc[(pt, me, sc)], sc == "diff") for pt in ["D-plain", "
 table(OUT / "x4_quality_table.tex",
       r"The critic's fit and the actor's advantages in X4, measured at every rollout against a separate reference critic fitted out of sample to Monte-Carlo returns. Value error: RMSE of the learner's values against the returns over their SD; advantage error: RMS difference of the standardized learner and reference GAE advantages; sign disagreement: share of transitions where they differ in sign; rank agreement: their Spearman correlation. Seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.",
       "tab:x4q", r"@{}>{\raggedright\arraybackslash}p{.34\textwidth}ccc@{}", r"Quantity & Plain critic & PopArt critic & Fixed-scale head", rows, size=r"\footnotesize")
+
+# ---------------------------------------------------------------- the two jackknife-t implementations agree (revision v6)
+_J5 = pd.read_csv(RES / "jackknife_v5.csv").set_index("contrast")
+_pick = lambda f, **kw: rd(f, keep_default_na=False, na_values=[""]).pipe(lambda d: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0])
+for j5, row in [("E1 global_clip/raw S-B", _pick("E1E2_contrasts.csv", cell="global_clip/raw", contrast="S-B")),
+                ("E6 per-group minus shared clip, S-B", _pick("E6_interactions.csv", mode="groupwise_clip", contrast="S-B")),
+                ("E7 popart S-B", _pick("E7_contrasts.csv", mode="popart", contrast="S-B")),
+                ("E7 plain A-M", _pick("E7_contrasts.csv", mode="plain", contrast="A-M")),
+                ("E8 plain A-M_on", _pick("E8A_contrasts.csv", mode="plain", contrast="A-M_on")),
+                ("E8 PopArt minus plain, S-B (seeds 52-61)", _pick("E8B_contrasts.csv", cohort="seeds 52-61 (primary)", quantity="d(S-B) popart - plain")),
+                ("E9 tau 30000 minus tau 0.5, S-B", _pick("E9_contrasts.csv", contrast="d(S-B) tau 30000 - tau 0.5")),
+                ("E10 PopArt minus plain, S-B (seeds 62-81)", _pick("E10_contrasts.csv", contrast="primary 62-81: d(S-B) popart - plain")),
+                ("PopArt minus plain, S-B, pooled seeds 42-81", _pick("E10_contrasts.csv", contrast="pooled 42-81: d(S-B) popart - plain")),
+                ("E11 per-group minus shared clip, S-B", _pick("E11_contrasts.csv", contrast="d(S-B) group - raw")),
+                ("E12 default S-B", _pick("E12_contrasts.csv", contrast="default: S-B")),
+                ("E4 global_clip A-S", _pick("E4_contrasts.csv", optimizer="global_clip", contrast="A-S")),
+                ("E5 3.6M A-S", _pick("E5_contrasts.csv", checkpoint=3600000, contrast="A-S"))]:
+    assert abs(_J5.loc[j5].jt_low_95 - row.ci_low) < 1e-9 and abs(_J5.loc[j5].jt_high_95 - row.ci_high) < 1e-9, j5
+
+# ---------------------------------------------------------------- percentile sensitivity (revision v6)
+EXPN = {"E1E2": "E1/E2", "E3": "E3", "E4": "E4", "E5": "E5", "E6": "E6", "E7": "E7", "E8A": "E8", "E8B": "E8", "E9": "E9", "E10": "E10", "E11": "E11", "E12": "E12"}
+KEYS = ["cell", "optimizer", "mode", "cohort", "checkpoint", "theta", "condition", "arm", "ratio", "kind", "name", "contrast", "quantity"]
+ESTC = ["difference", "change_3p6M_minus_1p8M", "change_vs_standard", "change_vs_global", "change", "w50", "estimate", "point", "value"]
+SENS_LABEL = {
+    r"primary 62$-$81: d(S$-$B) popart $-$ plain": r"Change in S$-$B, PopArt minus plain critic (seeds 62--81)",
+    r"d(S$-$B) group $-$ raw": r"Change in S$-$B, per-group minus shared clip",
+    r"separate\_no\_clip/raw, S$-$B (change)": r"Change in S$-$B, no clip (separate optimizers) minus default (also E6)",
+    r"eps1e$-$8/raw, A$-$S (change)": r"Change in A$-$S, Adam $\epsilon{=}10^{-8}$ minus default",
+    r"separate\_no\_clip, curvature$-$linear": r"Curvature$-$linear, separate optimizers (not identified under the global clip)",
+    r"curvature$-$linear (change)": r"Change in curvature$-$linear between optimizers (not identified)",
+    r"seeds 52$-$61 (primary), d(S$-$B) popart $-$ plain": r"Change in S$-$B, PopArt minus plain critic (seeds 52--61)",
+    r"d(S$-$B) tau 30000 $-$ tau 0.5": r"Change in S$-$B, $\tau{=}30{,}000$ minus $\tau{=}0.5$",
+}
+for ck in range(150000, 3600001, 150000):
+    for c in ["A-S", "A-B", "S-B"]:
+        SENS_LABEL[f"{ck}, contrast, {c.replace('-', '$-$')}"] = f"{c.replace('-', '$-$')} at {ck / 1e6:g}M (non-primary checkpoint, exploratory)"
+tex = lambda t: str(t).replace("_", r"\_").replace("-", "$-$").replace("$$", "")
+sens, n_all = [], 0
+for f in sorted(JT.glob("*.csv")):
+    d = pd.read_csv(f, keep_default_na=False, na_values=[""])
+    if "pct_ci_low" not in d.columns:
+        continue
+    ref = 1.0 if "excludes_one" in d.columns else 0.0; est = next(c for c in ESTC if c in d.columns)
+    for r in d.itertuples():
+        if est == "w50" or getattr(r, "kind", "") == "crossing" or ("quantity" in d.columns and f.stem == "E4_theta_sensitivity" and "-" not in str(r.quantity)):
+            continue  # a crossing's location is not tested against zero
+        if f.stem == "E6_interactions" and r.mode == "separate_no_clip":
+            continue  # the same E1 runs as the E1/E2 rows
+        n_all += 1
+        pe, je = (r.pct_ci_low > ref or r.pct_ci_high < ref), (r.ci_low > ref or r.ci_high < ref)
+        if pe != je:
+            key = ", ".join(tex(getattr(r, k)) for k in KEYS if k in d.columns and str(getattr(r, k)) not in ("", "nan"))
+            if f.stem.endswith("interactions"):
+                key += " (change)"
+            key = SENS_LABEL[key]
+            sens.append([EXPN.get(f.stem.split("_")[0], f.stem.split("_")[0]), key, f"${num(getattr(r, est), True)}$",
+                         f"${iv(r.ci_low, r.ci_high, True)}$", f"${iv(r.pct_ci_low, r.pct_ci_high, True)}$"])
+table(OUT / "pct_sensitivity.tex",
+      r"The pre-declared seed-block percentile intervals as a sensitivity analysis. Every crossing and contrast interval of E1--E12 and X1--X4 in the main text and tables is the seed-level jackknife-$t$ interval (Section~\ref{sec:stats}); the legacy sweeps keep their seed-block intervals; the percentile interval for every reported contrast and change of E1--E12 is in the archive (\texttt{results\_jt/}, columns \texttt{pct\_*}). Listed are the " + f"{len(sens)}" + r" whose zero-exclusion verdict at 95\% differs between the two procedures (for ratios, the exclusion of one); in each, the percentile interval excludes the null value and the jackknife-$t$ interval does not.",
+      "tab:pct_sensitivity", r"@{}l>{\raggedright\arraybackslash}p{.36\textwidth}ccc@{}", r"Exp. & Quantity & Estimate & Jackknife-$t$ 95\% & Percentile 95\%", sens, size=r"\footnotesize", pos="H")
+assert all(r[4] != r[3] for r in sens)
 
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
@@ -393,7 +460,7 @@ def cv(df, **kw):
     for k, v in kw.items(): q = q[q[k] == v]
     x = q.iloc[0]; d = x.difference if "difference" in x else x.w50
     return f"${num(d, True)}$ ${iv(x.ci_low, x.ci_high, True)}$"
-e1 = pd.read_csv(RES / "E1E2_diagnostics.csv")
+e1 = rd("E1E2_diagnostics.csv")
 m = ""
 m += mac("VfourSymStd", cv(co, cell="global_clip/raw", contrast="S-B"))
 m += mac("VfourAsymStd", cv(co, cell="global_clip/raw", contrast="A-S"))
@@ -417,12 +484,12 @@ m += mac("VfourAppliedActorB", f"{ps.loc['B'].mb_post_actor_grad_norm:.4f}"); m 
 m += mac("VfourCriticNormB", f"{ps.loc['B'].mb_critic_grad_norm:,.0f}"); m += mac("VfourCriticNormS", f"{ps.loc['S'].mb_critic_grad_norm:,.0f}")
 lbf_share = d4[d4.optimizer_mode == "global_clip"].mb_actor_grad_energy_share
 m += mac("VfourLBFActorShare", f"{lbf_share.min():.2f}--{lbf_share.max():.2f}")
-xp = pd.read_csv(RES / "crossplatform.csv")
+xp = rd("crossplatform.csv")
 a, b = xp.iloc[0], xp.iloc[1]
 m += mac("VfourAgreeControl", f"{a.agree}/{a.total} ({100 * a.agree / a.total:.1f}\\%)")
 m += mac("VfourBitControl", f"{int(a.bit_identical_profit)}/{a.total}")
 m += mac("VfourAgreeHorizon", f"{b.agree:,}/{b.total:,} ({100 * b.agree / b.total:.1f}\\%)")
-cp = pd.read_csv(RES / "compute_v4.csv")
+cp = rd("compute_v4.csv")
 m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3', 'X4'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
@@ -438,23 +505,24 @@ table(OUT / "compute_table.tex",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
       + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
-evd = pd.read_csv(RES / "E1E2_explained_variance.csv").set_index(["cell", "arm"]).explained_variance_last
+evd = rd("E1E2_explained_variance.csv").set_index(["cell", "arm"]).explained_variance_last
 m += mac("VfourEVSepRawB", f"{evd[('separate_no_clip/raw', 'B')]:.2f}"); m += mac("VfourEVSepRawS", f"{evd[('separate_no_clip/raw', 'S')]:.2f}")
 m += mac("VfourEVNormB", f"{evd[('separate_no_clip/vecnormalize', 'B')]:.2f}"); m += mac("VfourEVNormS", f"{evd[('separate_no_clip/vecnormalize', 'S')]:.2f}")
 m += mac("VfourLBFLossOnly", cv(k4, optimizer="separate_no_clip", contrast="A-curvature"))
 m += mac("VfourLBFLossOnlyGlobal", cv(k4, optimizer="global_clip", contrast="A-curvature"))
+m += mac("VfourLBFSymGlobal", cv(k4, optimizer="global_clip", contrast="S-curvature")); m += mac("VfourLBFSymSep", cv(k4, optimizer="separate_no_clip", contrast="S-curvature"))
 m += mac("VfourIsoMaxSupply", f"{max(c1[c1.in_grid].gap.max(), h3.gap.max()):.3f}")
 g5 = lambda ck, n: cv(k5, checkpoint=ck, contrast=n)
 m += mac("VfiveAsymStart", g5(300000, "A-S")); m += mac("VfiveAsymEnd", g5(3600000, "A-S")); m += mac("VfiveSymEnd", g5(3600000, "S-B"))
 m += mac("VfiveSymStart", g5(300000, "S-B"))
-it6 = pd.read_csv(RES / "E6_interactions.csv")
+it6 = rd("E6_interactions.csv")
 m += mac("VsixSymGroup", cv(k6, mode="groupwise_clip", contrast="S-B")); m += mac("VsixAsymGroup", cv(k6, mode="groupwise_clip", contrast="A-S"))
 x = it6[(it6["mode"] == "groupwise_clip") & (it6.contrast == "S-B")].iloc[0]
 m += mac("VsixSymGroupChange", f"${num(x.change_vs_global, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
 gr6 = lambda mo, q: ur[(ur["mode"] == mo) & (ur.ratio == "S/B") & (ur.quantity == q)].iloc[0]
 m += mac("VsixUpdGlobal", f"{gr6('global_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixUpdGroup", f"{gr6('groupwise_clip', 'pu_actor_update_norm').point:.2f}")
 m += mac("VsixUpdNone", f"{gr6('separate_no_clip', 'pu_actor_update_norm').point:.2f}"); m += mac("VsixGradGlobal", f"{gr6('global_clip', 'pu_applied_actor_grad_norm').point:.2f}")
-rp = pd.read_csv(RES / "E6_reproduction.csv").iloc[0]; m += mac("VsixRepro", f"{rp.agree}/{rp.total}")
+rp = rd("E6_reproduction.csv").iloc[0]; m += mac("VsixRepro", f"{rp.agree}/{rp.total}")
 c7 = lambda mo, n: cv(k7, mode=mo, contrast=n)
 for mo, tag in [("plain", "Plain"), ("popart", "Pop")]:
     for n, nm in [("S-B", "Sym"), ("A-S", "Asym"), ("A-M", "AM"), ("M-B", "MB"), ("A-B", "AB")]:
@@ -497,6 +565,13 @@ for c, tag in [("cleanrl_raw", "Raw"), ("cleanrl_group", "Group"), ("cleanrl_def
     m += mac(f"VelevenShare{tag}", f"{mech11.loc[c].critic_share:.3f}"); m += mac(f"VelevenRatio{tag}", f"{mech11.loc[c].applied_ratio_SB:.2f}")
     m += mac(f"VelevenEV{tag}", f"{mech11.loc[c].ev_B:.2f} for B and {mech11.loc[c].ev_S:.2f} for S")
 m += mac("VelevenGroupChange", civ(k11.loc["d(S-B) group - raw"])); m += mac("VelevenGroupChangeNine", civ9(k11.loc["d(S-B) group - raw"]))
+# the pre-declared seed-block percentile intervals, for the sentences that compare the two procedures
+cpct = lambda x: f"${num(x.difference, True)}$ ${iv(x.pct_ci_low, x.pct_ci_high, True)}$"
+m += mac("VnineDosePct", cpct(k9.loc["d(S-B) tau 30000 - tau 0.5"])); m += mac("VelevenGroupChangePct", cpct(k11.loc["d(S-B) group - raw"]))
+m += mac("VtenChangePct", cpct(k10.loc["primary 62-81: d(S-B) popart - plain"])); m += mac("VeightBChangePct", cpct(q8("seeds 52-61 (primary)", "d(S-B) popart - plain")))
+x = it[(it.cell == "separate_no_clip/raw") & (it.contrast == "S-B")].iloc[0]
+m += mac("VfourSymSepChange", f"${num(x.change_vs_standard, True)}$ ${iv(x.ci_low, x.ci_high, True)}$")
+m += mac("VfourSymSepChangePct", f"${num(x.change_vs_standard, True)}$ ${iv(x.pct_ci_low, x.pct_ci_high, True)}$")
 for l, tag in [("default", "Default"), ("decoupled", "Dec")]:
     m += mac(f"VtwelveSym{tag}", civ(k12.loc[f"{l}: S-B"])); m += mac(f"VtwelveAsym{tag}", civ(k12.loc[f"{l}: A-S"]))
     for a in "BAS":
@@ -519,7 +594,7 @@ au = [o3.loc[(mo, "pu_actor_update_norm")].value for mo in ["both", "actor_only"
 m += mac("VxtActUpdLo", f"{min(au):.2f}"); m += mac("VxtActUpdHi", f"{max(au):.2f}")
 cu = [o3.loc[(mo, "pu_critic_update_norm")].value for mo in ["both", "actor_only", "critic_only", "neither"]]
 m += mac("VxtCritUpdLo", f"{min(cu):.2f}"); m += mac("VxtCritUpdHi", f"{max(cu):.2f}")
-ex = pd.read_csv(RES / "explore_x13_pooled.csv").set_index("quantity")
+ex = rd("explore_x13_pooled.csv").set_index("quantity")
 for q, nm in [("S-B noclip", "None"), ("S-B groupclip", "Group"), ("groupclip minus noclip", "Diff")]:
     r = ex.loc[q]; m += mac(f"Vxe{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
 for q, nm in [("E1 separate_no_clip/raw S-B", "Sep"), ("E1 global_clip/vecnormalize S-B", "NormGlob"), ("E7 plain A-M", "SevenAMPlain"), ("E7 popart A-M", "SevenAMPop")]:
@@ -535,5 +610,6 @@ for pt, nm in [("D-plain", "Plain"), ("D-pop", "Pop"), ("M", "Head")]:
     r = q4x.loc[(pt, "ev_train_mc", "diff")]; m += mac(f"VxfFit{nm}", f"${num(r.value, True)}$"); m += mac(f"VxfFit{nm}Ninety", f"${iv(r.low_90, r.high_90, True)}$")
 dev = [abs(q4x.loc[(pt, me, "ratio")].value - 1) for pt in ["D-pop", "M"] for me in ["verr_train", "gae_err", "sign_dis", "adv_spearman"]]
 m += mac("VxfQualMax", f"{max(dev):.3f}")
+m += mac("VpctSensN", f"{len(sens)}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

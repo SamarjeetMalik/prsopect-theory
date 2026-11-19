@@ -171,7 +171,7 @@ axes[0].legend(frameon=False, ncol=2, loc="lower left")
 fig.tight_layout(); fig.savefig(OUT / "fig_e7_moments.pdf"); plt.close(fig)
 
 # ---------------------------------------------------------------- LBF estimator and threshold sensitivity
-ts = pd.read_csv(RES / "E4_theta_sensitivity.csv")
+ts = pd.read_csv(RES.parent / "results_jt/E4_theta_sensitivity.csv")   # jackknife-t (revision v6)
 fig, axes = plt.subplots(1, 2, figsize=(6.6, 2.4), sharey=True)
 STY = {"linear": ("#7f7f7f", "D"), "curvature": ("#0072B2", "o"), "A": ("#D55E00", "^"), "S": ("#009E73", "s")}
 for ax, opt, title in zip(axes, ["global_clip", "separate_no_clip"], ["MAPPO, shared clip", "MAPPO, separate optimizers"]):

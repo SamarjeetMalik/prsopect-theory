@@ -1,0 +1,27 @@
+\begin{table}[H]
+\caption{The pre-declared seed-block percentile intervals as a sensitivity analysis. Every crossing and contrast interval of E1--E12 and X1--X4 in the main text and tables is the seed-level jackknife-$t$ interval (Section~\ref{sec:stats}); the legacy sweeps keep their seed-block intervals; the percentile interval for every reported contrast and change of E1--E12 is in the archive (\texttt{results\_jt/}, columns \texttt{pct\_*}). Listed are the 16 whose zero-exclusion verdict at 95\% differs between the two procedures (for ratios, the exclusion of one); in each, the percentile interval excludes the null value and the jackknife-$t$ interval does not.}
+\label{tab:pct_sensitivity}
+\centering\footnotesize
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{.36\textwidth}ccc@{}}
+\toprule
+Exp. & Quantity & Estimate & Jackknife-$t$ 95\% & Percentile 95\% \\
+\midrule
+E10 & Change in S$-$B, PopArt minus plain critic (seeds 62--81) & $-0.101$ & $[-0.209,\,+0.007]$ & $[-0.199,\,-0.002]$ \\
+E11 & Change in S$-$B, per-group minus shared clip & $-0.101$ & $[-0.224,\,+0.022]$ & $[-0.207,\,-0.000]$ \\
+E1/E2 & Change in S$-$B, no clip (separate optimizers) minus default (also E6) & $-0.197$ & $[-0.410,\,+0.015]$ & $[-0.366,\,-0.021]$ \\
+E1/E2 & Change in A$-$S, Adam $\epsilon{=}10^{-8}$ minus default & $+0.122$ & $[-0.027,\,+0.272]$ & $[+0.008,\,+0.253]$ \\
+E4 & Curvature$-$linear, separate optimizers (not identified under the global clip) & $+0.145$ & $[-0.013,\,+0.302]$ & $[+0.016,\,+0.291]$ \\
+E4 & Change in curvature$-$linear between optimizers (not identified) & $-0.294$ & $[-0.712,\,+0.124]$ & $[-0.845,\,-0.067]$ \\
+E5 & A$-$B at 1.05M (non-primary checkpoint, exploratory) & $+0.094$ & $[-0.012,\,+0.199]$ & $[+0.019,\,+0.199]$ \\
+E5 & S$-$B at 1.5M (non-primary checkpoint, exploratory) & $-0.138$ & $[-0.288,\,+0.011]$ & $[-0.268,\,-0.010]$ \\
+E5 & A$-$S at 1.95M (non-primary checkpoint, exploratory) & $+0.099$ & $[-0.017,\,+0.214]$ & $[+0.007,\,+0.214]$ \\
+E5 & A$-$S at 2.1M (non-primary checkpoint, exploratory) & $+0.129$ & $[-0.002,\,+0.261]$ & $[+0.023,\,+0.227]$ \\
+E5 & A$-$S at 2.25M (non-primary checkpoint, exploratory) & $+0.124$ & $[-0.016,\,+0.263]$ & $[+0.014,\,+0.240]$ \\
+E5 & A$-$B at 2.55M (non-primary checkpoint, exploratory) & $+0.096$ & $[-0.010,\,+0.202]$ & $[+0.004,\,+0.184]$ \\
+E5 & A$-$S at 3.3M (non-primary checkpoint, exploratory) & $+0.141$ & $[-0.007,\,+0.289]$ & $[+0.026,\,+0.262]$ \\
+E5 & A$-$S at 3.45M (non-primary checkpoint, exploratory) & $+0.139$ & $[-0.012,\,+0.290]$ & $[+0.019,\,+0.260]$ \\
+E8 & Change in S$-$B, PopArt minus plain critic (seeds 52--61) & $-0.156$ & $[-0.334,\,+0.022]$ & $[-0.303,\,-0.016]$ \\
+E9 & Change in S$-$B, $\tau{=}30{,}000$ minus $\tau{=}0.5$ & $-0.204$ & $[-0.411,\,+0.003]$ & $[-0.369,\,-0.032]$ \\
+\bottomrule
+\end{tabular}
+\end{table}
