@@ -1,0 +1,16 @@
+{
+ "design": "x5-v1",
+ "seeds": [162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181,
+           182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201],
+ "arms": ["B", "S"],
+ "parts": ["plain", "popart", "M"],
+ "indices": "0-1919",
+ "execution": "decentralized: each trained node has its own actor network (no parameter sharing), whose input is the node's local view and a one-hot node identifier (E12's local view); one centralized critic whose input is the full global state and the node identifier",
+ "actor": {"hidden": [64, 64], "activation": "tanh", "per_agent_log_std": true},
+ "critic": {"hidden": [64, 64], "activation": "tanh", "input": "global state + one-hot node identifier"},
+ "optimizer": "separate actor and critic Adam, no gradient clipping (E7's separate_no_clip learner), raw rewards",
+ "critic_modes": {"plain": "E7's plain critic head", "popart": "E7's PopArt head", "M": "the plain head with its output fixed-scaled, V = c * head(x), c = 1 (B) or 7 (S), as X4's part M"},
+ "logging": "X4's reference-critic logging (x4_runner.X4Logging), unchanged",
+ "inference": "seed-level jackknife-t over 40 seeds, t(39), primary at 95%; equivalence by the 90% jackknife-t interval within the declared margin; seed-block percentile bootstrap (2,000 draws, seed 20261123) secondary",
+ "gate": "1: index 0 run twice is bit-identical (evaluation, every minibatch record, X5 log); 2: part M arm B (c=1) reproduces part plain arm B bit-for-bit on the same seed and w, including the X5 log; 3: logging is RNG-neutral: plain arm B with and without logging gives bit-identical evaluation and minibatch records; 4: the independence check passes (actor parameter sets per node are disjoint, a node's actor receives zero gradient from other nodes' samples, the critic's input contains no local-only entries); 5: indices 0, 640 and 1280 complete with 469 X5 records"
+}

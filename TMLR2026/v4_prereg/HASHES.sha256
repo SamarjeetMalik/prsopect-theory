@@ -64,3 +64,8 @@ b8667a6d83288215758304d60dd428bd793094a07cb3fde2b978ca60f8b9c7b6  TMLR2026/v4_pr
 4db64789a87db30116ecd1d571f19c5032935ac353049f4f8b81d0594e228512  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/x4_runner.py
 25392fa78c19fa4df494cc12ac11a1a7bd4e5032bb91b78ec5a1e69eb7d200bb  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/x4_design.json
 cd42ea1a6a334e7abd1e7ffce713dc9abecc27135a480c8fcfc1f9b2c1de2830  TMLR2026/v4_prereg/analysis/phase3_x4.py
+# X5 freeze, 2026-11-19T11:57:19Z, before the gate and any main-array run; smoke jobs 14013 and 14014 passed (determinism, logging neutrality, M arm B identical to plain, independence check); profile 14016; arrays 0-959 and 960-1919 (OFFSET)
+be8e956826b812e78f75c7b0cf1b8b2f220c34442590754b9b4716885ca966a2  TMLR2026/v4_prereg/PREREGISTRATION_X5.md
+c16b157489bd8eb90255de32f221dd475e5755fb0948ea4668dd9e8724494a8a  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/x5_runner.py
+b9b75cfbd1027a680eec6490de9ad33034676196cadb93a6d3c87b7d74fb70f1  AAMAS2027/optimizer_factorial_source_v2/AAMAS2027/experiments/x5_design.json
+571a9f26656551f0bfe899934ea978d9f50d60d20c9bcfc1984e4643328cc53a  TMLR2026/v4_prereg/analysis/phase3_x5.py
