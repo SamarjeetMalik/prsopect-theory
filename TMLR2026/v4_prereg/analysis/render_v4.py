@@ -348,6 +348,25 @@ table(OUT / "x3_table.tex",
       r"Which clipped group carries the symmetric shift (X3, 1,280 runs): one Adam step, raw rewards, the actor's and the critic's gradients each clipped to 0.5 or not, arms B and S, the E1 grid, fresh seeds 102--121. Rows 1--4: S$-$B in each mode; rows 5--7: factorial effects on S$-$B. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. P2 is an equivalence test: its 90\% interval must lie within $\pm0.10$.",
       "tab:x3", r"@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}", r"Mode or effect & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\%", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- X4 (critic target scale and fit)
+k4x = pd.read_csv(RES / "X4_contrasts.csv").set_index("quantity"); q4x = pd.read_csv(RES / "X4_advantage_quality.csv").set_index(["part", "metric", "scale"])
+X4PART = {"D-plain": "Plain critic", "D-pop": "PopArt critic", "M": "Fixed-scale head"}
+X4ROWS = [("Plain critic", "S-B D-plain"), ("PopArt critic", "S-B D-pop"), (r"Fixed-scale head, $V=c\,h(x)$", "S-B M"),
+          (r"Change, PopArt $-$ plain", "change D-pop - D-plain"), (r"Change, fixed-scale head $-$ plain", "change M - D-plain")]
+x4ex = lambda r: (r.jt_low_95 > 0) or (r.jt_high_95 < 0)
+rows = [[lab, f"${num(k4x.loc[q].difference, True)}$" + (r"$^{\ast}$" if x4ex(k4x.loc[q]) else ""), x3c(k4x.loc[q], "jt_low_95", "jt_high_95"),
+         x3c(k4x.loc[q], "jt_low_90", "jt_high_90"), x3c(k4x.loc[q], "pct_low_95", "pct_high_95")] for lab, q in X4ROWS]
+table(OUT / "x4_table.tex",
+      r"Does the critic's target scale carry the symmetric shift? (X4, 1,920 runs): separate actor and critic Adam without clipping, raw rewards, arms B and S, the E1 grid, fresh seeds 122--161 (forty). Plain critic: E7's; PopArt critic: E7's; fixed-scale head: the plain critic with its output multiplied by the arm's reward scale $c$ (B: 1, S: 7), so that it regresses targets of B's size. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. The equivalence predictions require the 90\% interval of S$-$B within $\pm0.10$.",
+      "tab:x4", r"@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}", r"Critic or change & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\%", rows, size=r"\footnotesize")
+QROWS = [(r"Value error, S/B", "verr_train", "ratio"), (r"Advantage error, S/B", "gae_err", "ratio"), (r"Sign disagreement, S/B", "sign_dis", "ratio"),
+         (r"Rank agreement, S$-$B", "adv_spearman", "diff"), (r"Critic fit (EV against Monte-Carlo returns), S$-$B", "ev_train_mc", "diff")]
+qc = lambda r, sg: f"${num(r.value, sg)}$ ${iv(r.low_95, r.high_95, sg)}$"
+rows = [[lab] + [qc(q4x.loc[(pt, me, sc)], sc == "diff") for pt in ["D-plain", "D-pop", "M"]] for lab, me, sc in QROWS]
+table(OUT / "x4_quality_table.tex",
+      r"The critic's fit and the actor's advantages in X4, measured at every rollout against a separate reference critic fitted out of sample to Monte-Carlo returns. Value error: RMSE of the learner's values against the returns over their SD; advantage error: RMS difference of the standardized learner and reference GAE advantages; sign disagreement: share of transitions where they differ in sign; rank agreement: their Spearman correlation. Seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.",
+      "tab:x4q", r"@{}>{\raggedright\arraybackslash}p{.34\textwidth}ccc@{}", r"Quantity & Plain critic & PopArt critic & Fixed-scale head", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- cell-count tables
 def cell_header(cells_str):
     return [c.split(":")[0] for c in cells_str.split()]
@@ -404,7 +423,7 @@ m += mac("VfourAgreeControl", f"{a.agree}/{a.total} ({100 * a.agree / a.total:.1
 m += mac("VfourBitControl", f"{int(a.bit_identical_profit)}/{a.total}")
 m += mac("VfourAgreeHorizon", f"{b.agree:,}/{b.total:,} ({100 * b.agree / b.total:.1f}\\%)")
 cp = pd.read_csv(RES / "compute_v4.csv")
-m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
+m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3', 'X4'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
         "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
@@ -412,9 +431,10 @@ DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$
         "E8": "Online moment control; fresh-seed replication, 300k", "E9": "Clip-threshold dose-response, 300k",
         "E10": "Critic-target replication, seeds 62--81, 300k", "E11": "Second PPO implementation (CleanRL-style), 300k",
         "E12": "Local observations with agent identity, 300k", "X1": "Fresh-seed clipping replication, SB3, 300k",
-        "X2": "Fresh-seed clipping replication, CleanRL-style, 300k", "X3": "Actor/critic clipping factorial, 300k"}
+        "X2": "Fresh-seed clipping replication, CleanRL-style, 300k", "X3": "Actor/critic clipping factorial, 300k",
+        "X4": "Critic target scale and fit, seeds 122--161, 300k"}
 table(OUT / "compute_table.tex",
-      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X3 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per run throughout).",
+      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X4 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4).",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
       + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
@@ -505,5 +525,15 @@ for q, nm in [("S-B noclip", "None"), ("S-B groupclip", "Group"), ("groupclip mi
 for q, nm in [("E1 separate_no_clip/raw S-B", "Sep"), ("E1 global_clip/vecnormalize S-B", "NormGlob"), ("E7 plain A-M", "SevenAMPlain"), ("E7 popart A-M", "SevenAMPop")]:
     r = JKA.loc[q]; m += mac(f"VjtS{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
 m += mac("VxtCritGradNone", f"{o3.loc[('neither', 'pu_applied_critic_grad_norm')].value:.1f}")
+for q, nm in [("S-B D-plain", "Plain"), ("S-B D-pop", "Pop"), ("S-B M", "Head"), ("change D-pop - D-plain", "ChPop"), ("change M - D-plain", "ChHead")]:
+    r = k4x.loc[q]; m += mac(f"Vxf{nm}", f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$")
+    m += mac(f"Vxf{nm}Ninety", f"${iv(r.jt_low_90, r.jt_high_90, True)}$")
+for me, nm in [("verr_train", "Verr"), ("gae_err", "Gae"), ("sign_dis", "Sign")]:
+    r = q4x.loc[("D-plain", me, "ratio")]; m += mac(f"Vxf{nm}", f"{r.value:.2f}")
+r = q4x.loc[("D-plain", "adv_spearman", "diff")]; m += mac("VxfRank", f"${num(r.value, True)}$")
+for pt, nm in [("D-plain", "Plain"), ("D-pop", "Pop"), ("M", "Head")]:
+    r = q4x.loc[(pt, "ev_train_mc", "diff")]; m += mac(f"VxfFit{nm}", f"${num(r.value, True)}$"); m += mac(f"VxfFit{nm}Ninety", f"${iv(r.low_90, r.high_90, True)}$")
+dev = [abs(q4x.loc[(pt, me, "ratio")].value - 1) for pt in ["D-pop", "M"] for me in ["verr_train", "gae_err", "sign_dis", "adv_spearman"]]
+m += mac("VxfQualMax", f"{max(dev):.3f}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

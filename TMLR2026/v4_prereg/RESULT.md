@@ -438,3 +438,46 @@ X1 and X3 (seeds 82–121) for the configurations they share: S − B without cl
 per-group clipping +0.244 [+0.193, +0.295], difference +0.118 [+0.049, +0.187]. The cohorts disagree (per-group minus
 no clip ≈ 0.20 on X1's seeds, 0.04 on X3's). Reading: clipping is not necessary for the shift and may enlarge it; its
 contribution is unresolved.
+
+## X4 (pre-registered 2026-11-18/19, frozen 19:08:43Z before the gate; analysed with the frozen `phase3_x4.py`)
+1,920 of 1,920 runs complete (Slurm arrays 12064 and 12065; gate 12063 passed all four checks). Separate actor and
+critic Adam, no clipping, raw rewards, arms B and S, the E1 grid, fresh seeds 122–161 (forty). Parts: D-plain (E7's
+plain critic), D-pop (E7's PopArt critic), M (plain critic with output fixed-scaled, V = c·h(x), c = 1 for B, 7 for S;
+called the "fixed-scale head" in the paper to avoid a clash with E7's control M). Output:
+`results/phase3_x4_report.txt`, `results/X4_contrasts.csv`, `results/X4_advantage_quality.csv`,
+`results/X4_predictions.csv`.
+
+| Quantity | Estimate | Jackknife-t 95% | Jackknife-t 90% |
+|---|---|---|---|
+| S − B, D-plain | +0.143 | [+0.090, +0.195] | [+0.099, +0.186] |
+| S − B, D-pop | +0.010 | [−0.040, +0.060] | [−0.032, +0.051] |
+| S − B, M | +0.012 | [−0.033, +0.057] | [−0.026, +0.049] |
+| change M − D-plain | −0.131 | [−0.175, −0.087] | [−0.168, −0.094] |
+| change D-pop − D-plain | −0.133 | [−0.212, −0.055] | [−0.198, −0.068] |
+
+- **Predictions (all met):**
+  - **P1:** S − B under D-plain excludes zero.
+  - **P2:** under D-plain S's advantages are worse on all four measures. Value error S/B 1.45, GAE error 1.17, sign
+    disagreement 1.20, rank agreement −0.076.
+  - **P3:** under D-pop all four S/B ratios lie within 1 ± 0.10 (each within 0.006 of 1).
+  - **P4:** under M the fit gap (EV against Monte-Carlo returns) is −0.004, with 90% interval [−0.009, −0.000],
+    against −0.261 under D-plain.
+  - **P5:** the change M − D-plain is below zero, and S − B under M lies within ±0.10 (90%).
+  - **P6:** under D-pop the fit gap is +0.001, with 90% interval [−0.004, +0.005].
+- **Declared readings:**
+  - **Channel (M):** fixing the critic's output scale removes the shift; the critic's target scale carries it at this
+    budget.
+  - **H-fit (D-pop):** consistent with H-fit; the shift is equivalent to zero within ±0.10 with the fit equalized. This
+    is not proof, because PopArt changes more than the fit.
+- **Descriptive:** M arm B equals D-plain arm B run by run (label, profit and X4 fit identical in all 320 pairs), as the gate requires.
+- **Not used:** the single-seed calibration on seed 43, in which S still collapsed under PopArt, was declared
+  descriptive only. On forty seeds PopArt's shift is +0.010.
+- **Exploratory only (not pre-declared):** under D-plain, S's in-sample EV after the update, against SB3's own returns,
+  exceeds B's (+0.295), while its EV against Monte-Carlo returns is far lower. That measure is self-referential, which
+  is why it was rejected as the manipulation check.
+
+## Verdict after X4
+The symmetric-scaling shift in the no-clip SB3 learner runs through the scale of the critic's regression targets.
+Removing the scale, with a fixed-scale head or with PopArt, removes the shift on forty fresh seeds (equivalent to zero
+within ±0.10). With the plain critic, S fits the returns worse and builds worse advantages. X4 does not isolate the
+critic's fit as the mediator: both interventions that equalize the fit also remove the target scale.

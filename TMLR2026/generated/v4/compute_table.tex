@@ -1,5 +1,5 @@
 \begin{table}[H]
-\caption{Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X3 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per run throughout).}
+\caption{Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X4 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4).}
 \label{tab:compute_v4}
 \centering\small
 \begin{tabular}{@{}llrrr@{}}
@@ -21,7 +21,8 @@ E12 & Local observations with agent identity, 300k & 480 & 67.2 & 8.4 \\
 X1 & Fresh-seed clipping replication, SB3, 300k & 960 & 133.2 & 8.3 \\
 X2 & Fresh-seed clipping replication, CleanRL-style, 300k & 640 & 89.3 & 8.4 \\
 X3 & Actor/critic clipping factorial, 300k & 1,280 & 178.7 & 8.4 \\
- & Total & 9,900 & 2,239.5 &  \\
+X4 & Critic target scale and fit, seeds 122--161, 300k & 1,920 & 280.2 & 8.8 \\
+ & Total & 11,820 & 2,519.8 &  \\
 \bottomrule
 \end{tabular}
 \end{table}

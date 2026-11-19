@@ -1,0 +1,67 @@
+== X4: 1,920 runs complete, 300,160 transitions, declared evaluation seeds, 469 X4 records each
+
+== crossing contrasts
+  S-B D-plain                  +0.143  jt95 [+0.090, +0.195]  jt90 [+0.099, +0.186]  pct95 [+0.094, +0.191]
+  S-B D-pop                    +0.010  jt95 [-0.040, +0.060]  jt90 [-0.032, +0.051]  pct95 [-0.038, +0.057]
+  S-B M                        +0.012  jt95 [-0.033, +0.057]  jt90 [-0.026, +0.049]  pct95 [-0.029, +0.058]
+  change M - D-plain           -0.131  jt95 [-0.175, -0.087]  jt90 [-0.168, -0.094]  pct95 [-0.171, -0.090]
+  change D-pop - D-plain       -0.133  jt95 [-0.212, -0.055]  jt90 [-0.198, -0.068]  pct95 [-0.206, -0.058]
+
+== advantage quality, seed-paired S vs B (ratios: geometric mean S/B; differences: S-B)
+  D-plain  verr_train         S/B +1.453  95% [+1.441, +1.466]  90% [+1.443, +1.464]
+  D-plain  gae_err            S/B +1.172  95% [+1.157, +1.186]  90% [+1.160, +1.184]
+  D-plain  sign_dis           S/B +1.204  95% [+1.183, +1.226]  90% [+1.186, +1.222]
+  D-plain  adv_spearman       S-B -0.076  95% [-0.082, -0.070]  90% [-0.081, -0.071]
+  D-plain  adv_spearman       S/B +0.870  95% [+0.861, +0.879]  90% [+0.862, +0.878]
+  D-plain  ev_sb3             S-B -0.285  95% [-0.294, -0.275]  90% [-0.293, -0.277]
+  D-plain  ev_train_mc        S-B -0.261  95% [-0.268, -0.254]  90% [-0.267, -0.255]
+  D-plain  ev_ref_mc          S-B -0.027  95% [-0.035, -0.020]  90% [-0.034, -0.021]
+  D-plain  ev_post_insample   S-B +0.295  95% [+0.289, +0.300]  90% [+0.290, +0.299]
+  D-pop    verr_train         S/B +1.004  95% [+0.995, +1.013]  90% [+0.996, +1.012]
+  D-pop    gae_err            S/B +1.000  95% [+0.990, +1.011]  90% [+0.992, +1.009]
+  D-pop    sign_dis           S/B +1.006  95% [+0.989, +1.023]  90% [+0.992, +1.020]
+  D-pop    adv_spearman       S-B +0.001  95% [-0.002, +0.004]  90% [-0.001, +0.003]
+  D-pop    adv_spearman       S/B +1.003  95% [+0.998, +1.007]  90% [+0.999, +1.006]
+  D-pop    ev_sb3             S-B +0.002  95% [-0.003, +0.006]  90% [-0.002, +0.006]
+  D-pop    ev_train_mc        S-B +0.001  95% [-0.005, +0.006]  90% [-0.004, +0.005]
+  D-pop    ev_ref_mc          S-B +0.001  95% [-0.006, +0.007]  90% [-0.005, +0.006]
+  D-pop    ev_post_insample   S-B -0.002  95% [-0.007, +0.002]  90% [-0.006, +0.002]
+  M        verr_train         S/B +1.004  95% [+0.998, +1.009]  90% [+0.999, +1.008]
+  M        gae_err            S/B +1.006  95% [+0.998, +1.015]  90% [+0.999, +1.014]
+  M        sign_dis           S/B +1.005  95% [+0.992, +1.019]  90% [+0.994, +1.016]
+  M        adv_spearman       S-B +0.002  95% [-0.001, +0.006]  90% [-0.001, +0.005]
+  M        adv_spearman       S/B +1.004  95% [+0.997, +1.011]  90% [+0.998, +1.009]
+  M        ev_sb3             S-B -0.004  95% [-0.009, +0.001]  90% [-0.008, +0.000]
+  M        ev_train_mc        S-B -0.004  95% [-0.010, +0.001]  90% [-0.009, -0.000]
+  M        ev_ref_mc          S-B -0.010  95% [-0.017, -0.003]  90% [-0.016, -0.004]
+  M        ev_post_insample   S-B +0.001  95% [-0.002, +0.004]  90% [-0.002, +0.003]
+
+== descriptive: run means by arm
+  D-plain  B  ev_sb3 0.439  ev_train_mc 0.354  ev_ref_mc 0.413  verr_train 0.857  gae_err 0.685  adv_spearman 0.675  sign_dis 0.226
+  D-plain  S  ev_sb3 0.154  ev_train_mc 0.093  ev_ref_mc 0.386  verr_train 1.267  gae_err 0.783  adv_spearman 0.599  sign_dis 0.265
+  D-pop    B  ev_sb3 0.568  ev_train_mc 0.474  ev_ref_mc 0.406  verr_train 0.721  gae_err 0.596  adv_spearman 0.753  sign_dis 0.184
+  D-pop    S  ev_sb3 0.570  ev_train_mc 0.475  ev_ref_mc 0.407  verr_train 0.722  gae_err 0.595  adv_spearman 0.754  sign_dis 0.184
+  M        B  ev_sb3 0.439  ev_train_mc 0.354  ev_ref_mc 0.413  verr_train 0.857  gae_err 0.685  adv_spearman 0.675  sign_dis 0.226
+  M        S  ev_sb3 0.435  ev_train_mc 0.350  ev_ref_mc 0.403  verr_train 0.860  gae_err 0.684  adv_spearman 0.677  sign_dis 0.225
+
+== Pre-declared predictions (jackknife-t)
+P1 replication, S-B D-plain > 0 (95%): +0.143 [+0.090, +0.195] -> MET
+P2 verr_train   S/B > 1: 1.453 [1.441, 1.466] -> met
+P2 gae_err      S/B > 1: 1.172 [1.157, 1.186] -> met
+P2 sign_dis     S/B > 1: 1.204 [1.183, 1.226] -> met
+P2 adv_spearman S-B < 0: -0.0759 [-0.0818, -0.0700] -> met
+P2 advantage degradation under S (all four): MET (4/4)
+P3 verr_train   D-pop S/B within 1 +/- 0.1 (90%): 1.004 [0.996, 1.012] -> met
+P3 gae_err      D-pop S/B within 1 +/- 0.1 (90%): 1.000 [0.992, 1.009] -> met
+P3 sign_dis     D-pop S/B within 1 +/- 0.1 (90%): 1.006 [0.992, 1.020] -> met
+P3 adv_spearman D-pop S/B within 1 +/- 0.1 (90%): 1.003 [0.999, 1.006] -> met
+P3 PopArt equalizes advantage quality: MET
+P4 manipulation check, M critic-fit gap S-B (EV vs MC returns) within +/-0.05 (90%): -0.004 [-0.009, -0.000] (D-plain -0.261) -> MET
+P5a change M - D-plain < 0 (95%): -0.131 [-0.175, -0.087] -> met
+P5b S-B under M within +/-0.1 (90%): +0.012 [-0.026, +0.049] -> met
+P5 channel test (scale-matched critic removes the shift): MET
+P6 H-fit test (D-pop): fit gap S-B within +/-0.05 (90%): +0.001 [-0.004, +0.005] -> met; S-B D-pop +0.010, 90% [-0.032, +0.051], 95% lower -0.040
+
+== Declared interpretation
+Channel (M): fixing the critic's output scale removes the shift; the critic's target scale carries it at this budget.
+H-fit (D-pop): consistent with H-fit: with critic fit equalized, the shift is equivalent to zero within +/-0.10.

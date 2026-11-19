@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{The critic's fit and the actor's advantages in X4, measured at every rollout against a separate reference critic fitted out of sample to Monte-Carlo returns. Value error: RMSE of the learner's values against the returns over their SD; advantage error: RMS difference of the standardized learner and reference GAE advantages; sign disagreement: share of transitions where they differ in sign; rank agreement: their Spearman correlation. Seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.}
+\label{tab:x4q}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.34\textwidth}ccc@{}}
+\toprule
+Quantity & Plain critic & PopArt critic & Fixed-scale head \\
+\midrule
+Value error, S/B & \begin{tabular}[t]{@{}c@{}}$1.453$\\[-1pt]{\scriptsize $[1.441,\,1.466]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.004$\\[-1pt]{\scriptsize $[0.995,\,1.013]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.004$\\[-1pt]{\scriptsize $[0.998,\,1.009]$}\end{tabular} \\
+Advantage error, S/B & \begin{tabular}[t]{@{}c@{}}$1.172$\\[-1pt]{\scriptsize $[1.157,\,1.186]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.000$\\[-1pt]{\scriptsize $[0.990,\,1.011]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.006$\\[-1pt]{\scriptsize $[0.998,\,1.015]$}\end{tabular} \\
+Sign disagreement, S/B & \begin{tabular}[t]{@{}c@{}}$1.204$\\[-1pt]{\scriptsize $[1.183,\,1.226]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.006$\\[-1pt]{\scriptsize $[0.989,\,1.023]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.005$\\[-1pt]{\scriptsize $[0.992,\,1.019]$}\end{tabular} \\
+Rank agreement, S$-$B & \begin{tabular}[t]{@{}c@{}}$-0.076$\\[-1pt]{\scriptsize $[-0.082,\,-0.070]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.001$\\[-1pt]{\scriptsize $[-0.002,\,+0.004]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.002$\\[-1pt]{\scriptsize $[-0.001,\,+0.006]$}\end{tabular} \\
+Critic fit (EV against Monte-Carlo returns), S$-$B & \begin{tabular}[t]{@{}c@{}}$-0.261$\\[-1pt]{\scriptsize $[-0.268,\,-0.254]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.001$\\[-1pt]{\scriptsize $[-0.005,\,+0.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.004$\\[-1pt]{\scriptsize $[-0.010,\,+0.001]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

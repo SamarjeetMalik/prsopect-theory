@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{Does the critic's target scale carry the symmetric shift? (X4, 1,920 runs): separate actor and critic Adam without clipping, raw rewards, arms B and S, the E1 grid, fresh seeds 122--161 (forty). Plain critic: E7's; PopArt critic: E7's; fixed-scale head: the plain critic with its output multiplied by the arm's reward scale $c$ (B: 1, S: 7), so that it regresses targets of B's size. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. The equivalence predictions require the 90\% interval of S$-$B within $\pm0.10$.}
+\label{tab:x4}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}}
+\toprule
+Critic or change & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\% \\
+\midrule
+Plain critic & $+0.143$$^{\ast}$ & $[+0.090,\,+0.195]$ & $[+0.099,\,+0.186]$ & $[+0.094,\,+0.191]$ \\
+PopArt critic & $+0.010$ & $[-0.040,\,+0.060]$ & $[-0.032,\,+0.051]$ & $[-0.038,\,+0.057]$ \\
+Fixed-scale head, $V=c\,h(x)$ & $+0.012$ & $[-0.033,\,+0.057]$ & $[-0.026,\,+0.049]$ & $[-0.029,\,+0.058]$ \\
+Change, PopArt $-$ plain & $-0.133$$^{\ast}$ & $[-0.212,\,-0.055]$ & $[-0.198,\,-0.068]$ & $[-0.206,\,-0.058]$ \\
+Change, fixed-scale head $-$ plain & $-0.131$$^{\ast}$ & $[-0.175,\,-0.087]$ & $[-0.168,\,-0.094]$ & $[-0.171,\,-0.090]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -21,3 +21,9 @@ labels therefore use θ = 0.5, not the pre-declared θ = 0.626.
 **Fix.** Every run stores its team return, so labels are recomputed at θ = 0.626 from `E4_runs.csv` (no rerun). The
 θ = 0.5 analysis is kept as a sensitivity result. At θ = 0.626, A − S is +0.447 [+0.312, +0.559] (global clip) and
 +0.490 [+0.315, +0.619] (separate); at θ = 0.5 it is +0.418 and +0.479; at θ = 0.75 it is +0.370 and +0.447.
+
+## X4 extraction (2026-11-19, after all 1,920 runs completed): extractor read a removed field
+The cluster-side extraction script (not a frozen source; it only collects per-run records) still read
+`protocol["extra_epochs_cap"]`, a field of the drafted part F that was dropped before the freeze, and raised `KeyError`
+before writing `X4_runs.csv` (job 12114). The line was changed to record `critic_output_scale` instead, and extraction
+was rerun (job 14004). No run, frozen source or analysis changed; the frozen `phase3_x4.py` does not read either field.
