@@ -1,0 +1,8 @@
+prediction,met
+1,True
+2,True
+3,True
+4,True
+5,True
+6,True
+reading,"Scope: a symmetric-scaling shift is present under decentralized execution (per-node actors on local views, centralized critic). Channel (M): fixing the critic's output scale removes the shift; the critic's target scale carries it under decentralized execution at this budget. PopArt: with critic fit equalized the shift is equivalent to zero within +/-0.10 and reduced; consistent with the critic-target account (not proof)."

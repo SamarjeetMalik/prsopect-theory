@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{The symmetric shift and its channel under decentralized execution (X5, 1,920 runs): each of the five trained nodes has its own actor network, action head and log-standard deviation, and sees only its local view and a one-hot node identifier; one centralized critic sees the global state and the identifier. Separate actor and critic Adam without clipping, raw rewards, arms B and S, the E1 grid, fresh seeds 162--201 (forty). The three critics are X4's. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. The equivalence predictions require the 90\% interval of S$-$B within $\pm0.10$.}
+\label{tab:x5}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.30\textwidth}cccc@{}}
+\toprule
+Critic or change & S$-$B & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\% \\
+\midrule
+Plain critic & $+0.143$$^{\ast}$ & $[+0.097,\,+0.188]$ & $[+0.105,\,+0.181]$ & $[+0.098,\,+0.187]$ \\
+PopArt critic & $-0.001$ & $[-0.048,\,+0.046]$ & $[-0.040,\,+0.038]$ & $[-0.046,\,+0.043]$ \\
+Fixed-scale head, $V=c\,h(x)$ & $+0.014$ & $[-0.025,\,+0.054]$ & $[-0.019,\,+0.047]$ & $[-0.024,\,+0.053]$ \\
+Change, PopArt $-$ plain & $-0.143$$^{\ast}$ & $[-0.216,\,-0.071]$ & $[-0.204,\,-0.083]$ & $[-0.215,\,-0.073]$ \\
+Change, fixed-scale head $-$ plain & $-0.128$$^{\ast}$ & $[-0.176,\,-0.080]$ & $[-0.168,\,-0.088]$ & $[-0.175,\,-0.078]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

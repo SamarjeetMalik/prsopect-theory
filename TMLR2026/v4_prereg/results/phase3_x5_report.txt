@@ -1,0 +1,66 @@
+== X5: 1,920 runs complete, 300,160 transitions, declared evaluation seeds, 469 X5 records each, decentralized execution
+
+== crossing contrasts
+  S-B plain                    +0.143  jt95 [+0.097, +0.188]  jt90 [+0.105, +0.181]  pct95 [+0.098, +0.187]
+  S-B popart                   -0.001  jt95 [-0.048, +0.046]  jt90 [-0.040, +0.038]  pct95 [-0.046, +0.043]
+  S-B M                        +0.014  jt95 [-0.025, +0.054]  jt90 [-0.019, +0.047]  pct95 [-0.024, +0.053]
+  change M - plain             -0.128  jt95 [-0.176, -0.080]  jt90 [-0.168, -0.088]  pct95 [-0.175, -0.078]
+  change popart - plain        -0.143  jt95 [-0.216, -0.071]  jt90 [-0.204, -0.083]  pct95 [-0.215, -0.073]
+
+== advantage quality, seed-paired S vs B (ratios: geometric mean S/B; differences: S-B)
+  plain    verr_train         S/B +1.712  95% [+1.695, +1.730]  90% [+1.698, +1.727]
+  plain    gae_err            S/B +1.089  95% [+1.081, +1.098]  90% [+1.082, +1.096]
+  plain    sign_dis           S/B +1.084  95% [+1.076, +1.093]  90% [+1.077, +1.092]
+  plain    adv_spearman       S-B -0.072  95% [-0.080, -0.065]  90% [-0.078, -0.066]
+  plain    adv_spearman       S/B +0.820  95% [+0.805, +0.836]  90% [+0.807, +0.833]
+  plain    ev_sb3             S-B -0.371  95% [-0.377, -0.365]  90% [-0.376, -0.366]
+  plain    ev_train_mc        S-B -0.357  95% [-0.363, -0.352]  90% [-0.362, -0.353]
+  plain    ev_ref_mc          S-B -0.009  95% [-0.015, -0.004]  90% [-0.014, -0.005]
+  plain    ev_post_insample   S-B +0.398  95% [+0.392, +0.404]  90% [+0.393, +0.403]
+  popart   verr_train         S/B +1.009  95% [+0.994, +1.024]  90% [+0.997, +1.022]
+  popart   gae_err            S/B +0.997  95% [+0.989, +1.006]  90% [+0.990, +1.004]
+  popart   sign_dis           S/B +0.997  95% [+0.990, +1.004]  90% [+0.991, +1.003]
+  popart   adv_spearman       S-B +0.002  95% [-0.005, +0.009]  90% [-0.003, +0.008]
+  popart   adv_spearman       S/B +1.007  95% [+0.991, +1.023]  90% [+0.994, +1.020]
+  popart   ev_sb3             S-B -0.002  95% [-0.008, +0.003]  90% [-0.007, +0.002]
+  popart   ev_train_mc        S-B -0.004  95% [-0.011, +0.003]  90% [-0.010, +0.002]
+  popart   ev_ref_mc          S-B -0.002  95% [-0.008, +0.004]  90% [-0.007, +0.003]
+  popart   ev_post_insample   S-B +0.002  95% [-0.002, +0.007]  90% [-0.002, +0.006]
+  M        verr_train         S/B +1.003  95% [+0.992, +1.013]  90% [+0.994, +1.011]
+  M        gae_err            S/B +0.999  95% [+0.994, +1.004]  90% [+0.995, +1.003]
+  M        sign_dis           S/B +1.000  95% [+0.995, +1.005]  90% [+0.996, +1.005]
+  M        adv_spearman       S-B -0.000  95% [-0.005, +0.005]  90% [-0.004, +0.004]
+  M        adv_spearman       S/B +0.999  95% [+0.987, +1.012]  90% [+0.989, +1.010]
+  M        ev_sb3             S-B -0.002  95% [-0.008, +0.003]  90% [-0.007, +0.002]
+  M        ev_train_mc        S-B -0.002  95% [-0.009, +0.004]  90% [-0.008, +0.003]
+  M        ev_ref_mc          S-B -0.002  95% [-0.008, +0.004]  90% [-0.007, +0.003]
+  M        ev_post_insample   S-B +0.002  95% [-0.003, +0.007]  90% [-0.002, +0.007]
+
+== descriptive: run means by arm
+  plain    B  ev_sb3 0.594  ev_train_mc 0.527  ev_ref_mc 0.729  verr_train 0.701  gae_err 1.043  adv_spearman 0.401  sign_dis 0.362
+  plain    S  ev_sb3 0.223  ev_train_mc 0.170  ev_ref_mc 0.720  verr_train 1.220  gae_err 1.134  adv_spearman 0.329  sign_dis 0.392
+  popart   B  ev_sb3 0.731  ev_train_mc 0.663  ev_ref_mc 0.731  verr_train 0.549  gae_err 0.969  adv_spearman 0.469  sign_dis 0.328
+  popart   S  ev_sb3 0.728  ev_train_mc 0.659  ev_ref_mc 0.729  verr_train 0.554  gae_err 0.966  adv_spearman 0.471  sign_dis 0.327
+  M        B  ev_sb3 0.594  ev_train_mc 0.527  ev_ref_mc 0.729  verr_train 0.701  gae_err 1.043  adv_spearman 0.401  sign_dis 0.362
+  M        S  ev_sb3 0.592  ev_train_mc 0.525  ev_ref_mc 0.727  verr_train 0.703  gae_err 1.041  adv_spearman 0.401  sign_dis 0.362
+
+== Pre-declared predictions (jackknife-t)
+P1 symmetric shift under decentralized execution, S-B plain > 0 (95%): +0.143 [+0.097, +0.188] -> MET; 90% [+0.105, +0.181] within +/-0.1: False
+P2 verr_train   S/B > 1: 1.712 [1.695, 1.730] -> met
+P2 gae_err      S/B > 1: 1.089 [1.081, 1.098] -> met
+P2 sign_dis     S/B > 1: 1.084 [1.076, 1.093] -> met
+P2 adv_spearman S-B < 0: -0.0724 [-0.0796, -0.0651] -> met
+P2 advantage degradation under S, plain critic (all four): MET (4/4)
+P3 PopArt equalizes critic fit, S-B within +/-0.05 (90%): -0.004 [-0.010, +0.002] -> MET
+P4 fixed-scale head equalizes critic fit, S-B within +/-0.05 (90%): -0.002 [-0.008, +0.003] -> MET
+P5a change M - plain < 0 (95%): -0.128 [-0.176, -0.080] -> met
+P5b S-B under M within +/-0.1 (90%): +0.014 [-0.019, +0.047] -> met
+P5 channel test (fixed-scale head removes the shift): MET
+P6a change popart - plain < 0 (95%): -0.143 [-0.216, -0.071] -> met
+P6b S-B under PopArt within +/-0.1 (90%): -0.001 [-0.040, +0.038] -> met
+P6 PopArt removes the shift: MET
+
+== Declared interpretation
+Scope: a symmetric-scaling shift is present under decentralized execution (per-node actors on local views, centralized critic).
+Channel (M): fixing the critic's output scale removes the shift; the critic's target scale carries it under decentralized execution at this budget.
+PopArt: with critic fit equalized the shift is equivalent to zero within +/-0.10 and reduced; consistent with the critic-target account (not proof).

@@ -502,3 +502,32 @@ replaced by leave-one-seed-out weights. It writes `results_jt/`, with `ci_*` hol
   - E8's plain-critic A − M_on excludes zero at 95% but not at 99%.
 - **Pre-declared verdicts are unchanged.** They are judged with the intervals they were declared with; the paper
   says where the two differ.
+
+## X5 (pre-registered and frozen 2026-11-19T11:57:19Z before the gate; analysed 2026-11-20 with the frozen `phase3_x5.py`)
+Decentralized execution: each of the five trained nodes has its own actor network (local view plus one-hot node
+identifier); one centralized critic sees the global state and the identifier. X4's learner (separate Adam, no clip,
+raw rewards) and X4's three critics. Fresh seeds 162–201, 1,920 runs, none failed. Gate job 14017 passed all five
+checks; arrays 14018/14019; extraction 14020.
+
+- **Predictions (jackknife-t, 39 df): all six met.**
+  - **P1:** S − B under the plain critic +0.143 [+0.097, +0.188], the same size as X4's +0.143.
+  - **P2:** under the plain critic S's advantages are worse on all four measures: value error S/B 1.71, GAE error
+    1.09, sign disagreement 1.08, rank agreement −0.072.
+  - **P3:** PopArt fit gap −0.004, 90% [−0.010, +0.002].
+  - **P4:** fixed-scale head fit gap −0.002, 90% [−0.008, +0.003] (plain: −0.357).
+  - **P5:** change M − plain −0.128 [−0.176, −0.080]; S − B under M +0.014, 90% [−0.019, +0.047].
+  - **P6:** change PopArt − plain −0.143 [−0.216, −0.071]; S − B under PopArt −0.001, 90% [−0.040, +0.038].
+- **Declared readings:**
+  - **Scope:** a symmetric-scaling shift is present under decentralized execution; the claim extends to this setting.
+  - **Channel (M):** fixing the critic's output scale removes the shift; the critic's target scale carries it under
+    decentralized execution at this budget.
+  - **PopArt:** with the fit equalized the shift is equivalent to zero and reduced; consistent with the critic-target
+    account, not proof of it.
+- **Descriptive:** M arm B equals plain arm B in the run means of every logged measure, as the c = 1 gate requires.
+
+## Verdict after X5
+The shift and its channel are not specific to the parameter-shared, fully observed actor: with per-node actors on
+local views and a centralized critic, the shift replicates at full size and both critic interventions remove it. What
+X5 keeps from the shared controller is a critic on the global state that regresses unnormalized targets, so agents
+with decentralized critics remain untested. X5 does not explain E12's undetected shift; E12 differs from X5 in the
+learner (shared clip), the critic's input (local) and parameter sharing.

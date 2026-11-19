@@ -60,8 +60,12 @@ critic fits the scaled returns worse. On forty further fresh seeds (X4) the plai
 symmetric scaling, and two critics that equalize its fit remove the shift: PopArt (\VxfPop{}) and a head whose output is fixed-scaled
 by the reward multiplier, so that it regresses targets of the baseline's size (\VxfHead{}); both are equivalent to zero within
 $\pm0.10$. At this budget and without clipping, the shift therefore runs through the scale of the critic's regression targets.
-Under local observation with agent identity (E12) the symmetric shift is no longer detectable, so on the supply chain
-the confound is established for the fully observed shared controller.
+On forty more fresh seeds (X5) each node has its own actor network, acting on its local observation, with a centralized
+critic, and the result repeats: the shift is \VxvPlain{} with the plain critic, and with the fixed-scale head
+(\VxvHead{}) or PopArt (\VxvPop{}) it is equivalent to zero within $\pm0.10$. The confound therefore does not require
+a parameter-shared, fully observed actor. What X5 keeps from the shared controller is a critic that sees the global
+state and regresses unnormalized targets. With a shared actor and critic both on local views, under the shared clip
+(E12), the shift was not detectable; X5 does not explain why.
 (ii)~\emph{a measurement protocol with checked uncertainty} (Sections~\ref{sec:design} and~\ref{sec:robustness}):
 Firth logistic crossings with training-seed-level intervals, pre-registered experiments (\VfourTrajectories{} trajectories,
 of which \VfourMechTrajectories{} address the optimizer), and a simulation study of interval procedures showing that the
@@ -78,11 +82,14 @@ on the critic: with raw value targets it is small (\VjtPAMonPlain{}, which does 
 moments reproduces most of the loss-only shift; with normalized value targets it is large (\VjtPAMonPop{}). In Level-Based Foraging an asymmetric transform also moves the
 crossing, through a different incentive route (Section~\ref{sec:lbf}).
 
-\emph{Scope.} Every symmetric shift we detect on the supply chain is for a fully observed, parameter-shared controller
-(Section~\ref{sec:method}); with local observation and agent identity (E12) it was not detectable. In the decentralized,
+\emph{Scope.} On the supply chain the symmetric shift is established in two settings: a fully observed,
+parameter-shared controller (Section~\ref{sec:method}), and per-node actors on local observations with a centralized
+critic (X5). With a shared actor and critic both on local views and the shared clip (E12) it was not detectable. E12
+differs from X5 in the learner, in the critic's input, in parameter sharing and in power (ten seeds against forty);
+its interval includes X5's estimate, so it neither shows the shift absent nor tells us which difference matters. In the decentralized,
 partially observed LBF environment, whose critic does not dominate the gradient, symmetric $\times4$ scaling moves the
 crossing only slightly under the global clip (\VfourLBFSymGlobal{}) and not detectably without it (\VfourLBFSymSep{}).
-Whether the critic-target confound reaches independently acting, partially observed agents is open.
+Whether the critic-target confound reaches agents whose critics also see only local information is open.
 We use ``boundary'' and ``crossing'' only in this operational, finite-budget sense, not as claims of
 phase-like criticality.
 
@@ -188,13 +195,13 @@ label; train matched policies across a grid of $w$; label each run from pre-spec
 $P(\mathrm{collapse}\mid w)$, reporting the midpoint $\wcrit$ with seed-level confidence intervals.
 
 \paragraph{Information structure.}
-The supply-chain experiments train one policy, shared by the five trainable nodes, on each node's own
+Except in E12 and X5, the supply-chain experiments train one policy, shared by the five trainable nodes, on each node's own
 blended reward. Every node's policy input is the \emph{same} full observation of the network state; there is
 no agent identifier, and actions are padded to the largest per-node action dimension, each node using its
 leading entries. Under deterministic evaluation the five nodes therefore receive the same action vector. The
 setting is thus a fully observed, homogeneous shared controller trained on per-node mixed rewards, not a
 decentralized partially observed team: collapse here is the shared policy settling on the lazy action, and
-nothing below is evidence about decentralized information. In Level-Based Foraging each agent's actor sees
+nothing below except E12 and X5 bears on decentralized information. In Level-Based Foraging each agent's actor sees
 only its own observation and a centralized critic sees the global state (Section~\ref{sec:lbf}).
 
 \paragraph{Reward transforms.}
@@ -283,7 +290,7 @@ or targets should remove it. Predictions (a) and (b), and the optimizer half of 
 behavioural half of (c) is not: restoring the actor's update reduced the crossing shift in one cohort (E6) but not
 on fresh seeds (X1), and when actor and critic are clipped independently neither clip has a detectable effect on the
 shift (X3). For (d), no symmetric shift is detectable under reward normalization with or without the shared clip (E1),
-and critic-only target normalization reduces the shift on the pooled cohorts and, on forty fresh seeds, removes it (X4). As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
+and critic-only target normalization reduces the shift on the pooled cohorts and, on forty fresh seeds, removes it (X4), also under decentralized execution (X5). As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
 cell. The critic accounts for more than 99.99\% of the squared joint norm in both arms, every minibatch is clipped,
 and the predicted S/B ratio of applied actor gradients, \VeqPred{}, equals the measured \VeqMeas{} (largest
 per-minibatch relative error $\VeqMaxErr{}$); under per-group clipping both are \VeqGroupMeas{}. Because
@@ -320,7 +327,7 @@ removes the target scale while keeping everything else, and separately equalizes
 \node[box, right=of k] (u) {Applied actor gradient $\kappa\|g_a\|$, then Adam step};
 \node[box, right=of u] (b) {Policy learned at budget $T$; collapse label; $w_{50}$};
 \draw[arr] (r) -- (c); \draw[arr] (r) -- (a); \draw[arr] (c) -- (k); \draw[arr] (a) -- (u); \draw[arr] (k) -- (u); \draw[arr] (u) -- (b);
-\node[inter, above=3mm of c] (i1) {Reward normalization or PopArt: bound $\|g_c\|$ (E1, E7, X4)};
+\node[inter, above=3mm of c] (i1) {Reward normalization or PopArt: bound $\|g_c\|$ (E1, E7, X4, X5)};
 \node[inter, above=3mm of k] (i2) {Per-group or no clipping: $\kappa\to\kappa_a$ (E1, E6, X1, X3)};
 \draw[dashed, -{Stealth[length=1.5mm]}] (i1) -- (c); \draw[dashed, -{Stealth[length=1.5mm]}] (i2) -- (k);
 \end{tikzpicture}
@@ -337,7 +344,7 @@ removes the target scale while keeping everything else, and separately equalizes
 \input{content/setup_v4}
 
 \begin{table}[!htbp]
-\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-level jackknife-$t$ intervals (E8's replication cohort uses seeds 52--61, E10's seeds 62--81, X1--X4 the seeds shown); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs, E9--E10, E11--E12 and X1--X2 as pairs, and X3 and X4 each alone; X1--X4 take the jackknife-$t$ interval as primary. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
+\caption{Experiment matrix. All experiments use ten training seeds (42--51) per arm and mixture cell, one evaluation label per run, the Firth crossing and seed-level jackknife-$t$ intervals (E8's replication cohort uses seeds 52--61, E10's seeds 62--81, X1--X5 the seeds shown); E4 runs on Level-Based Foraging, all others on the supply chain. E1--E4 were pre-registered together, E5--E8 each before any of its runs, E9--E10, E11--E12 and X1--X2 as pairs, and X3, X4 and X5 each alone; X1--X5 take the jackknife-$t$ interval as primary. ``Main finding'' cites the contrast that answers the row's question; Table~\ref{tab:results} gives intervals.}
 \label{tab:matrix}
 \centering\scriptsize\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}>{\raggedright\arraybackslash}p{.045\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.21\textwidth}>{\raggedright\arraybackslash}p{.17\textwidth}>{\raggedright\arraybackslash}p{.06\textwidth}>{\raggedright\arraybackslash}p{.15\textwidth}>{\raggedright\arraybackslash}p{.12\textwidth}@{}}
@@ -360,17 +367,18 @@ X1 & Does E6's per-group reduction replicate? & E6's three clipping modes, Adam-
 X2 & Same, second implementation & E11's raw and per-group modes & B, S; 8 cells; 300k; seeds 82--101 & 640 & S$-$B not reduced (fresh); small reduction pooled & Pooled test secondary \\
 X3 & Which clipped group carries S$-$B? & Actor clipped or not $\times$ critic clipped or not, one Adam & B, S; 8 cells; 300k; seeds 102--121 & 1,280 & No detectable effect of either clip; S$-$B present without clipping & Critic route not isolated \\
 X4 & Does the critic's target scale carry S$-$B? & Separate no-clip optimizers; plain vs PopArt critic vs output fixed-scaled to the reward multiplier; advantage-quality logging & B, S; 8 cells; 300k; seeds 122--161 & 1,920 & PopArt and fixed-scale head each remove S$-$B; plain critic's advantages worse & Fit not separated from target scale \\
+X5 & Does S$-$B hold under decentralized execution? & Per-node actors on local view plus identifier, centralized critic; X4's three critics and logging & B, S; 8 cells; 300k; seeds 162--201 & 1,920 & S$-$B replicates; PopArt and fixed-scale head each remove it & Critic centralized; fit not separated \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \paragraph{Experiments.}
-Table~\ref{tab:matrix} lists the sixteen pre-registered experiments. Together they comprise \VfourTrajectories{}
-trajectories; the \VfourMechTrajectories{} in E1, E2, E6--E11 and X1--X4 address the optimizer mechanism (E11's 720 and
+Table~\ref{tab:matrix} lists the seventeen pre-registered experiments. Together they comprise \VfourTrajectories{}
+trajectories; the \VfourMechTrajectories{} in E1, E2, E6--E11 and X1--X5 address the optimizer mechanism (E11's 720 and
 X2's 640 in a second PPO implementation), E3 and E5 follow 540 trajectories to 3.6M transitions, E4's 800 run on the second environment, and
-E12's 480 change the information structure. Earlier ``legacy'' sweeps from another platform
+E12's 480 change the information structure (as do X5's 1,920, counted above). Earlier ``legacy'' sweeps from another platform
 (20 seeds per cell) supply the curvature-versus-multiplier decomposition and the cross-sectional horizon
-fit; they are reported separately and never pooled with E1--E12 or X1--X4.
+fit; they are reported separately and never pooled with E1--E12 or X1--X5.
 
 \paragraph{Estimation.}
 We fit the logistic curve by Firth's bias-reduced maximum likelihood~\citep{firth1993}, which stays finite
@@ -409,7 +417,7 @@ most for \emph{changes} in a contrast between conditions, which we report with j
 seeds the two conditions share: several changes that excluded zero under the percentile interval do not under the
 calibrated one (Sections~\ref{sec:optimizer} and~\ref{sec:limitations}). An independent set of 10,000 bootstrap draws
 moves no percentile endpoint by more than \VrvMCShift{}. Intervals are pointwise; we make no simultaneous claim beyond
-the stated Holm family. Every interval in the text, tables and figures of E1--E12 and X1--X4 is the 95\% jackknife-$t$ interval unless it is
+the stated Holm family. Every interval in the text, tables and figures of E1--E12 and X1--X5 is the 95\% jackknife-$t$ interval unless it is
 labelled as the pre-declared percentile interval (Wilson intervals on observed proportions and $\pm1.96$ standard-error
 bars on reward moments are labelled where they appear); the legacy sweeps of Sections~\ref{sec:asymmetric} and~\ref{sec:robustness}
 keep their seed-block intervals. Table~\ref{tab:results} gives both intervals for every principal contrast, and
@@ -419,14 +427,14 @@ Where a pre-declared prediction was judged with the percentile interval and the 
 effect; we make equivalence statements only against a stated margin.
 
 \paragraph{Pre-registration and platform.}
-Experiments E1--E12 and X1--X4 were pre-declared, with source and design hashes frozen before launch; the
+Experiments E1--E12 and X1--X5 were pre-declared, with source and design hashes frozen before launch; the
 departures (one pre-execution source fix, a label-threshold fallback corrected from stored data, and
-analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E12 and X1--X4 trajectories run on one CPU
+analysis-code fixes) are logged in Appendix~\ref{app:prereg}. All E1--E12 and X1--X5 trajectories run on one CPU
 platform. An earlier platform does not reproduce trained policies
 bit-for-bit, but collapse labels agree in \VfourAgreeControl{} of matched direct-control runs and
 \VfourAgreeHorizon{} of matched horizon checkpoints, so we make reproducibility claims at the level of
 labels and crossings. The legacy sweeps in Sections~\ref{sec:asymmetric} and~\ref{sec:robustness} (20 seeds
-per cell) come from the earlier platform and are not pooled with E1--E12 or X1--X4.
+per cell) come from the earlier platform and are not pooled with E1--E12 or X1--X5.
 
 % =======================================================================
 
@@ -448,7 +456,7 @@ evaluation behavior.
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{generated/v4/fig_summary.pdf}
-\caption{Principal crossing contrasts across experiments; the fresh-seed experiments X1--X4 are in Tables~\ref{tab:x1x2}, \ref{tab:x3} and~\ref{tab:x4}. Thick bars: calibrated 95\% jackknife-$t$ intervals; thin bars, offset upward: pre-declared 95\% seed-block percentile intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, the decoupled learner with normalized rewards, the PopArt critic (three cohorts), the second implementation and local observation. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the moment-matched symmetric controls M and M$_{\mathrm{on}}$, and the LBF replication.}
+\caption{Principal crossing contrasts across experiments; the fresh-seed experiments X1--X5 are in Tables~\ref{tab:x1x2}, \ref{tab:x3}, \ref{tab:x4} and~\ref{tab:x5}. Thick bars: calibrated 95\% jackknife-$t$ intervals; thin bars, offset upward: pre-declared 95\% seed-block percentile intervals (Section~\ref{sec:stats}); dots: point estimates. Top block: symmetric scaling S$-$B under the default shared clip, per-group clipping, the decoupled learner with normalized rewards, the PopArt critic (three cohorts), the second implementation and local observation. Middle: asymmetric contrasts on the supply chain. Lower: asymmetric versus the moment-matched symmetric controls M and M$_{\mathrm{on}}$, and the LBF replication.}
 \label{fig:summary}
 \Description{Dot-and-interval plot of twenty-four contrasts; the default symmetric shifts in both implementations are large and positive, the decoupled, normalized and PopArt symmetric shifts include zero, asymmetric contrasts are positive, plain-critic A minus M touches zero.}
 \end{figure}
@@ -622,6 +630,36 @@ the target scale, and PopArt changes the parametrization as well as the fit.
 
 \input{generated/v4/x4_table}
 \input{generated/v4/x4_quality_table}
+
+\paragraph{The same channel under decentralized execution (X5).}
+X4, like every supply-chain experiment except E12, trains one actor that sees the full state. X5 (1,920 runs, forty
+fresh seeds 162--201) repeats X4's three critics with centralized training and decentralized execution. Each of the
+five trained nodes has its own actor network, action head and log-standard deviation. Each acts on its local view
+(E12's: its own retail demand, inventory and incoming order pipeline) plus a one-hot identifier. One critic sees the
+global state and the identifier, which it needs because each node's mixed reward differs. No actor parameter is shared.
+The gate verified that a node's actor receives exactly zero gradient from other nodes' samples and that the critic
+ignores the local-only inputs (Appendix~\ref{app:prereg}). The learner is X4's: separate Adam, no clipping, raw
+rewards.
+
+With the plain critic the shift is present (\VxvPlain{}), as large as under the shared controller in X4
+(\VxfPlain{}). The critic fits the scaled returns worse (S$-$B in explained variance against Monte-Carlo returns
+\VxvFitPlain{}), and the actor's advantages are worse: relative to B, value error is \VxvVerr{} times, advantage error \VxvGae{} times
+and sign disagreement \VxvSign{} times as large, and rank agreement differs by \VxvRank{} (Table~\ref{tab:x5q}; each of
+the four 95\% intervals excludes equality). The
+fixed-scale head and PopArt each equalize the fit (gaps \VxvFitHead{} and \VxvFitPop{}, 90\% intervals
+\VxvFitHeadNinety{} and \VxvFitPopNinety{}) and leave shifts of \VxvHead{} and \VxvPop{}. Both are equivalent to zero
+within $\pm0.10$ (90\% intervals \VxvHeadNinety{} and \VxvPopNinety{}), and the changes from the plain critic are
+\VxvChHead{} and \VxvChPop{} (Table~\ref{tab:x5}).
+
+All six pre-declared predictions are met. By the declared readings, the critic's target scale carries the shift under
+decentralized execution at this budget; the PopArt result is consistent with the critic-target account, not proof
+of it. Two limits carry over from X4: the fit is not isolated as the mediator, and the
+result is for 300k transitions without clipping. A third is new. The critic here is centralized, so X5 does not test
+agents whose critics see only local information. Nor does it explain why E12, with a shared actor and critic both on
+local views and the shared clip, found no detectable shift.
+
+\input{generated/v4/x5_table}
+\input{generated/v4/x5_quality_table}
 
 \paragraph{The baseline crossing itself depends on the optimizer.}
 The curvature-only crossing B is \VfourBaselineStd{} in the default cell and \VfourBaselineRange{} in
@@ -933,8 +971,8 @@ crossings reflect this relapse at high $w$. Cell-level counts are in Appendix~\r
 \input{generated/v4/horizon_stability}
 
 \paragraph{Local observations with agent identity (E12).}
-The supply-chain policy elsewhere is a homogeneous shared controller: every node receives the full state and no
-identifier. In E12 (480 runs) each node observes only its own retail demand, inventory and incoming order
+The supply-chain policy elsewhere, except in X5, is a homogeneous shared controller: every node receives the full
+state and no identifier. In E12 (480 runs) each node observes only its own retail demand, inventory and incoming order
 pipeline, zero-padded, plus a one-hot node identifier, in training and in evaluation, under E1's default and
 decoupled learners (Table~\ref{tab:e12}). A$-$S remains positive under both: \VtwelveAsymDefault{} (default) and
 \VtwelveAsymDec{} (decoupled). The pre-declared prediction that the default learner's symmetric shift persists is
@@ -970,12 +1008,13 @@ exploratory pool of the two fresh cohorts finds that clipping enlarges it (\VxeD
 this, so the clip's contribution is unresolved. In the CleanRL-style implementation a small per-group reduction
 appears only when cohorts are pooled, a secondary analysis. Intervals that include zero do not
 exclude a small clip effect; only the actor-clipping effect in X3 was tested for equivalence, and it lies within $\pm0.10$. The account that
-remains, critic target scale, is tested directly in one pre-registered cohort (X4): removing the target scale with a
-fixed-scale head, or normalizing the targets with PopArt, removes the shift on forty fresh seeds, consistent with the
-normalization results of E1, E7, E8, E10 and E11. X4 does not identify which property of the scaled critic carries it.
+remains, critic target scale, is tested directly in two pre-registered cohorts, X4 and, under decentralized
+execution, X5: removing the target scale with a fixed-scale head, or normalizing the targets with PopArt, removes the
+shift in each, on forty fresh seeds, consistent with the
+normalization results of E1, E7, E8, E10 and E11. Neither identifies which property of the scaled critic carries it.
 Both interventions equalize the critic's fit and the actor's advantage quality together with the target scale, so the
 fit is a candidate mediator, not an isolated one, and the advantage measures depend on a reference critic that is
-itself an estimate. X4 runs at one budget, 300k, on the supply chain only. How much
+itself an estimate. X4 and X5 run at one budget, 300k, on the supply chain only. How much
 of Adam's partial compensation under the shared clip is due to the varying clip factor and how much to $\epsilon$ is
 not isolated.
 
@@ -991,11 +1030,13 @@ With a raw-target critic, the part of the asymmetric effect not explained by the
 Intervals that include zero are reported as no detectable effect, and none would support equivalence at a
 $\pm0.05$ margin. The 24-checkpoint E5 reading is exploratory and its intervals are pointwise.
 
-\paragraph{Information structure and generality.} Apart from E12 the supply-chain policy is a fully observed shared
+\paragraph{Information structure and generality.} Apart from E12 and X5 the supply-chain policy is a fully observed shared
 controller without agent identity (Section~\ref{sec:method}). Under local observation with an identifier (E12) the
 asymmetric contrast holds, but the default learner's symmetric shift is no longer detectable, contrary to our
-prediction, and we have not explained why; the supply-chain symmetric shift is therefore established for the fully
-observed controller only. In LBF, symmetric $\times4$ scaling moves the crossing by \VfourLBFSymGlobal{} under the global
+prediction, and we have not explained why. With per-node actors on local views and a centralized critic (X5) the
+shift is present and, at this budget and without clipping, has the same channel. The supply-chain symmetric shift is therefore established for the shared
+controller and for per-node actors with a centralized critic, each at 300k; with a parameter-shared critic on local
+views (E12, ten seeds) it was not detected, which is inconclusive. In LBF, symmetric $\times4$ scaling moves the crossing by \VfourLBFSymGlobal{} under the global
 clip and not detectably without it (\VfourLBFSymSep{}); with LBF's actor-dominated gradient, this is not evidence for the
 supply-chain mechanism. Two small environments and two PPO implementations are tested: SB3 2.8.0 and a CleanRL-style port
 run in the same environment and harness (E11). Other implementations, clipping conventions and value normalizations
@@ -1031,9 +1072,9 @@ without any clipping in SB3 (E1, X3), though it was not detectable in X1, and at
 clipping may enlarge it; the CleanRL-style port was not run without clipping. With normalized rewards no symmetric
 shift is detectable in either implementation. A pre-registered test on fresh seeds locates the shift without clipping, at this budget, in the scale of
 the critic's regression targets: fixing that scale, or normalizing the targets, removes it (X4). Both interventions also
-equalize the critic's fit, so whether the fit is the mediator is not isolated. All of this holds for the fully observed
-shared controller; under local observation with agent identity (E12) the symmetric shift was not detectable, and in LBF
-it is small.
+equalize the critic's fit, so whether the fit is the mediator is not isolated. The same holds with per-node actors on
+local observations and a centralized critic (X5). With a shared actor and critic both on local views (E12) the
+symmetric shift was not detectable, and in LBF it is small.
 Third, with separate optimizers and
 normalized rewards, a loss-only multiplier moves the crossing relative to a symmetric control on the
 supply chain, through 3.6M transitions, and an asymmetric transform moves it on Level-Based Foraging by a
@@ -1054,7 +1095,7 @@ these, a change in reward scale can pass for a change in reward shape.
 \paragraph{Implications for actor--critic optimization.}
 The confound needs an unnormalized critic, which is SB3 PPO's default. Advantages are normalized per minibatch,
 so the actor's loss is nearly scale-free, yet the crossing still moves with the reward scale, and the critic fits
-the scaled returns worse in every clipping mode we tested; fixing the scale of its targets removes the shift (X4). CleanRL's default PPO normalizes rewards, and in our
+the scaled returns worse in every clipping mode we tested; fixing the scale of its targets removes the shift (X4, and X5 under decentralized execution). CleanRL's default PPO normalizes rewards, and in our
 port that default leaves no detectable symmetric shift (E11); without it, the same port reproduces the confound.
 Cooperative PPO implementations that normalize value targets by default~\citep{yu2022surprising} should be less
 exposed; we did not test them. A methodological lesson concerns the evidence for a mechanism: a large, directly
@@ -1072,7 +1113,7 @@ deployment requirement such as at most 5\% collapse would need its own probabili
 assessment.
 
 \paragraph{Reproducibility.}
-All E1--E12 and X1--X4 runs share one platform; trained policies are not bit-reproducible across hardware and software
+All E1--E12 and X1--X5 runs share one platform; trained policies are not bit-reproducible across hardware and software
 builds, but labels agree in \VfourAgreeControl{} of matched runs, so we claim reproducibility of labels and
 crossings, not of policies. The artifact rebuilds every reported table, figure and number from per-run
 records with one command (Appendix~\ref{app:artifact}).

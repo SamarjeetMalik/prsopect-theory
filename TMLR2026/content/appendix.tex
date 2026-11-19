@@ -72,7 +72,7 @@ frozen analysis script with its bootstrap weight matrix replaced by the leave-on
 computes independently, the two agree. The pre-declared confidence intervals use 2,000
 percentile-bootstrap draws of complete training-seed blocks (multinomial weights over the ten seeds;
 random seed 20261015 for E1--E12; E8's fresh-seed cohort uses the same weights over seeds 52--61, and E10's
-twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). X1 and X2 use draws over seeds 82--101 (random seed 20261119) and, pooled with seeds 42--51, over thirty seeds (20261120); X3 uses draws over seeds 102--121 (20261121), X4 over seeds 122--161 (20261122). The same weight vector is used for every condition in an experiment,
+twenty-seed cohort its own draws over seeds 62--81, random seed 20261108, and over the pooled seeds 42--81, random seed 20261109). X1 and X2 use draws over seeds 82--101 (random seed 20261119) and, pooled with seeds 42--51, over thirty seeds (20261120); X3 uses draws over seeds 102--121 (20261121), X4 over seeds 122--161 (20261122) and X5 over seeds 162--201 (20261123). The same weight vector is used for every condition in an experiment,
 so differences are seed-paired. Fits outside the grid and non-converged draws are retained and counted.
 Intervals are pointwise; no simultaneous statement across checkpoints or cells is made.
 
@@ -132,10 +132,10 @@ recomputed at $\theta=0.626$; the 0.5 analysis is kept as a sensitivity result (
 The pre-declared predictions that failed are reported in the main text: the Adam-$\epsilon$ route (E2)
 two of three LBF predictions (E4), and in E7 the critic-target attribution (inconclusive), the moment
 control under the plain critic and the moment-matching check, and in E12 the persistence of the default learner's symmetric shift under local observation. After the calibration
-study, four further experiments were pre-registered and frozen before their gates: X1 and X2, which repeat E6's and
+study, five further experiments were pre-registered and frozen before their gates: X1 and X2, which repeat E6's and
 E11's clipping comparisons on fresh seeds 82--101 with jackknife-$t$ as the primary analysis and add logging of the
-actor's Adam moments, X3, an actor-by-critic clipping factorial on seeds 102--121, and X4, a test of the critic's target scale and fit on
-seeds 122--161. X1 and X2 were gated on bit-for-bit reproduction of E6 and E11 runs, X3 on reproduction of an X1 run,
+actor's Adam moments, X3, an actor-by-critic clipping factorial on seeds 102--121, X4, a test of the critic's target scale and fit on
+seeds 122--161, and X5, the same test under decentralized execution on seeds 162--201. X1 and X2 were gated on bit-for-bit reproduction of E6 and E11 runs, X3 on reproduction of an X1 run,
 and X4 on reproduction of an E1 and an E7 run, with the fixed-scale head at $c=1$ reproducing the plain critic. X4's design
 changed before it was frozen, after two smoke tests and a single-seed calibration run on seed 43, which is not an X4 seed:
 a drafted arm that gave the critic extra fitting epochs was dropped because it lowered B's fit instead of raising S's,
@@ -149,7 +149,14 @@ reached an evaluation, and no outcome from it is used. In X1 and X2 the per-grou
 (the primary tests) and the fresh-seed no-clip shift were not confirmed. In X3 the primary test, a critic-clipping
 effect on S$-$B, was not confirmed; the actor-clipping equivalence and the replication of the shift with both groups
 clipped were. All six X4 predictions were met. The X4 extraction script, which is not a frozen source, read a field of
-the dropped arm and was corrected before any analysis (deviation log). All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
+the dropped arm and was corrected before any analysis (deviation log). X5 was gated on five checks: one index run twice
+gives bit-identical results; the fixed-scale head at $c=1$ reproduces the plain critic; the logging leaves training
+unchanged; each node's actor parameters are disjoint from the others', a node's actor receives exactly zero gradient
+from other nodes' samples, and the critic does not depend on the local-only inputs; and the three gate indices
+complete. Before the freeze, two smoke tests on seed 42, which is not an X5 seed, ran these checks and timed the runs.
+Between them the actor's routing was changed from masking all five networks' outputs to evaluating each sample with its
+own node's network only; the two compute the same function. The analysis script was dry-run on X4's per-run table
+relabelled as X5 data. All six X5 predictions were met, and no run failed. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
 \section{Refined Horizon Cohort}
@@ -205,7 +212,7 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \section{Computational Accounting}
 \label{app:compute}
 
-E1--E12 and X1--X4 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+E1--E12 and X1--X5 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
 (Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
 the earlier confirmation cohorts were run separately on another platform and are not included.
 
@@ -216,7 +223,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 \label{app:artifact}
 
 The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
-deviation log; the executed source for E1--E12 and X1--X4; per-run tables for every E1--E12 and X1--X4 trajectory (protocol,
+deviation log; the executed source for E1--E12 and X1--X5; per-run tables for every E1--E12 and X1--X5 trajectory (protocol,
 label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Labels are never taken from a stored field without
 check: one module (\texttt{analysis/labels.py}) recomputes them from stored evaluation statistics, asserts each

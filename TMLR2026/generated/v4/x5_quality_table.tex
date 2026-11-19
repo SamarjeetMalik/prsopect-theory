@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{The critic's fit and the actor's advantages in X5 (decentralized execution), measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.}
+\label{tab:x5q}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.34\textwidth}ccc@{}}
+\toprule
+Quantity & Plain critic & PopArt critic & Fixed-scale head \\
+\midrule
+Value error, S/B & \begin{tabular}[t]{@{}c@{}}$1.712$\\[-1pt]{\scriptsize $[1.695,\,1.730]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.009$\\[-1pt]{\scriptsize $[0.994,\,1.024]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.003$\\[-1pt]{\scriptsize $[0.992,\,1.013]$}\end{tabular} \\
+Advantage error, S/B & \begin{tabular}[t]{@{}c@{}}$1.089$\\[-1pt]{\scriptsize $[1.081,\,1.098]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.997$\\[-1pt]{\scriptsize $[0.989,\,1.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.999$\\[-1pt]{\scriptsize $[0.994,\,1.004]$}\end{tabular} \\
+Sign disagreement, S/B & \begin{tabular}[t]{@{}c@{}}$1.084$\\[-1pt]{\scriptsize $[1.076,\,1.093]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.997$\\[-1pt]{\scriptsize $[0.990,\,1.004]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.000$\\[-1pt]{\scriptsize $[0.995,\,1.005]$}\end{tabular} \\
+Rank agreement, S$-$B & \begin{tabular}[t]{@{}c@{}}$-0.072$\\[-1pt]{\scriptsize $[-0.080,\,-0.065]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.002$\\[-1pt]{\scriptsize $[-0.005,\,+0.009]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.000$\\[-1pt]{\scriptsize $[-0.005,\,+0.005]$}\end{tabular} \\
+Critic fit (EV against Monte-Carlo returns), S$-$B & \begin{tabular}[t]{@{}c@{}}$-0.357$\\[-1pt]{\scriptsize $[-0.363,\,-0.352]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.004$\\[-1pt]{\scriptsize $[-0.011,\,+0.003]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.002$\\[-1pt]{\scriptsize $[-0.009,\,+0.004]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}
