@@ -180,7 +180,10 @@ from other nodes' samples, and the critic does not depend on the local-only inpu
 complete. Before the freeze, two smoke tests on seed 42, which is not an X5 seed, ran these checks and timed the runs.
 Between them the actor's routing was changed from masking all five networks' outputs to evaluating each sample with its
 own node's network only; the two compute the same function. The analysis script was dry-run on X4's per-run table
-relabelled as X5 data. All six X5 predictions were met, and no run failed. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
+relabelled as X5 data. All six X5 predictions were met, and no run failed. Three further experiments, X6--X8
+(Section~\ref{sec:limitations}, ``Open tests''), were pre-registered after X5. They were frozen before any run, with
+the critic learning-rate multiplier of X8 set beforehand by a calibration on seeds 42--45 (\texttt{PREREGISTRATION\_X6\_X8.md}
+in the archive); their results are not reported here. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
 \section{Training Budget: the Horizon Cohorts and the Equivalent-Budget Mapping}

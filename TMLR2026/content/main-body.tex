@@ -928,6 +928,21 @@ finite-budget. An earlier ablation on the supply chain found no interior crossin
 coarse 11-level discretization of the base-stock action. Crossings are conditional on the behavioral label and
 the sampled grid; non-bracketed estimates are reported, not clipped.
 
+\paragraph{Open tests.} Four gaps remain, and the paper's claims stop short of each.
+\begin{itemize}
+\item \emph{Critics that see only local information.} X5's critic is centralized, and E12, whose critic was local but
+parameter-shared, was inconclusive.
+\item \emph{The clipped shift under decentralized execution.} X5 ran without clipping. It does not show that the larger
+default shift transfers to per-node actors, or how much of that shift runs through the critic's targets.
+\item \emph{Fit as the mediator.} The critic's fit is not separated from its target scale.
+\item \emph{A second environment.} The only other environment tested, LBF, has an actor-dominated gradient, so the
+critic-target shift is shown on the supply chain alone.
+\end{itemize}
+Three further experiments address the first three gaps: X6 (per-node local critics), X7 (X5's architecture under the
+shared clip, with critics whose targets and gradients are of the baseline's size, and per-group clipping) and X8 (a
+critic slowed to the scaled arm's fit at the baseline's target scale). They were pre-registered and frozen before any
+run (Appendix~\ref{app:prereg}); their results are not part of this version.
+
 \paragraph{Pre-registration record.} E4's stored labels used a fallback threshold of 0.5 instead of the
 declared 0.626 because a calibration file was missing from the frozen source; all E4 results are recomputed
 from the stored team returns (deviation D4). Each stored team return equals the mean of the run's ten stored
