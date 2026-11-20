@@ -1,0 +1,38 @@
+\begin{table}[H]
+\caption{Data-generating parameters of the 27 calibration scenarios (Equation~\ref{eq:calmodel}), read from the per-scenario outputs of \texttt{calibration\_v5.py} by \texttt{calibration\_summarize.py}. $\beta_0,\beta_1$: arm-1 intercept and slope on $w$; $\delta_0$: arm-2 intercept shift ($\delta_1=0$ throughout); $\sigma_u,\sigma_v$: SDs of the per-seed intercept and slope; $\rho$: their correlation between arms; $h$: arm-2 SD multiplier. $w_{50}$: arm 1's true marginal crossing; $\Delta$: the true contrast, both computed numerically from 400,000 seed draws per arm (null contrasts differ from zero only by this Monte Carlo error, below $5\times10^{-4}$, and are shown as zero). Every scenario uses the E1 grid, 10,000 replicates, 2,000 seed-block bootstrap draws and 500 parametric draws per replicate.}
+\label{tab:calscen}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rlcccccccccrr@{}}
+\toprule
+\# & Scenario & Seeds & Link & $\beta_0$ & $\beta_1$ & $\delta_0$ & $\sigma_u$ & $\sigma_v$ & $\rho$ & $h$ & $w_{50}$ & $\Delta$ \\
+\midrule
+0 & steep, null, no seed effect & 10 & logit & $8$ & $-20$ & $0$ & 0 & 0 & 1 & 1 & 0.400 & $+0.000$ \\
+1 & steep, null, seed SD 1 & 10 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.400 & $+0.000$ \\
+2 & steep, null, seed SD 2 & 10 & logit & $8$ & $-20$ & $0$ & 2 & 0 & 1 & 1 & 0.400 & $+0.000$ \\
+3 & steep, effect, no seed effect & 10 & logit & $8$ & $-20$ & $2$ & 0 & 0 & 1 & 1 & 0.400 & $+0.100$ \\
+4 & steep, effect, seed SD 1 & 10 & logit & $8$ & $-20$ & $2$ & 1 & 0 & 1 & 1 & 0.400 & $+0.100$ \\
+5 & steep, effect, seed SD 2 & 10 & logit & $8$ & $-20$ & $2$ & 2 & 0 & 1 & 1 & 0.400 & $+0.100$ \\
+6 & shallow, null, no seed effect & 10 & logit & $3.5$ & $-8$ & $0$ & 0 & 0 & 1 & 1 & 0.438 & $+0.000$ \\
+7 & shallow, null, seed SD 1 & 10 & logit & $3.5$ & $-8$ & $0$ & 1 & 0 & 1 & 1 & 0.438 & $+0.000$ \\
+8 & shallow, null, seed SD 2 & 10 & logit & $3.5$ & $-8$ & $0$ & 2 & 0 & 1 & 1 & 0.437 & $+0.000$ \\
+9 & shallow, effect, no seed effect & 10 & logit & $3.5$ & $-8$ & $1.6$ & 0 & 0 & 1 & 1 & 0.438 & $+0.200$ \\
+10 & shallow, effect, seed SD 1 & 10 & logit & $3.5$ & $-8$ & $1.6$ & 1 & 0 & 1 & 1 & 0.437 & $+0.200$ \\
+11 & shallow, effect, seed SD 2 & 10 & logit & $3.5$ & $-8$ & $1.6$ & 2 & 0 & 1 & 1 & 0.437 & $+0.200$ \\
+12 & steep, null, seed SD 1, + random slope & 10 & logit & $8$ & $-20$ & $0$ & 1 & 4 & 1 & 1 & 0.400 & $+0.000$ \\
+13 & steep, effect, seed SD 1, + random slope & 10 & logit & $8$ & $-20$ & $2$ & 1 & 4 & 1 & 1 & 0.400 & $+0.100$ \\
+14 & steep, null, seed SD 1, $\rho=0.5$ & 10 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 0.5 & 1 & 0.400 & $+0.000$ \\
+15 & steep, null, seed SD 1, $\rho=0$ & 10 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 0 & 1 & 0.400 & $+0.000$ \\
+16 & steep, null, seed SD 1, arm-2 SD $\times2$ & 10 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 1 & 2 & 0.400 & $+0.000$ \\
+17 & steep, null, cloglog link, seed SD 1 & 10 & cloglog & $8$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.423 & $+0.000$ \\
+18 & steep, effect, cloglog link, seed SD 1 & 10 & cloglog & $8$ & $-20$ & $2$ & 1 & 0 & 1 & 1 & 0.423 & $+0.100$ \\
+19 & edge, low, null, seed SD 1 & 10 & logit & $2$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.100 & $+0.000$ \\
+20 & edge, high, null, seed SD 1 & 10 & logit & $19$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.950 & $+0.000$ \\
+21 & steep, null, seed SD 1 & 20 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.400 & $+0.000$ \\
+22 & steep, effect, seed SD 1 & 20 & logit & $8$ & $-20$ & $2$ & 1 & 0 & 1 & 1 & 0.400 & $+0.100$ \\
+23 & shallow, effect, seed SD 1 & 20 & logit & $3.5$ & $-8$ & $1.6$ & 1 & 0 & 1 & 1 & 0.437 & $+0.200$ \\
+24 & steep, null, seed SD 1 & 30 & logit & $8$ & $-20$ & $0$ & 1 & 0 & 1 & 1 & 0.400 & $+0.000$ \\
+25 & steep, effect, seed SD 1 & 30 & logit & $8$ & $-20$ & $2$ & 1 & 0 & 1 & 1 & 0.400 & $+0.100$ \\
+26 & shallow, effect, seed SD 1 & 30 & logit & $3.5$ & $-8$ & $1.6$ & 1 & 0 & 1 & 1 & 0.438 & $+0.200$ \\
+\bottomrule
+\end{tabular}
+\end{table}

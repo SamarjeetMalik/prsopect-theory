@@ -91,6 +91,30 @@ bootstrap from that model refitted with the pooled Firth estimator. The hierarch
 bootstrap assume seed effects shared across arms, and fail when they are not (``$\rho$'' rows). The earlier,
 smaller simulation of the pre-declared intervals is kept as Table~\ref{tab:coverage}.
 
+\paragraph{The simulation model.}
+Each replicate draws $n$ training seeds and, for seed $s$, arm $a\in\{1,2\}$ and grid weight $w$, one binary label
+\begin{equation}
+Y_{saw}\sim\mathrm{Bernoulli}\bigl(F(\beta_0+\delta_0\mathbf 1[a=2]+u_{sa}+(\beta_1+\delta_1\mathbf 1[a=2]+v_{sa})\,w)\bigr),
+\label{eq:calmodel}
+\end{equation}
+with $F$ the logistic or the complementary log-log function. Arm 1's seed effects are $u_{s1}\sim N(0,\sigma_u^2)$ and
+$v_{s1}\sim N(0,\sigma_v^2)$; arm 2's are $u_{s2}=h\,(\rho\,u_{s1}+\sqrt{1-\rho^2}\,\sigma_u z_s)$ and likewise for $v$,
+with $z_s$ independent standard normal. So $\rho$ sets how much a seed's luck is shared by the two arms of a paired
+contrast, and $h$ makes one arm noisier. The estimand is the experiments' own: the crossing of the pooled Firth
+fit, which we take as estimating the 50\% crossing of the \emph{population-averaged} curve $\bar p_a(w)=\mathbb E_{u,v}[p_a(w)]$, not
+of the curve for a typical seed. The true values in Table~\ref{tab:calscen} are therefore computed numerically for
+each scenario. The design simplifies the experiments in three ways. Labels are independent given the seed's effects,
+so evaluation episodes and cells share nothing else. The seed effects are normal and linear on the link scale. And
+each scenario fixes one pair of curves, whereas the experiments' curves differ across arms and optimizer cells. The scenarios
+(Table~\ref{tab:calscen}) span the slopes seen in the experiments (steep: $\beta_1=-20$; shallow: $-8$), seed SDs of 0, 1
+and 2 on the logit scale, a random slope, partial and zero sharing of seed effects, a noisier second arm, a non-logistic
+link, crossings near either edge of the grid, and 10, 20 and 30 seeds. \texttt{calibration\_v5.py} defines the scenarios
+(function \texttt{scenarios}) and runs one per call; \texttt{calibration\_summarize.py} reduces the per-replicate
+outputs, which the archive includes (\texttt{v4/calibration/}), to Tables~\ref{tab:calibration} and~\ref{tab:calscen}.
+Each scenario takes 12--22 single-core minutes, about 7.4 core-hours in all.
+
+\input{generated/v4/calibration_scenarios}
+
 \input{generated/v4/calibration_table}
 
 \input{generated/v4/coverage_table}
@@ -159,8 +183,45 @@ own node's network only; the two compute the same function. The analysis script 
 relabelled as X5 data. All six X5 predictions were met, and no run failed. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
-\section{Refined Horizon Cohort}
+\section{Training Budget: the Horizon Cohorts and the Equivalent-Budget Mapping}
 \label{app:horizon}
+
+\paragraph{Refined single-platform cohort (E3).}
+Unlike the cross-sectional legacy sweep, E3 follows the same policies: we trained 270 trajectories to 3.6M transitions, evaluated every 150k: linear,
+curvature-only and $\lambda=7$ rewards, ten seeds, and nine mixture cells
+$\{.2,.4,.6,.65,.7,.75,.8,.85,1\}$. The four cells between .6 and .85 were added because a coarser
+five-cell grid gave zero-width bootstrap intervals there. E3 uses the \emph{default} optimizer
+configuration (single Adam step, global clip, raw rewards). Section~\ref{sec:optimizer} shows that in this
+configuration reward scale alone moves the crossing, so the E3 contrasts below include that scale pathway:
+they measure how transform effects evolve with budget under the default learner, not loss asymmetry. The
+multiplier-minus-curvature difference is positive at every primary budget but shrinks, from
+\VfourHorizonStart{} at 300k to \VfourHorizonEnd{} at 3.6M (Table~\ref{tab:horizon},
+Figure~\ref{fig:horizon}). The $\lambda=7$ crossing falls monotonically,
+whereas the linear and curvature-only crossings fall until 900k and then rise again. No condition meets
+the pre-declared stability criterion, a 3.6M$-$1.8M interval within $\pm.05$
+(Table~\ref{tab:horizon_stability}), so all readings are budget-conditional.
+
+\paragraph{Collapse is not absorbing, and neither is non-collapse.}
+Conditioning on the 300k label, many collapsed trajectories recover by 3.6M and some initially
+non-collapsed ones relapse (Table~\ref{tab:horizon_stability}). The non-monotone linear and curvature
+crossings reflect this relapse at high $w$. Cell-level counts are in Table~\ref{tab:horizon_cells}.
+
+\input{generated/v4/horizon_table}
+\input{generated/v4/horizon_stability}
+
+\input{generated/equivalent_budget_table}
+
+\paragraph{Equivalent linear-training budget.}
+As a descriptive translation, inverting the legacy cross-sectional fit
+$w_{50}=1.4824-0.13748\ln(T/1000)$ maps curvature-only at 300k to a linear budget of 685k $[535,942]$
+and $\lambda=7$ to 98k $[67,128]$ (an extrapolation below the observed 150k--900k range); the repeated
+linear null maps to 330k $[275,406]$ (Table~\ref{tab:decomposition}). This mapping is not causal,
+and it is consistent with Section~\ref{sec:optimizer}: under the default optimizer the loss multiplier
+behaves like a smaller training budget.
+
+\input{generated/v4/e5_table}
+
+
 
 \input{generated/v4/horizon_cells}
 
@@ -170,6 +231,145 @@ labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not
 \caption{E3 crossings at every checkpoint (lines) with pointwise 95\% jackknife-$t$ bands. Default optimizer; nine mixture cells, ten seeds per cell and condition.}
 \label{fig:horizon}
 \Description{Three crossing curves over training budget: lambda seven decreasing throughout; linear and curvature-only falling to 900k and rising afterwards.}
+\end{figure}
+\FloatBarrier
+
+\section{The Shared-Clip Pathway in Detail}
+\label{app:clip}
+
+This appendix reports the experiments that tested the shared-clip pathway of Section~\ref{sec:mechanism}, summarized
+in Section~\ref{sec:optimizer}, and collects the remaining tables of Section~\ref{sec:optimizer}.
+
+\paragraph{Prediction (c) of Section~\ref{sec:mechanism}: clipping isolation (E6).}
+A second pre-registered cohort (720 runs) clips actor and critic gradients separately under one Adam step,
+and logs, at every optimizer step, both the applied gradient and the actual parameter change
+(Table~\ref{tab:e6}). With logging switched on, the default and no-clip modes reproduce the corresponding
+E1 runs exactly (\VsixRepro{} labels and profits), so the logging does not alter training. Under the shared
+clip the actor's applied gradient for S is \VsixGradGlobal{} of B's, but Adam partly compensates, and the
+actor's actual parameter update is \VsixUpdGlobal{} of B's. With per-group clipping or no clipping the ratio
+is \VsixUpdGroup{} and \VsixUpdNone{}, close to but detectably below one, so our pre-declared prediction of
+no difference is not met as stated. Per-group clipping reduces the symmetric effect by \VsixSymGroupChange{}
+to \VsixSymGroup{}, a change that excludes zero at 95\% but not at 99\% (\VjtChSixNine{}), and its
+crossings are almost identical to those without any clipping. In this cohort the shared clip therefore appeared to
+account for roughly 0.2 of the 0.36 shift; on fresh seeds this does not replicate (X1, below). Without clipping
+the shift accompanies a poorly fitted critic, and under reward normalization it is not detectable (E1). The asymmetric contrast A$-$S is \VsixAsymGroup{} under per-group
+clipping. Figure~\ref{fig:e6} shows the pathway run by run.
+
+\paragraph{Does the shift follow the clip threshold? (E9)}
+If the shared clip carries part of the shift, the shift should shrink as the threshold $\tau$ rises and the clip
+binds less. E9 (640 runs) keeps the default learner and raw rewards and sets $\tau\in\{300,3000,10^4,3\cdot10^4\}$;
+E1 supplies $\tau=0.5$ and no clipping. S's applied actor gradient rises monotonically relative to B's, from
+\VnineRatioHalf{} at $\tau=0.5$ to \VnineRatioThirtyK{} at $\tau=3\cdot10^4$, and the symmetric shift falls with it,
+from \VnineHalf{} to \VnineThirtyK{} (Table~\ref{tab:e9}). The pre-declared percentile interval for the paired
+change, \VnineDosePct{}, excludes zero, so the three pre-declared predictions are met; the calibrated jackknife-$t$
+interval, \VjtChNineDose{}, does not. At $\tau=3\cdot10^4$ the shift is indistinguishable from the no-clip value
+(\VjtChNineEnd{}). The ordering of the six point estimates follows the clip's attenuation, but with ten seeds the
+dose-response is suggestive, not established.
+
+\input{generated/v4/e9_table}
+
+\paragraph{On fresh seeds, restoring the actor's step does not remove the shift (X1, X2).}
+Because the calibrated intervals left E6's reduction resting on one ten-seed cohort, we repeated E6's three modes on
+twenty fresh seeds (X1, seeds 82--101, 960 runs), now also logging Adam's moments for the actor, and E11's two
+clipping conditions likewise (X2, 640 runs); both were pre-registered with the jackknife-$t$ interval as the primary
+analysis (Appendix~\ref{app:prereg}). The optimizer prediction is met (Table~\ref{tab:x1opt}). Under the shared clip
+the clip factor for S is \VxoKappa{} of B's, Adam's first moment and the root of its second moment shrink together
+(\VxoGlobM{} and \VxoGlobV{}), and the resulting Adam step is \VxoGlobStep{} of B's; clipping the groups separately
+restores it to \VxoGroupStep{}. The behavioural prediction is not met (Table~\ref{tab:x1x2}). The symmetric shift
+replicates under the shared clip (\VxFGlob{}), but it is just as large when actor and critic are clipped separately
+(\VxFGroup{}): the change is \VxFCh{}, against E6's \VjtChSix{}. Pooled with E6's seeds the change is \VxPCh{}. In the
+second implementation the separately clipped shift (\VxFTwoGroup{}) is also not detectably smaller than the shared-clip
+one on the fresh seeds (\VxFTwoRaw{}; change \VxFTwoCh{}). Pooled with E11's seeds, a secondary analysis, that change is
+\VxPTwoCh{} and excludes zero, so in the second implementation the shared clip may carry a small part of the shift. Without any clipping the shift is \VxFNone{} on the fresh
+seeds and \VxPNone{} pooled. By the interpretation we declared before the runs, the per-group reduction is supported
+only in E6's cohort, and the shared clip's starving of the actor, although directly measured, is not shown to be what
+moves the crossing. In the separately clipped mode the critic is still clipped, so a separate pre-registered factorial
+(X3) asks which group's clipping carries the shift.
+
+\input{generated/v4/x1_optimizer_table}
+\input{generated/v4/x1x2_table}
+
+\paragraph{Neither group's clip carries the shift (X3).}
+X3 (1,280 runs, seeds 102--121) crosses whether the actor's gradient is clipped with whether the critic's is, under
+one Adam step and raw rewards. It was gated on bit-for-bit reproduction of an X1 run (Appendix~\ref{app:prereg}). The
+clips act as declared: without its clip the critic's applied gradient for S is \VxtCritGradNone{} times B's, and with
+it the ratio is one. The symmetric shift is present in all four modes (Table~\ref{tab:x3}). It is \VxtBoth{} with both
+groups clipped, which replicates X1 (prediction P3 met), \VxtActor{} and \VxtCritic{} with only the actor or only the
+critic clipped, and \VxtNeither{} with neither. The critic-clipping effect, our primary test, is \VxtCEff{}, so P1 is
+not met. The actor-clipping effect is \VxtAEff{}, and its 90\% interval \VxtAEffNinety{} lies within the declared
+$\pm0.10$ margin, so the equivalence of P2 is met. The interaction is \VxtInt{}. In every mode the actor's parameter
+update for S is \VxtActUpdLo{}--\VxtActUpdHi{} of B's, the critic's \VxtCritUpdLo{}--\VxtCritUpdHi{}, and the critic's
+explained variance is lower for S by \VxtEVLo{}--\VxtEVHi{}. By the reading declared before the runs, neither group's
+clipping is shown to carry the shift, and the located factors are the shift without clipping and normalization of
+rewards or value targets. The two fresh cohorts disagree on the no-clip shift itself: X1's pre-registered prediction
+that it is positive (P3) was not met, at \VxFNone{}, whereas on X3's seeds it is \VxtNeither{}. Pooled with E6's seeds, X1's estimate was already
+\VxPNone{}. The two fresh cohorts disagree on whether clipping adds to the shift: per-group clipping minus no clipping is
+0.20 on X1's seeds and 0.04 on X3's (differences of the point estimates above). Pooling X1 and X3 (forty seeds; exploratory, written after X3's
+results) gives \VxeNone{} without clipping, \VxeGroup{} with per-group clipping and a difference of \VxeDiff{}. Clipping is
+therefore not necessary for the shift, and may enlarge it; restoring the actor's step under the shared clip does not
+reduce it (X1).
+
+\input{generated/v4/x3_table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/fig_mechanism6.pdf}
+\caption{The shared-clip pathway, run by run. (A) In the default cell the critic's pre-clip gradient norm grows with the reward multiplier (B $\times1$, R $\times3.45$, S $\times7$; one point per run). (B) The actor's applied-to-pre-clip ratio against the joint pre-clip norm, for every clip threshold $\tau$ of E1 and E9; lines are $\min(1,\tau/\|g\|)$. (C) Seed-paired S/B ratios: the actor's applied gradient against the critic's norm, by $\tau$. (D) E6 seed-paired S/B ratios of the actor's applied gradient and of its actual parameter update, by clipping mode; Adam undoes part, not all, of the attenuation. (E) S$-$B against the measured S/B applied-gradient ratio across the six thresholds (E9 and E1). (F) S$-$B under each intervention. E and F show 95\% seed-level jackknife-$t$ intervals. Panels A--D are descriptive. E and F show the earlier cohorts only; the fresh-seed interventions, which did not replicate E6's reduction, are in Tables~\ref{tab:x1x2} and~\ref{tab:x3}.}
+\label{fig:e6}
+\Description{Six panels: critic gradient rising roughly in proportion to the reward multiplier; attenuation following the clip curves for five thresholds; paired S over B applied-gradient ratios near one over the critic ratio under the default clip; parameter-update ratios near 0.4 under the shared clip and near one otherwise; S minus B falling as the applied ratio rises; S minus B under nine interventions, positive with the shared clip and near zero with reward or target normalization.}
+\end{figure}
+
+\paragraph{Tables for Section~\ref{sec:optimizer}.}
+Tables~\ref{tab:x4q} and~\ref{tab:x5q} give X4's and X5's critic-fit and advantage measures; the factorial's crossings,
+contrasts and changes, E6's diagnostics, E7's contrasts and E11's results follow.
+
+\input{generated/v4/x4_quality_table}
+\input{generated/v4/x5_quality_table}
+\input{generated/v4/factorial_crossings}
+\input{generated/v4/factorial_contrasts}
+\input{generated/v4/e6_table}
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/factorial_contrasts.pdf}
+\caption{Symmetric-scaling (left) and asymmetric-minus-symmetric (right) crossing differences in each optimizer cell, with paired 95\% seed-level jackknife-$t$ intervals. Under the default configuration (top row) symmetric scaling moves the crossing as far as the loss multiplier; with normalized rewards it is not detectable, and with separate optimizers alone it remains (its reduction from the default is not established), while A$-$S becomes positive.}
+\label{fig:factorial}
+\Description{Two dot-and-interval panels across five optimizer cells. Symmetric effects are large in the default cell and near zero under normalization; asymmetric-minus-symmetric differences are near zero by default and positive under the interventions.}
+\end{figure}
+
+\input{generated/v4/e7_table}
+
+
+\input{generated/v4/e11_table}
+\FloatBarrier
+
+\section{Moment Controls in Detail}
+\label{app:moments}
+
+\paragraph{E7's static control M.} One qualification applies to both critics' readings in Section~\ref{sec:asymmetric} (Figure~\ref{fig:e7_moments}). The affine constants match A's
+moments under E1's policies, but M's achieved moments depend on its own: M matches A's SD
+(\VsevenSDPlainM{} vs.\ \VsevenSDPlainA{} with the plain critic, \VsevenSDPopM{} vs.\ \VsevenSDPopA{} with
+PopArt) but not its mean (\VsevenMeanPlainM{} vs.\ \VsevenMeanPlainA{}; \VsevenMeanPopM{} vs.\
+\VsevenMeanPopA{}), failing the pre-declared 25\% matching check. The mismatch is concentrated at
+$w\in[0.4,0.7]$. There M's policies, like A's, mostly collapse, whereas the B policies whose moments set M's
+constants mostly do not, and B's reward is lower under a collapsed policy. M is
+thus a scale-matched control whose mean is more negative than A's, and the plain-critic reading cannot
+separate a moment effect from that mean difference. An affine control can match at most the first two
+moments; what it leaves different, by construction, is the shape of the reward distribution, which is the
+feature an asymmetric transform is meant to change. The training-reward logs confirm this and show one further
+difference (Table~\ref{tab:dist}, Appendix~\ref{app:factorial}). A's per-rollout reward is left-skewed (quantile
+skewness \VdaSkewA{}), M's is not (\VdaSkewM{}). With the plain critic, M's critic targets are also larger than
+A's (mean return \VdaRetMeanM{} against \VdaRetMeanA{}, SD \VdaRetSdM{} against \VdaRetSdA{}). Larger target
+scale is the factor with which the symmetric shift is consistent (Section~\ref{sec:optimizer}), so with
+a raw-target critic M is exposed to it at least as much as A. This is consistent with, but does not establish, a
+target-scale explanation of the near-null plain-critic A$-$M.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{generated/v4/fig_e7_moments.pdf}
+\caption{Achieved training-reward moments of the loss-multiplier arm A and the scale-matched symmetric control M in E7, by mixture weight (mean over ten seeds; bars are $\pm1.96$ standard errors across seeds). M matches A's within-run SD closely but its mean falls below A's at middle weights, most with the plain critic: there M's policies mostly collapse, unlike the B policies whose moments set its constants. The plain-critic A runs are E1's.}
+\label{fig:e7_moments}
+\Description{Two panels against mixture weight. Left: mean training reward, with M under the plain critic dropping to about minus 28 at middle weights while A stays near minus 13. Right: within-run SD, similar for A and M.}
 \end{figure}
 \FloatBarrier
 
@@ -224,7 +424,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 
 The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
 deviation log; the executed source for E1--E12 and X1--X5; per-run tables for every E1--E12 and X1--X5 trajectory (protocol,
-label, evaluation summary and optimizer diagnostics); the extraction and analysis scripts; and the
+label, evaluation summary and optimizer diagnostics); the per-replicate outputs of the calibration simulation; the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Labels are never taken from a stored field without
 check: one module (\texttt{analysis/labels.py}) recomputes them from stored evaluation statistics, asserts each
 declared threshold against the sentence of the pre-registration that declares it, rejects undeclared thresholds

@@ -150,6 +150,26 @@ Scenario & Seeds & $\Delta$ & Pct & BCa & J-$t$ & HLM & PB & Pct & J-$t$ \\
 \end{table}
 """)
 
+# ---------------------------------------------------------------- calibration scenarios (calibration_summarize.py, revision v7)
+SC = pd.read_csv(RES.parent / "results_v5/calibration_scenarios.csv")
+rows = []
+for r in SC.itertuples():
+    rows.append(" & ".join([f"{r.i}", scen(r.name), f"{r.n}", "logit" if r.link == "logit" else "cloglog", f"${r.b0:g}$", f"${r.b1:g}$",
+                            f"${r.d0:g}$", f"{r.sd_u:g}", f"{r.sd_v:g}", f"{r.rho:g}", f"{r.het:g}", f"{r.true_w1:.3f}", f"${(0.0 if abs(r.true_d) < 5e-4 else r.true_d):+.3f}$"]) + r" \\")
+(OUT / "calibration_scenarios.tex").write_text(r"""\begin{table}[H]
+\caption{Data-generating parameters of the """ + f"{len(SC)}" + r""" calibration scenarios (Equation~\ref{eq:calmodel}), read from the per-scenario outputs of \texttt{calibration\_v5.py} by \texttt{calibration\_summarize.py}. $\beta_0,\beta_1$: arm-1 intercept and slope on $w$; $\delta_0$: arm-2 intercept shift ($\delta_1=0$ throughout); $\sigma_u,\sigma_v$: SDs of the per-seed intercept and slope; $\rho$: their correlation between arms; $h$: arm-2 SD multiplier. $w_{50}$: arm 1's true marginal crossing; $\Delta$: the true contrast, both computed numerically from 400,000 seed draws per arm (null contrasts differ from zero only by this Monte Carlo error, below $5\times10^{-4}$, and are shown as zero). Every scenario uses the E1 grid, 10,000 replicates, 2,000 seed-block bootstrap draws and 500 parametric draws per replicate.}
+\label{tab:calscen}
+\centering\scriptsize\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}rlcccccccccrr@{}}
+\toprule
+\# & Scenario & Seeds & Link & $\beta_0$ & $\beta_1$ & $\delta_0$ & $\sigma_u$ & $\sigma_v$ & $\rho$ & $h$ & $w_{50}$ & $\Delta$ \\
+\midrule
+""" + "\n".join(rows) + r"""
+\bottomrule
+\end{tabular}
+\end{table}
+""")
+
 # ---------------------------------------------------------------- E7 achieved moments
 e7 = pd.read_csv(RUNS / "E7_runs.csv"); e1 = pd.read_csv(RUNS / "E1_runs.csv")
 pa = e1[(e1.optimizer_mode == "separate_no_clip") & (e1.reward_mode == "raw") & (e1.arm == "A")].assign(critic_mode="plain")

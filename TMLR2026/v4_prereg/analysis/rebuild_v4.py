@@ -4,7 +4,7 @@
 Run from the artifact root:  python TMLR2026/v4_prereg/analysis/rebuild_v4.py
 Steps: (1) E1-E3, (2) E4 and (3) E5-E12 and X1-X5 analysis, and jackknife-t versions of every E1-E12 interval (results_jt/) from the per-run tables in v4/runs/, (4) the review figures and
 leave-one-seed-out table, (5) estimator checks (output consistency, bootstrap stability, interval coverage) and the
-revision figures, (6) render the v4 tables, figures and macros, (7) the legacy rebuild (re-analyses the legacy sweeps and compiles the PDF).
+revision figures (after summarizing the calibration study from v4/calibration/), (6) render the v4 tables, figures and macros, (7) the legacy rebuild (re-analyses the legacy sweeps and compiles the PDF).
 """
 from pathlib import Path
 import subprocess
@@ -38,6 +38,7 @@ run(sys.executable, A / "stat_checks.py", RUNS, ROOT, RES)
 run(sys.executable, A / "dist_audit.py", "analyse", RUNS, RES)
 run(sys.executable, A / "eq2_check.py", RUNS, RES)
 run(sys.executable, A / "jackknife_v5.py", RUNS, ROOT, RES)
+run(sys.executable, A / "calibration_summarize.py", ROOT / "v4/calibration", ROOT / "TMLR2026/v4_prereg/results_v5")
 run(sys.executable, A / "revision_figures.py", RUNS, RES)
 run(sys.executable, A / "mechanism_v5.py", RUNS, RES, ROOT / "TMLR2026/generated/v4/fig_mechanism6.pdf")
 run(sys.executable, A / "render_v4.py")
