@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{The critic's fit and the actor's advantages in X8, each arm relative to B. Measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.}
+\label{tab:x8q}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.42\textwidth}cc@{}}
+\toprule
+Quantity & S relative to B & B$_{\mathrm{deg}}$ relative to B \\
+\midrule
+Value error, ratio & \begin{tabular}[t]{@{}c@{}}$1.435$\\[-1pt]{\scriptsize $[1.423,\,1.447]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.436$\\[-1pt]{\scriptsize $[1.425,\,1.448]$}\end{tabular} \\
+Advantage error, ratio & \begin{tabular}[t]{@{}c@{}}$1.160$\\[-1pt]{\scriptsize $[1.148,\,1.172]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.195$\\[-1pt]{\scriptsize $[1.181,\,1.209]$}\end{tabular} \\
+Sign disagreement, ratio & \begin{tabular}[t]{@{}c@{}}$1.200$\\[-1pt]{\scriptsize $[1.180,\,1.220]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.254$\\[-1pt]{\scriptsize $[1.232,\,1.276]$}\end{tabular} \\
+Rank agreement, difference & \begin{tabular}[t]{@{}c@{}}$-0.074$\\[-1pt]{\scriptsize $[-0.078,\,-0.070]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.088$\\[-1pt]{\scriptsize $[-0.093,\,-0.084]$}\end{tabular} \\
+Critic fit (EV against Monte-Carlo returns), difference & \begin{tabular}[t]{@{}c@{}}$-0.253$\\[-1pt]{\scriptsize $[-0.260,\,-0.245]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.273$\\[-1pt]{\scriptsize $[-0.280,\,-0.265]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

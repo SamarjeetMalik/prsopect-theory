@@ -1,0 +1,18 @@
+\begin{table}[!htbp]
+\caption{The critic's fit, the actor's advantages and the gradients in X7 (decentralized execution, shared clip unless per-group), S relative to B. Measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.}
+\label{tab:x7q}
+\centering\scriptsize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.25\textwidth}cccc@{}}
+\toprule
+Quantity & Plain & Norm.\ head & Norm.\ PopArt & Per-group clip \\
+\midrule
+Value error, ratio & \begin{tabular}[t]{@{}c@{}}$1.702$\\[-1pt]{\scriptsize $[1.687,\,1.717]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.997$\\[-1pt]{\scriptsize $[0.992,\,1.002]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.006$\\[-1pt]{\scriptsize $[0.991,\,1.021]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.631$\\[-1pt]{\scriptsize $[1.609,\,1.654]$}\end{tabular} \\
+Advantage error, ratio & \begin{tabular}[t]{@{}c@{}}$1.026$\\[-1pt]{\scriptsize $[1.022,\,1.030]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.002$\\[-1pt]{\scriptsize $[0.999,\,1.005]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.998$\\[-1pt]{\scriptsize $[0.989,\,1.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.058$\\[-1pt]{\scriptsize $[1.050,\,1.066]$}\end{tabular} \\
+Sign disagreement, ratio & \begin{tabular}[t]{@{}c@{}}$1.029$\\[-1pt]{\scriptsize $[1.024,\,1.034]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.003$\\[-1pt]{\scriptsize $[0.999,\,1.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.999$\\[-1pt]{\scriptsize $[0.992,\,1.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.052$\\[-1pt]{\scriptsize $[1.043,\,1.060]$}\end{tabular} \\
+Rank agreement, difference & \begin{tabular}[t]{@{}c@{}}$-0.022$\\[-1pt]{\scriptsize $[-0.027,\,-0.018]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.001$\\[-1pt]{\scriptsize $[-0.004,\,+0.001]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.001$\\[-1pt]{\scriptsize $[-0.006,\,+0.008]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.061$\\[-1pt]{\scriptsize $[-0.069,\,-0.053]$}\end{tabular} \\
+Critic fit (EV against Monte-Carlo returns), difference & \begin{tabular}[t]{@{}c@{}}$-0.374$\\[-1pt]{\scriptsize $[-0.382,\,-0.367]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.002$\\[-1pt]{\scriptsize $[-0.002,\,+0.006]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.003$\\[-1pt]{\scriptsize $[-0.009,\,+0.004]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.354$\\[-1pt]{\scriptsize $[-0.361,\,-0.346]$}\end{tabular} \\
+Median pre-clip critic gradient, ratio & \begin{tabular}[t]{@{}c@{}}$3.21$\\[-1pt]{\scriptsize $[3.113,\,3.311]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.99$\\[-1pt]{\scriptsize $[0.974,\,1.011]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.02$\\[-1pt]{\scriptsize $[0.985,\,1.059]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$7.32$\\[-1pt]{\scriptsize $[6.973,\,7.694]$}\end{tabular} \\
+Median applied actor gradient, ratio & \begin{tabular}[t]{@{}c@{}}$0.30$\\[-1pt]{\scriptsize $[0.289,\,0.305]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.00$\\[-1pt]{\scriptsize $[0.986,\,1.023]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.99$\\[-1pt]{\scriptsize $[0.968,\,1.018]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.00$\\[-1pt]{\scriptsize $[1.000,\,1.000]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

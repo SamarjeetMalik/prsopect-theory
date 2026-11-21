@@ -1,0 +1,24 @@
+\begin{table}[!htbp]
+\caption{Crossing contrasts in X6 (per-node actors and per-node local critics, no clip, 1,280 runs, seeds 202--241), X7 (X5's per-node actors and centralized critic under one Adam step and the shared clip, 2,560 runs, seeds 242--281) and X8 (shared controller, no clip, B's critic learning rate multiplied by $1/8$ in B$_{\mathrm{deg}}$, 960 runs, seeds 282--321). All use raw rewards, the E1 grid, 300k transitions and forty seeds. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. Equivalence statements require the 90\% interval within $\pm0.10$.}
+\label{tab:x678}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.36\textwidth}cccc@{}}
+\toprule
+Experiment and quantity & Estimate & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\% \\
+\midrule
+X6, plain local critic: S$-$B & $+0.282$$^{\ast}$ & $[+0.210,\,+0.353]$ & $[+0.222,\,+0.341]$ & $[+0.218,\,+0.356]$ \\
+X6, fixed-scale head: S$-$B & $-0.070$ & $[-0.155,\,+0.015]$ & $[-0.141,\,+0.001]$ & $[-0.177,\,+0.001]$ \\
+X6, change, head $-$ plain & $-0.352$$^{\ast}$ & $[-0.445,\,-0.258]$ & $[-0.430,\,-0.274]$ & $[-0.455,\,-0.275]$ \\
+X7, plain critic, shared clip: S$-$B & $+0.102$$^{\ast}$ & $[+0.061,\,+0.143]$ & $[+0.068,\,+0.136]$ & $[+0.061,\,+0.140]$ \\
+X7, normalized-loss head: S$-$B & $-0.003$ & $[-0.024,\,+0.019]$ & $[-0.021,\,+0.015]$ & $[-0.024,\,+0.017]$ \\
+X7, normalized-loss PopArt: S$-$B & $+0.000$ & $[-0.043,\,+0.043]$ & $[-0.036,\,+0.036]$ & $[-0.042,\,+0.041]$ \\
+X7, per-group clip: S$-$B & $+0.121$$^{\ast}$ & $[+0.079,\,+0.163]$ & $[+0.086,\,+0.156]$ & $[+0.081,\,+0.161]$ \\
+X7, change, head $-$ plain & $-0.105$$^{\ast}$ & $[-0.147,\,-0.063]$ & $[-0.140,\,-0.070]$ & $[-0.145,\,-0.062]$ \\
+X7, change, PopArt $-$ plain & $-0.102$$^{\ast}$ & $[-0.165,\,-0.039]$ & $[-0.154,\,-0.050]$ & $[-0.160,\,-0.040]$ \\
+X7, change, per-group $-$ shared & $+0.019$ & $[-0.051,\,+0.089]$ & $[-0.039,\,+0.077]$ & $[-0.047,\,+0.088]$ \\
+X8, S$-$B & $+0.170$$^{\ast}$ & $[+0.127,\,+0.213]$ & $[+0.134,\,+0.206]$ & $[+0.132,\,+0.213]$ \\
+X8, slowed critic: B$_{\mathrm{deg}}-$B & $+0.164$$^{\ast}$ & $[+0.110,\,+0.218]$ & $[+0.119,\,+0.209]$ & $[+0.113,\,+0.215]$ \\
+X8, (S$-$B) $-$ (B$_{\mathrm{deg}}-$B) & $+0.006$ & $[-0.044,\,+0.056]$ & $[-0.036,\,+0.048]$ & $[-0.043,\,+0.054]$ \\
+\bottomrule
+\end{tabular}
+\end{table}

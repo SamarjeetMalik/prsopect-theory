@@ -387,6 +387,34 @@ table(OUT / "x5_quality_table.tex",
       r"The critic's fit and the actor's advantages in X5 (decentralized execution), measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.",
       "tab:x5q", r"@{}>{\raggedright\arraybackslash}p{.34\textwidth}ccc@{}", r"Quantity & Plain critic & PopArt critic & Fixed-scale head", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- X6-X8 (local critics, shared clip, fit at fixed target scale)
+k6x = rd("X6_contrasts.csv").set_index("quantity"); k7x = rd("X7_contrasts.csv").set_index("quantity"); k8x = rd("X8_contrasts.csv").set_index("quantity")
+q6x = rd("X6_advantage_quality.csv").set_index(["part", "contrast", "metric"]); q7x = rd("X7_advantage_quality.csv").set_index(["part", "contrast", "metric"]); q8x = rd("X8_advantage_quality.csv").set_index(["part", "contrast", "metric"])
+X678ROWS = [(k6x, r"X6, plain local critic: S$-$B", "S-B plain"), (k6x, r"X6, fixed-scale head: S$-$B", "S-B M"), (k6x, r"X6, change, head $-$ plain", "change M - plain"),
+            (k7x, r"X7, plain critic, shared clip: S$-$B", "S-B plain"), (k7x, r"X7, normalized-loss head: S$-$B", "S-B normhead"), (k7x, r"X7, normalized-loss PopArt: S$-$B", "S-B normpopart"), (k7x, r"X7, per-group clip: S$-$B", "S-B groupclip"),
+            (k7x, r"X7, change, head $-$ plain", "change normhead - plain"), (k7x, r"X7, change, PopArt $-$ plain", "change normpopart - plain"), (k7x, r"X7, change, per-group $-$ shared", "change groupclip - plain"),
+            (k8x, r"X8, S$-$B", "S-B plain"), (k8x, r"X8, slowed critic: B$_{\mathrm{deg}}-$B", "Bdeg-B"), (k8x, r"X8, (S$-$B) $-$ (B$_{\mathrm{deg}}-$B)", "(S-B) - (Bdeg-B)")]
+rows = [[lab, f"${num(k.loc[q].difference, True)}$" + (r"$^{\ast}$" if x4ex(k.loc[q]) else ""), x3c(k.loc[q], "jt_low_95", "jt_high_95"),
+         x3c(k.loc[q], "jt_low_90", "jt_high_90"), x3c(k.loc[q], "pct_low_95", "pct_high_95")] for k, lab, q in X678ROWS]
+table(OUT / "x678_table.tex",
+      r"Crossing contrasts in X6 (per-node actors and per-node local critics, no clip, 1,280 runs, seeds 202--241), X7 (X5's per-node actors and centralized critic under one Adam step and the shared clip, 2,560 runs, seeds 242--281) and X8 (shared controller, no clip, B's critic learning rate multiplied by $1/8$ in B$_{\mathrm{deg}}$, 960 runs, seeds 282--321). All use raw rewards, the E1 grid, 300k transitions and forty seeds. Jackknife-$t$ intervals (primary) and the seed-block percentile interval (secondary); $^{\ast}$: 95\% jackknife-$t$ interval excludes zero. Equivalence statements require the 90\% interval within $\pm0.10$.",
+      "tab:x678", r"@{}>{\raggedright\arraybackslash}p{.36\textwidth}cccc@{}", r"Experiment and quantity & Estimate & Jackknife-$t$ 95\% & Jackknife-$t$ 90\% & Percentile 95\%", rows, size=r"\footnotesize")
+QR2 = [(r"Value error, ratio", "verr_train", True), (r"Advantage error, ratio", "gae_err", True), (r"Sign disagreement, ratio", "sign_dis", True),
+       (r"Rank agreement, difference", "adv_spearman", False), (r"Critic fit (EV against Monte-Carlo returns), difference", "ev_train_mc", False)]
+qkey = lambda arm, ratio: f"{arm}/B" if ratio else f"{arm}-B"
+qcap = r" Measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds."
+rows = [[lab] + [qc(q6x.loc[(pt, qkey("S", ra), me)], not ra) for pt in ["plain", "M"]] for lab, me, ra in QR2]
+table(OUT / "x6_quality_table.tex", r"The critic's fit and the actor's advantages in X6 (per-node local critics), S relative to B." + qcap,
+      "tab:x6q", r"@{}>{\raggedright\arraybackslash}p{.42\textwidth}cc@{}", r"Quantity & Plain local critic & Fixed-scale head", rows, size=r"\footnotesize")
+rows = [[lab] + [qc(q7x.loc[(pt, qkey("S", ra), me)], not ra) for pt in ["plain", "normhead", "normpopart", "groupclip"]] for lab, me, ra in QR2]
+rows += [[lab] + [f"${q7x.loc[(pt, 'S/B', me)].value:.2f}$ ${iv(q7x.loc[(pt, 'S/B', me)].low_95, q7x.loc[(pt, 'S/B', me)].high_95)}$" for pt in ["plain", "normhead", "normpopart", "groupclip"]]
+         for lab, me in [(r"Median pre-clip critic gradient, ratio", "median critic_grad_norm"), (r"Median applied actor gradient, ratio", "median post_actor_grad_norm")]]
+table(OUT / "x7_quality_table.tex", r"The critic's fit, the actor's advantages and the gradients in X7 (decentralized execution, shared clip unless per-group), S relative to B." + qcap,
+      "tab:x7q", r"@{}>{\raggedright\arraybackslash}p{.25\textwidth}cccc@{}", r"Quantity & Plain & Norm.\ head & Norm.\ PopArt & Per-group clip", rows, size=r"\scriptsize", fit=True)
+rows = [[lab] + [qc(q8x.loc[("plain", qkey(a, ra), me)], not ra) for a in ["S", "Bdeg"]] for lab, me, ra in QR2]
+table(OUT / "x8_quality_table.tex", r"The critic's fit and the actor's advantages in X8, each arm relative to B." + qcap,
+      "tab:x8q", r"@{}>{\raggedright\arraybackslash}p{.42\textwidth}cc@{}", r"Quantity & S relative to B & B$_{\mathrm{deg}}$ relative to B", rows, size=r"\footnotesize")
+
 # ---------------------------------------------------------------- the two jackknife-t implementations agree (revision v6)
 _J5 = pd.read_csv(RES / "jackknife_v5.csv").set_index("contrast")
 _pick = lambda f, **kw: rd(f, keep_default_na=False, na_values=[""]).pipe(lambda d: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0])
@@ -444,7 +472,7 @@ for f in sorted(JT.glob("*.csv")):
             sens.append([EXPN.get(f.stem.split("_")[0], f.stem.split("_")[0]), key, f"${num(getattr(r, est), True)}$",
                          f"${iv(r.ci_low, r.ci_high, True)}$", f"${iv(r.pct_ci_low, r.pct_ci_high, True)}$"])
 table(OUT / "pct_sensitivity.tex",
-      r"The pre-declared seed-block percentile intervals as a sensitivity analysis. Every crossing and contrast interval of E1--E12 and X1--X5 in the main text and tables is the seed-level jackknife-$t$ interval (Section~\ref{sec:stats}); the legacy sweeps keep their seed-block intervals; the percentile interval for every reported contrast and change of E1--E12 is in the archive (\texttt{results\_jt/}, columns \texttt{pct\_*}). Listed are the " + f"{len(sens)}" + r" whose zero-exclusion verdict at 95\% differs between the two procedures (for ratios, the exclusion of one); in each, the percentile interval excludes the null value and the jackknife-$t$ interval does not.",
+      r"The pre-declared seed-block percentile intervals as a sensitivity analysis. Every crossing and contrast interval of E1--E12 and X1--X8 in the main text and tables is the seed-level jackknife-$t$ interval (Section~\ref{sec:stats}); the legacy sweeps keep their seed-block intervals; the percentile interval for every reported contrast and change of E1--E12 is in the archive (\texttt{results\_jt/}, columns \texttt{pct\_*}). Listed are the " + f"{len(sens)}" + r" whose zero-exclusion verdict at 95\% differs between the two procedures (for ratios, the exclusion of one); in each, the percentile interval excludes the null value and the jackknife-$t$ interval does not.",
       "tab:pct_sensitivity", r"@{}l>{\raggedright\arraybackslash}p{.36\textwidth}ccc@{}", r"Exp. & Quantity & Estimate & Jackknife-$t$ 95\% & Percentile 95\%", sens, size=r"\footnotesize", pos="H")
 assert all(r[4] != r[3] for r in sens)
 
@@ -504,7 +532,7 @@ m += mac("VfourAgreeControl", f"{a.agree}/{a.total} ({100 * a.agree / a.total:.1
 m += mac("VfourBitControl", f"{int(a.bit_identical_profit)}/{a.total}")
 m += mac("VfourAgreeHorizon", f"{b.agree:,}/{b.total:,} ({100 * b.agree / b.total:.1f}\\%)")
 cp = rd("compute_v4.csv")
-m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3', 'X4', 'X5'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
+m += mac("VfourTrajectories", f"{cp.trajectories.sum():,}"); m += mac("VfourMechTrajectories", f"{cp[cp.experiment.isin(['E1', 'E2', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'X1', 'X2', 'X3', 'X4', 'X5', 'X6', 'X7', 'X8'])].trajectories.sum():,}"); m += mac("VfourCoreHours", f"{cp.single_core_hours.sum():,.0f}")
 DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$\\epsilon$ addendum, 300k",
         "E3": "Refined horizon cohort to 3.6M", "E4": "MAPPO on LBF, 2M timesteps",
         "E5": "Decoupled horizon cohort to 3.6M", "E6": "Clipping isolation, 300k",
@@ -514,9 +542,11 @@ DESC = {"E1": "Optimizer $\\times$ normalization factorial, 300k", "E2": "Adam-$
         "E12": "Local observations with agent identity, 300k", "X1": "Fresh-seed clipping replication, SB3, 300k",
         "X2": "Fresh-seed clipping replication, CleanRL-style, 300k", "X3": "Actor/critic clipping factorial, 300k",
         "X4": "Critic target scale and fit, seeds 122--161, 300k",
-        "X5": "Decentralized execution, seeds 162--201, 300k"}
+        "X5": "Decentralized execution, seeds 162--201, 300k",
+        "X6": "Local critics, seeds 202--241, 300k", "X7": "Shared clip, per-node actors, seeds 242--281, 300k",
+        "X8": "Critic fit, fixed scale, seeds 282--321, 300k"}
 table(OUT / "compute_table.tex",
-      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X5 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4; " + f"{cp.set_index('experiment').mean_minutes['X5']:.1f}" + r" in X5, whose five per-node actors add little to the environment's cost).",
+      r"Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X8 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4; " + f"{cp.set_index('experiment').mean_minutes['X5']:.1f}" + r" in X5, whose five per-node actors add little to the environment's cost; " + f"{cp.set_index('experiment').mean_minutes['X6']:.1f}, {cp.set_index('experiment').mean_minutes['X7']:.1f} and {cp.set_index('experiment').mean_minutes['X8']:.1f}" + r" in X6, X7 and X8).",
       "tab:compute_v4", "@{}llrrr@{}", r"ID & Experiment & Trajectories & Core-hours & Mean minutes per run",
       [[r.experiment, DESC[r.experiment], f"{r.trajectories:,}", f"{r.single_core_hours:,.1f}", f"{r.mean_minutes:.1f}"] for r in cp.itertuples()]
       + [["", "Total", f"{cp.trajectories.sum():,}", f"{cp.single_core_hours.sum():,.1f}", ""]], pos="H")
@@ -635,6 +665,25 @@ for pt, nm in [("plain", "Plain"), ("popart", "Pop"), ("M", "Head")]:
     r = q5x.loc[(pt, "ev_train_mc", "diff")]; m += mac(f"VxvFit{nm}", f"${num(r.value, True)}$"); m += mac(f"VxvFit{nm}Ninety", f"${iv(r.low_90, r.high_90, True)}$")
 dev = [abs(q5x.loc[(pt, me, "ratio")].value - 1) for pt in ["popart", "M"] for me in ["verr_train", "gae_err", "sign_dis", "adv_spearman"]]
 m += mac("VxvQualMax", f"{max(dev):.3f}")
+def _cm(k, name, q):
+    r = k.loc[q]; return mac(name, f"${num(r.difference, True)}$ ${iv(r.jt_low_95, r.jt_high_95, True)}$") + mac(name + "Ninety", f"${iv(r.jt_low_90, r.jt_high_90, True)}$")
+for k, pre, items in [(k6x, "Vxsix", [("Plain", "S-B plain"), ("Head", "S-B M"), ("ChHead", "change M - plain")]),
+                      (k7x, "Vxsev", [("Plain", "S-B plain"), ("Head", "S-B normhead"), ("Pop", "S-B normpopart"), ("Group", "S-B groupclip"), ("ChHead", "change normhead - plain"), ("ChPop", "change normpopart - plain"), ("ChGroup", "change groupclip - plain")]),
+                      (k8x, "Vxei", [("Plain", "S-B plain"), ("Deg", "Bdeg-B"), ("Diff", "(S-B) - (Bdeg-B)")])]:
+    for nm, q in items: m += _cm(k, pre + nm, q)
+def _qm(q, name, key, ratio):
+    r = q.loc[key]
+    return mac(name, f"{r.value:.2f}" if ratio else f"${num(r.value, True)}$") + mac(name + "Ninety", f"${iv(r.low_90, r.high_90, not ratio)}$")
+for me, nm, ra in [("verr_train", "Verr", True), ("gae_err", "Gae", True), ("sign_dis", "Sign", True), ("adv_spearman", "Rank", False), ("ev_train_mc", "Fit", False)]:
+    m += _qm(q6x, f"Vxsix{nm}", ("plain", qkey("S", ra), me), ra)
+    m += _qm(q7x, f"Vxsev{nm}", ("plain", qkey("S", ra), me), ra)
+    m += _qm(q8x, f"Vxei{nm}", ("plain", qkey("S", ra), me), ra); m += _qm(q8x, f"VxeiDeg{nm}", ("plain", qkey("Bdeg", ra), me), ra)
+m += _qm(q6x, "VxsixFitHead", ("M", "S-B", "ev_train_mc"), False)
+m += _qm(q8x, "VxeiFitDiff", ("plain", "(Bdeg-B)-(S-B)", "ev_train_mc"), False)
+for pt, nm in [("plain", "Plain"), ("normhead", "Head"), ("normpopart", "Pop")]:
+    m += _qm(q7x, f"VxsevGrad{nm}", (pt, "S/B", "median critic_grad_norm"), True)
+for pt, nm in [("plain", "Plain"), ("groupclip", "Group")]:
+    m += _qm(q7x, f"VxsevApplied{nm}", (pt, "S/B", "median post_actor_grad_norm"), True)
 m += mac("VpctSensN", f"{len(sens)}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

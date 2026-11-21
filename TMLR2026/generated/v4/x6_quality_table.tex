@@ -1,0 +1,16 @@
+\begin{table}[!htbp]
+\caption{The critic's fit and the actor's advantages in X6 (per-node local critics), S relative to B. Measured as in Table~\ref{tab:x4q}: seed-paired, averaged over the eight cells (geometric mean for ratios), with 95\% jackknife-$t$ intervals over forty seeds.}
+\label{tab:x6q}
+\centering\footnotesize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{.42\textwidth}cc@{}}
+\toprule
+Quantity & Plain local critic & Fixed-scale head \\
+\midrule
+Value error, ratio & \begin{tabular}[t]{@{}c@{}}$1.465$\\[-1pt]{\scriptsize $[1.450,\,1.481]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$0.999$\\[-1pt]{\scriptsize $[0.993,\,1.006]$}\end{tabular} \\
+Advantage error, ratio & \begin{tabular}[t]{@{}c@{}}$1.039$\\[-1pt]{\scriptsize $[1.035,\,1.043]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.002$\\[-1pt]{\scriptsize $[0.999,\,1.006]$}\end{tabular} \\
+Sign disagreement, ratio & \begin{tabular}[t]{@{}c@{}}$1.020$\\[-1pt]{\scriptsize $[1.014,\,1.025]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$1.003$\\[-1pt]{\scriptsize $[0.998,\,1.007]$}\end{tabular} \\
+Rank agreement, difference & \begin{tabular}[t]{@{}c@{}}$-0.018$\\[-1pt]{\scriptsize $[-0.022,\,-0.013]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$-0.003$\\[-1pt]{\scriptsize $[-0.008,\,+0.001]$}\end{tabular} \\
+Critic fit (EV against Monte-Carlo returns), difference & \begin{tabular}[t]{@{}c@{}}$-0.229$\\[-1pt]{\scriptsize $[-0.238,\,-0.219]$}\end{tabular} & \begin{tabular}[t]{@{}c@{}}$+0.000$\\[-1pt]{\scriptsize $[-0.005,\,+0.006]$}\end{tabular} \\
+\bottomrule
+\end{tabular}
+\end{table}

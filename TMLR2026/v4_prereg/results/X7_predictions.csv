@@ -1,0 +1,6 @@
+prediction,met
+1,True
+2,True
+3,True
+4,True
+reading,"The shift under SB3's default shared clip transfers to decentralized execution. normhead: making the critic's targets and gradients B-sized removes the clipped shift and per-group clipping does not detectably reduce it: the clipped shift runs through the critic's target scale, not the clip's starving of the actor. normpopart: making the critic's targets and gradients B-sized removes the clipped shift and per-group clipping does not detectably reduce it: the clipped shift runs through the critic's target scale, not the clip's starving of the actor."

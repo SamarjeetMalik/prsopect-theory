@@ -2,7 +2,7 @@
 """Rebuild every v4 analysis output and the manuscript from the anonymous artifact.
 
 Run from the artifact root:  python TMLR2026/v4_prereg/analysis/rebuild_v4.py
-Steps: (1) E1-E3, (2) E4 and (3) E5-E12 and X1-X5 analysis, and jackknife-t versions of every E1-E12 interval (results_jt/) from the per-run tables in v4/runs/, (4) the review figures and
+Steps: (1) E1-E3, (2) E4 and (3) E5-E12 and X1-X8 analysis, and jackknife-t versions of every E1-E12 interval (results_jt/) from the per-run tables in v4/runs/, (4) the review figures and
 leave-one-seed-out table, (5) estimator checks (output consistency, bootstrap stability, interval coverage) and the
 revision figures (after summarizing the calibration study from v4/calibration/), (6) render the v4 tables, figures and macros, (7) the legacy rebuild (re-analyses the legacy sweeps and compiles the PDF).
 """
@@ -32,6 +32,7 @@ run(sys.executable, A / "phase3_x1x2.py", RUNS, ROOT, RES)
 run(sys.executable, A / "phase3_x3.py", RUNS, ROOT, RES)
 run(sys.executable, A / "phase3_x4.py", RUNS, ROOT, RES)
 run(sys.executable, A / "phase3_x5.py", RUNS, ROOT, RES)
+run(sys.executable, A / "phase3_x6_x8.py", RUNS, ROOT, RES)
 run(sys.executable, A / "explore_x13_pooled.py", RUNS / "X1_runs.csv", RUNS / "X3_runs.csv", ROOT, RES)
 run(sys.executable, A / "review_figures.py", RUNS, ROOT, RES)
 run(sys.executable, A / "stat_checks.py", RUNS, ROOT, RES)

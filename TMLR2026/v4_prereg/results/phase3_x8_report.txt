@@ -1,0 +1,36 @@
+== X8: 960 runs complete, 300,160 transitions, declared evaluation seeds, 469 X4-style records each
+
+== crossing contrasts
+  S-B plain                          +0.170  jt95 [+0.127, +0.213]  jt90 [+0.134, +0.206]  pct95 [+0.132, +0.213]
+  Bdeg-B                             +0.164  jt95 [+0.110, +0.218]  jt90 [+0.119, +0.209]  pct95 [+0.113, +0.215]
+  (S-B) - (Bdeg-B)                   +0.006  jt95 [-0.044, +0.056]  jt90 [-0.036, +0.048]  pct95 [-0.043, +0.054]
+
+== advantage quality and gradients, seed-paired
+  plain      S/B     verr_train               +1.435  95% [+1.423, +1.447]  90% [+1.425, +1.445]
+  plain      S/B     gae_err                  +1.160  95% [+1.148, +1.172]  90% [+1.150, +1.170]
+  plain      S/B     sign_dis                 +1.200  95% [+1.180, +1.220]  90% [+1.183, +1.217]
+  plain      S-B     adv_spearman             -0.074  95% [-0.078, -0.070]  90% [-0.077, -0.070]
+  plain      S-B     ev_train_mc              -0.253  95% [-0.260, -0.245]  90% [-0.259, -0.246]
+  plain      S-B     ev_ref_mc                -0.027  95% [-0.034, -0.019]  90% [-0.033, -0.021]
+  plain      S/B     median critic_grad_norm  +8.088  95% [+7.673, +8.525]  90% [+7.741, +8.450]
+  plain      S/B     median actor_grad_norm   +1.037  95% [+1.008, +1.068]  90% [+1.012, +1.062]
+  plain      S/B     median post_actor_grad_norm +1.037  95% [+1.008, +1.068]  90% [+1.012, +1.062]
+  plain      Bdeg/B  verr_train               +1.436  95% [+1.425, +1.448]  90% [+1.427, +1.446]
+  plain      Bdeg/B  gae_err                  +1.195  95% [+1.181, +1.209]  90% [+1.184, +1.207]
+  plain      Bdeg/B  sign_dis                 +1.254  95% [+1.232, +1.276]  90% [+1.236, +1.272]
+  plain      Bdeg-B  adv_spearman             -0.088  95% [-0.093, -0.084]  90% [-0.092, -0.085]
+  plain      Bdeg-B  ev_train_mc              -0.273  95% [-0.280, -0.265]  90% [-0.279, -0.266]
+  plain      Bdeg-B  ev_ref_mc                -0.028  95% [-0.034, -0.021]  90% [-0.033, -0.022]
+  plain      Bdeg/B  median critic_grad_norm  +0.488  95% [+0.470, +0.506]  90% [+0.473, +0.503]
+  plain      Bdeg/B  median actor_grad_norm   +1.040  95% [+1.006, +1.076]  90% [+1.012, +1.070]
+  plain      Bdeg/B  median post_actor_grad_norm +1.040  95% [+1.006, +1.076]  90% [+1.012, +1.070]
+  fit-gap difference (Bdeg-B)-(S-B) ev_train_mc -0.020  90% [-0.023, -0.017]
+
+== Pre-declared predictions (jackknife-t)
+P1 S-B plain > 0 (95%): +0.170 [+0.127, +0.213] -> MET; 90% within +/-0.1: False
+P2 fit match: (Bdeg-B)-(S-B) ev_train_mc -0.020 90% [-0.023, -0.017] within +/-0.05: MET
+P3 Bdeg-B > 0 (95%): +0.164 [+0.110, +0.218] -> MET
+   (S-B) - (Bdeg-B): +0.006 90% [-0.036, +0.048] within +/-0.1: True
+
+== Declared interpretation
+A critic degraded to S's fit at B's target scale reproduces the shift: a worse fit is sufficient, consistent with fit mediating the target-scale effect.

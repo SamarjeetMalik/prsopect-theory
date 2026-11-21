@@ -1,5 +1,5 @@
 \begin{table}[H]
-\caption{Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X5 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4; 9.6 in X5, whose five per-node actors add little to the environment's cost).}
+\caption{Measured v4 compute: completed Slurm array tasks, one CPU core each (single-thread PyTorch), summed elapsed time. E1--E12 ran at most eight tasks concurrently; X1--X8 ran more tasks at once, which does not change per-run elapsed time materially (8.3--8.5 minutes per 300k supply-chain run in E1--X3; 8.8 in X4; 9.6 in X5, whose five per-node actors add little to the environment's cost; 10.0, 9.6 and 8.8 in X6, X7 and X8).}
 \label{tab:compute_v4}
 \centering\small
 \begin{tabular}{@{}llrrr@{}}
@@ -23,7 +23,10 @@ X2 & Fresh-seed clipping replication, CleanRL-style, 300k & 640 & 89.3 & 8.4 \\
 X3 & Actor/critic clipping factorial, 300k & 1,280 & 178.7 & 8.4 \\
 X4 & Critic target scale and fit, seeds 122--161, 300k & 1,920 & 280.2 & 8.8 \\
 X5 & Decentralized execution, seeds 162--201, 300k & 1,920 & 305.9 & 9.6 \\
- & Total & 13,740 & 2,825.7 &  \\
+X6 & Local critics, seeds 202--241, 300k & 1,280 & 214.0 & 10.0 \\
+X7 & Shared clip, per-node actors, seeds 242--281, 300k & 2,560 & 410.9 & 9.6 \\
+X8 & Critic fit, fixed scale, seeds 282--321, 300k & 960 & 140.2 & 8.8 \\
+ & Total & 18,540 & 3,590.8 &  \\
 \bottomrule
 \end{tabular}
 \end{table}

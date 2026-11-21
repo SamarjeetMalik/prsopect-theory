@@ -1,0 +1,63 @@
+== X7: 2,560 runs complete, 300,160 transitions, declared evaluation seeds, 469 X4-style records each
+
+== crossing contrasts
+  S-B plain                          +0.102  jt95 [+0.061, +0.143]  jt90 [+0.068, +0.136]  pct95 [+0.061, +0.140]
+  S-B normhead                       -0.003  jt95 [-0.024, +0.019]  jt90 [-0.021, +0.015]  pct95 [-0.024, +0.017]
+  S-B normpopart                     +0.000  jt95 [-0.043, +0.043]  jt90 [-0.036, +0.036]  pct95 [-0.042, +0.041]
+  S-B groupclip                      +0.121  jt95 [+0.079, +0.163]  jt90 [+0.086, +0.156]  pct95 [+0.081, +0.161]
+  change normhead - plain            -0.105  jt95 [-0.147, -0.063]  jt90 [-0.140, -0.070]  pct95 [-0.145, -0.062]
+  change normpopart - plain          -0.102  jt95 [-0.165, -0.039]  jt90 [-0.154, -0.050]  pct95 [-0.160, -0.040]
+  change groupclip - plain           +0.019  jt95 [-0.051, +0.089]  jt90 [-0.039, +0.077]  pct95 [-0.047, +0.088]
+
+== advantage quality and gradients, seed-paired
+  plain      S/B     verr_train               +1.702  95% [+1.687, +1.717]  90% [+1.689, +1.714]
+  plain      S/B     gae_err                  +1.026  95% [+1.022, +1.030]  90% [+1.023, +1.029]
+  plain      S/B     sign_dis                 +1.029  95% [+1.024, +1.034]  90% [+1.025, +1.033]
+  plain      S-B     adv_spearman             -0.022  95% [-0.027, -0.018]  90% [-0.026, -0.019]
+  plain      S-B     ev_train_mc              -0.374  95% [-0.382, -0.367]  90% [-0.381, -0.368]
+  plain      S-B     ev_ref_mc                -0.088  95% [-0.095, -0.081]  90% [-0.094, -0.082]
+  plain      S/B     median critic_grad_norm  +3.211  95% [+3.113, +3.311]  90% [+3.129, +3.294]
+  plain      S/B     median actor_grad_norm   +0.961  95% [+0.955, +0.967]  90% [+0.956, +0.966]
+  plain      S/B     median post_actor_grad_norm +0.297  95% [+0.289, +0.305]  90% [+0.290, +0.304]
+  normhead   S/B     verr_train               +0.997  95% [+0.992, +1.002]  90% [+0.993, +1.001]
+  normhead   S/B     gae_err                  +1.002  95% [+0.999, +1.005]  90% [+1.000, +1.005]
+  normhead   S/B     sign_dis                 +1.003  95% [+0.999, +1.006]  90% [+1.000, +1.006]
+  normhead   S-B     adv_spearman             -0.001  95% [-0.004, +0.001]  90% [-0.004, +0.001]
+  normhead   S-B     ev_train_mc              +0.002  95% [-0.002, +0.006]  90% [-0.002, +0.005]
+  normhead   S-B     ev_ref_mc                +0.003  95% [-0.001, +0.007]  90% [-0.000, +0.007]
+  normhead   S/B     median critic_grad_norm  +0.993  95% [+0.974, +1.011]  90% [+0.977, +1.008]
+  normhead   S/B     median actor_grad_norm   +0.998  95% [+0.994, +1.001]  90% [+0.995, +1.000]
+  normhead   S/B     median post_actor_grad_norm +1.004  95% [+0.986, +1.023]  90% [+0.989, +1.020]
+  normpopart S/B     verr_train               +1.006  95% [+0.991, +1.021]  90% [+0.994, +1.019]
+  normpopart S/B     gae_err                  +0.998  95% [+0.989, +1.006]  90% [+0.991, +1.004]
+  normpopart S/B     sign_dis                 +0.999  95% [+0.992, +1.006]  90% [+0.993, +1.005]
+  normpopart S-B     adv_spearman             +0.001  95% [-0.006, +0.008]  90% [-0.004, +0.007]
+  normpopart S-B     ev_train_mc              -0.003  95% [-0.009, +0.004]  90% [-0.008, +0.003]
+  normpopart S-B     ev_ref_mc                -0.005  95% [-0.011, +0.002]  90% [-0.010, +0.001]
+  normpopart S/B     median critic_grad_norm  +1.021  95% [+0.985, +1.059]  90% [+0.991, +1.053]
+  normpopart S/B     median actor_grad_norm   +0.995  95% [+0.980, +1.010]  90% [+0.982, +1.007]
+  normpopart S/B     median post_actor_grad_norm +0.993  95% [+0.968, +1.018]  90% [+0.972, +1.014]
+  groupclip  S/B     verr_train               +1.631  95% [+1.609, +1.654]  90% [+1.613, +1.650]
+  groupclip  S/B     gae_err                  +1.058  95% [+1.050, +1.066]  90% [+1.051, +1.065]
+  groupclip  S/B     sign_dis                 +1.052  95% [+1.043, +1.060]  90% [+1.044, +1.059]
+  groupclip  S-B     adv_spearman             -0.061  95% [-0.069, -0.053]  90% [-0.067, -0.055]
+  groupclip  S-B     ev_train_mc              -0.354  95% [-0.361, -0.346]  90% [-0.360, -0.348]
+  groupclip  S-B     ev_ref_mc                -0.011  95% [-0.017, -0.005]  90% [-0.016, -0.006]
+  groupclip  S/B     median critic_grad_norm  +7.324  95% [+6.973, +7.694]  90% [+7.030, +7.631]
+  groupclip  S/B     median actor_grad_norm   +0.977  95% [+0.963, +0.991]  90% [+0.965, +0.989]
+  groupclip  S/B     median post_actor_grad_norm +1.000  95% [+1.000, +1.000]  90% [+1.000, +1.000]
+
+== Pre-declared predictions (jackknife-t)
+P1 S-B plain > 0 (95%): +0.102 [+0.061, +0.143] -> MET; 90% within +/-0.1: False
+P2 normhead: S/B median pre-clip critic norm 0.993 90% [0.977, 1.008] within (0.8, 1.25): True
+P2 normpopart: S/B median pre-clip critic norm 1.021 90% [0.991, 1.053] within (0.8, 1.25): True
+P2 plain: S/B median pre-clip critic norm 3.211 95% [3.113, 3.311] > 1: True
+P2 manipulation check: MET
+P3 normhead: change -0.105 [-0.147, -0.063]; S-B -0.003 90% [-0.021, +0.015] -> MET
+P4 normpopart: change -0.102 [-0.165, -0.039]; S-B +0.000 90% [-0.036, +0.036] -> MET
+Q5 change groupclip - plain: +0.019 95% [-0.051, +0.089] 90% [-0.039, +0.077]; within +/-0.1: True; below zero: False
+
+== Declared interpretation
+The shift under SB3's default shared clip transfers to decentralized execution.
+normhead: making the critic's targets and gradients B-sized removes the clipped shift and per-group clipping does not detectably reduce it: the clipped shift runs through the critic's target scale, not the clip's starving of the actor.
+normpopart: making the critic's targets and gradients B-sized removes the clipped shift and per-group clipping does not detectably reduce it: the clipped shift runs through the critic's target scale, not the clip's starving of the actor.

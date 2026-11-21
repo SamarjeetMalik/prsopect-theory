@@ -175,15 +175,24 @@ effect on S$-$B, was not confirmed; the actor-clipping equivalence and the repli
 clipped were. All six X4 predictions were met. The X4 extraction script, which is not a frozen source, read a field of
 the dropped arm and was corrected before any analysis (deviation log). X5 was gated on five checks: one index run twice
 gives bit-identical results; the fixed-scale head at $c=1$ reproduces the plain critic; the logging leaves training
-unchanged; each node's actor parameters are disjoint from the others', a node's actor receives exactly zero gradient
+unchanged; each node's actor parameters are disjoint from the others', through the networks' outputs a node's actor receives exactly zero gradient
 from other nodes' samples, and the critic does not depend on the local-only inputs; and the three gate indices
 complete. Before the freeze, two smoke tests on seed 42, which is not an X5 seed, ran these checks and timed the runs.
 Between them the actor's routing was changed from masking all five networks' outputs to evaluating each sample with its
 own node's network only; the two compute the same function. The analysis script was dry-run on X4's per-run table
-relabelled as X5 data. All six X5 predictions were met, and no run failed. Three further experiments, X6--X8
-(Section~\ref{sec:limitations}, ``Open tests''), were pre-registered after X5. They were frozen before any run, with
-the critic learning-rate multiplier of X8 set beforehand by a calibration on seeds 42--45 (\texttt{PREREGISTRATION\_X6\_X8.md}
-in the archive); their results are not reported here. All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
+relabelled as X5 data. All six X5 predictions were met, and no run failed. X6, X7 and X8
+were pre-registered together after X5 and frozen before any run (\texttt{PREREGISTRATION\_X6\_X8.md} in the archive). The
+critic learning-rate multiplier of X8 was set beforehand by a calibration on seeds 42--45, which are not X8 seeds,
+for $k\in\{1/2,1/4,1/8,1/16,1/32\}$: the rule took the candidate whose mean gap to B in explained variance against
+Monte-Carlo returns was closest to S's, and no crossing was computed from these runs. One gate job checked each
+experiment before its arrays: an index run twice gives bit-identical results; logging leaves training unchanged; the
+fixed-scale or normalized head at $c=1$ reproduces the plain critic (X6, X7), and $k=1$ reproduces plain B, whose run on
+seed 122 at $w=0.6$ reproduces the corresponding X4 run bit-for-bit (X8); the independence checks pass (X6, X7); and
+the first index of every part completes. During the smoke tests, an X7 independence check crashed after training
+because only the per-group learner had a read-only helper; it was added to the other X7 learners, where it does not
+affect training, and all X7 smoke runs were repeated, before the freeze. The analysis script was dry-run on X5's
+per-run table relabelled as X6--X8 data. All 4,800 runs completed and none failed. Ten of the eleven predictions were
+met; the exception is X6's P4 (the fixed-scale head's residual is not within the $\pm0.10$ margin). All of this is reported in the main text. An equality gate run before E1 reproduced the earlier platform's
 labels in 8/8 cells, but not its policies bit-for-bit, so archived runs were not reused.
 
 \section{Training Budget: the Horizon Cohorts and the Equivalent-Budget Mapping}
@@ -323,11 +332,14 @@ reduce it (X1).
 \end{figure}
 
 \paragraph{Tables for Section~\ref{sec:optimizer}.}
-Tables~\ref{tab:x4q} and~\ref{tab:x5q} give X4's and X5's critic-fit and advantage measures; the factorial's crossings,
+Tables~\ref{tab:x4q}, \ref{tab:x5q}, \ref{tab:x6q}, \ref{tab:x7q} and~\ref{tab:x8q} give the critic-fit and advantage measures of X4--X8; the factorial's crossings,
 contrasts and changes, E6's diagnostics, E7's contrasts and E11's results follow.
 
 \input{generated/v4/x4_quality_table}
 \input{generated/v4/x5_quality_table}
+\input{generated/v4/x6_quality_table}
+\input{generated/v4/x7_quality_table}
+\input{generated/v4/x8_quality_table}
 \input{generated/v4/factorial_crossings}
 \input{generated/v4/factorial_contrasts}
 \input{generated/v4/e6_table}
@@ -415,7 +427,7 @@ target-scale explanation of the near-null plain-critic A$-$M.
 \section{Computational Accounting}
 \label{app:compute}
 
-E1--E12 and X1--X5 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
+E1--E12 and X1--X8 comprise \VfourTrajectories{} trajectories and about \VfourCoreHours{} single-core hours
 (Table~\ref{tab:compute_v4}), excluding smoke tests, equality gates and extraction. The legacy sweeps and
 the earlier confirmation cohorts were run separately on another platform and are not included.
 
@@ -426,7 +438,7 @@ the earlier confirmation cohorts were run separately on another platform and are
 \label{app:artifact}
 
 The anonymized archive, provided as supplementary material with this submission, contains the manuscript source; the frozen designs, pre-registration, hashes and
-deviation log; the executed source for E1--E12 and X1--X5; per-run tables for every E1--E12 and X1--X5 trajectory (protocol,
+deviation log; the executed source for E1--E12 and X1--X8; per-run tables for every E1--E12 and X1--X8 trajectory (protocol,
 label, evaluation summary and optimizer diagnostics); the per-replicate outputs of the calibration simulation; the extraction and analysis scripts; and the
 renderer that produces every v4 table, figure and number. Labels are never taken from a stored field without
 check: one module (\texttt{analysis/labels.py}) recomputes them from stored evaluation statistics, asserts each

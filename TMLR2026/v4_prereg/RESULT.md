@@ -531,3 +531,26 @@ local views and a centralized critic, the shift replicates at full size and both
 X5 keeps from the shared controller is a critic on the global state that regresses unnormalized targets, so agents
 with decentralized critics remain untested. X5 does not explain E12's undetected shift; E12 differs from X5 in the
 learner (shared clip), the critic's input (local) and parameter sharing.
+
+## X6–X8 (pre-registered and frozen 2026-11-20T12:24:37Z before the gate; analysed 2026-11-21 with the frozen `phase3_x6_x8.py`)
+Fresh seeds 202–321, 4,800 runs, none failed. Gate job 16238 passed all 15 checks; arrays 16239–16244; extraction 21059.
+
+- **X6 (per-node actors and local critics, no clip; seeds 202–241). P1–P3 met, P4 not met.**
+  - P1: S − B plain +0.282 [+0.210, +0.353].
+  - P2: value error S/B 1.47, GAE error 1.04, sign disagreement 1.02, rank agreement −0.018; each 95% interval excludes equality.
+  - P3: fit gap under the fixed-scale head +0.000, 90% [−0.004, +0.005].
+  - P4: change −0.352 [−0.445, −0.258], but S − B under the head −0.070, 90% [−0.141, +0.001], is not within ±0.10.
+  - **Declared reading:** the shift is present with local critics; the channel there is inconclusive.
+- **X7 (X5's architecture, one Adam, shared clip; seeds 242–281). P1–P4 met; Q5 within ±0.10.**
+  - P1: S − B plain +0.102 [+0.061, +0.143].
+  - P2: S/B median pre-clip critic gradient 0.993 (normhead), 1.021 (normpopart), 3.211 (plain).
+  - P3: normhead change −0.105 [−0.147, −0.063]; S − B −0.003, 90% [−0.021, +0.015].
+  - P4: normpopart change −0.102 [−0.165, −0.039]; S − B 0.000, 90% [−0.036, +0.036].
+  - Q5: groupclip change +0.019 [−0.051, +0.089], 90% [−0.039, +0.077].
+  - **Declared reading:** the shift transfers to decentralized execution under the shared clip and in this architecture runs through the critic's target scale, not the clip's starving of the actor.
+  - **Scope:** the size does not transfer (+0.102 against E1's +0.357 [+0.226, +0.489]); X7 does not explain the default controller's shift.
+- **X8 (shared controller, no clip; k = 1/8; seeds 282–321). P1–P3 met.**
+  - P1: S − B +0.170 [+0.127, +0.213].
+  - P2: fit-gap difference (Bdeg − B) − (S − B) −0.020, 90% [−0.023, −0.017], within ±0.05.
+  - P3: Bdeg − B +0.164 [+0.110, +0.218]; (S − B) − (Bdeg − B) +0.006, 90% [−0.036, +0.048].
+  - **Declared reading:** a critic degraded to S's fit at B's target scale reproduces the shift; a worse fit is sufficient, consistent with fit mediating the target-scale effect. It does not show that S's shift runs through the fit.

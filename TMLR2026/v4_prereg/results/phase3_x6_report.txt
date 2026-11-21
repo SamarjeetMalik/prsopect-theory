@@ -1,0 +1,36 @@
+== X6: 1,280 runs complete, 300,160 transitions, declared evaluation seeds, 469 X4-style records each
+
+== crossing contrasts
+  S-B plain                          +0.282  jt95 [+0.210, +0.353]  jt90 [+0.222, +0.341]  pct95 [+0.218, +0.356]
+  S-B M                              -0.070  jt95 [-0.155, +0.015]  jt90 [-0.141, +0.001]  pct95 [-0.177, +0.001]
+  change M - plain                   -0.352  jt95 [-0.445, -0.258]  jt90 [-0.430, -0.274]  pct95 [-0.455, -0.275]
+
+== advantage quality and gradients, seed-paired
+  plain      S/B     verr_train               +1.465  95% [+1.450, +1.481]  90% [+1.452, +1.478]
+  plain      S/B     gae_err                  +1.039  95% [+1.035, +1.043]  90% [+1.036, +1.043]
+  plain      S/B     sign_dis                 +1.020  95% [+1.014, +1.025]  90% [+1.015, +1.024]
+  plain      S-B     adv_spearman             -0.018  95% [-0.022, -0.013]  90% [-0.021, -0.014]
+  plain      S-B     ev_train_mc              -0.229  95% [-0.238, -0.219]  90% [-0.237, -0.221]
+  plain      S-B     ev_ref_mc                +0.037  95% [+0.030, +0.044]  90% [+0.031, +0.042]
+  plain      S/B     median critic_grad_norm  +1.458  95% [+1.347, +1.579]  90% [+1.365, +1.558]
+  plain      S/B     median actor_grad_norm   +1.130  95% [+1.114, +1.147]  90% [+1.117, +1.144]
+  plain      S/B     median post_actor_grad_norm +1.130  95% [+1.114, +1.147]  90% [+1.117, +1.144]
+  M          S/B     verr_train               +0.999  95% [+0.993, +1.006]  90% [+0.994, +1.005]
+  M          S/B     gae_err                  +1.002  95% [+0.999, +1.006]  90% [+0.999, +1.005]
+  M          S/B     sign_dis                 +1.003  95% [+0.998, +1.007]  90% [+0.999, +1.007]
+  M          S-B     adv_spearman             -0.003  95% [-0.008, +0.001]  90% [-0.007, +0.001]
+  M          S-B     ev_train_mc              +0.000  95% [-0.005, +0.006]  90% [-0.004, +0.005]
+  M          S-B     ev_ref_mc                +0.003  95% [-0.002, +0.008]  90% [-0.001, +0.007]
+  M          S/B     median critic_grad_norm  +49.248  95% [+46.199, +52.499]  90% [+46.695, +51.941]
+  M          S/B     median actor_grad_norm   +0.998  95% [+0.991, +1.005]  90% [+0.992, +1.004]
+  M          S/B     median post_actor_grad_norm +0.998  95% [+0.991, +1.005]  90% [+0.992, +1.004]
+
+== Pre-declared predictions (jackknife-t)
+P1 S-B plain > 0 (95%): +0.282 [+0.210, +0.353] -> MET; 90% within +/-0.1: False
+P2 advantage degradation (plain, all four): MET (4/4)
+P3 head equalizes fit within +/-0.05 (90%): +0.000 [-0.004, +0.005] -> MET
+P4 change M - plain < 0 (95%) and S-B under M within +/-0.1 (90%): -0.352 [-0.445, -0.258]; -0.070 [-0.141, +0.001] -> NOT MET
+
+== Declared interpretation
+The shift is present with local critics; the claim extends to fully decentralized actor-critic training on the supply chain.
+Channel: inconclusive.
