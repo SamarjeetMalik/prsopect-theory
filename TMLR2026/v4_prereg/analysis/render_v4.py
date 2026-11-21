@@ -415,6 +415,16 @@ rows = [[lab] + [qc(q8x.loc[("plain", qkey(a, ra), me)], not ra) for a in ["S", 
 table(OUT / "x8_quality_table.tex", r"The critic's fit and the actor's advantages in X8, each arm relative to B." + qcap,
       "tab:x8q", r"@{}>{\raggedright\arraybackslash}p{.42\textwidth}cc@{}", r"Quantity & S relative to B & B$_{\mathrm{deg}}$ relative to B", rows, size=r"\footnotesize")
 
+# ---------------------------------------------------------------- equivariance of the critic controls (diagnostic, not pre-registered)
+eqh = rd("headcheck_equivariance.csv"); eqs = rd("popart_sigma_ratio.csv")
+_sci = lambda x: (lambda a, b: f"{a}\\times10^{{{int(b)}}}")(*f"{x:.1e}".split("e"))
+_rg = lambda v: f"{int(v.min())}--{int(v.max())}"
+_rs = lambda v: f"${_sci(v.min())}$ to ${_sci(v.max())}$"
+rows = [[a, _rs(g.early_median_reldiff_vs_B), _rs(g.early_median_reldiff_vs_Beps), _rg(g.first_1e3_vs_B), _rg(g.first_1e3_vs_Beps)] for a, g in eqh.groupby("architecture")]
+table(OUT / "equivariance_table.tex",
+      r"S under the fixed-scale head compared with plain B and with B whose critic Adam uses $\epsilon/49$ (diagnostic, not pre-registered; seeds 42--45, $w=0.6$, 300k transitions, 14,070 minibatches per run, 24 runs). Early difference: range over seeds of the median relative difference in the actor's gradient norm over the first 100 minibatches. First divergence: range over seeds of the first minibatch at which that difference exceeds $10^{-3}$.",
+      "tab:equiv", r"@{}lcccc@{}", r"Architecture & Early diff., vs B & Early diff., vs B($\epsilon/49$) & First div., vs B & First div., vs B($\epsilon/49$)", rows, size=r"\footnotesize")
+eq_last = eqs[eqs.rollout == eqs.rollout.max()]
 # ---------------------------------------------------------------- the two jackknife-t implementations agree (revision v6)
 _J5 = pd.read_csv(RES / "jackknife_v5.csv").set_index("contrast")
 _pick = lambda f, **kw: rd(f, keep_default_na=False, na_values=[""]).pipe(lambda d: d.loc[np.logical_and.reduce([d[k] == v for k, v in kw.items()])].iloc[0])
@@ -684,6 +694,17 @@ for pt, nm in [("plain", "Plain"), ("normhead", "Head"), ("normpopart", "Pop")]:
     m += _qm(q7x, f"VxsevGrad{nm}", (pt, "S/B", "median critic_grad_norm"), True)
 for pt, nm in [("plain", "Plain"), ("groupclip", "Group")]:
     m += _qm(q7x, f"VxsevApplied{nm}", (pt, "S/B", "median post_actor_grad_norm"), True)
+m += mac("VeqvSigMed", f"{eqs.sigma_ratio_median.min():.2f}--{eqs.sigma_ratio_median.max():.2f}")
+m += mac("VeqvSigLow", f"{eq_last.sigma_ratio_p5.min():.1f}"); m += mac("VeqvSigHigh", f"{eq_last.sigma_ratio_p95.max():.1f}")
+eqm = rd("popart_mu_ratio.csv"); _x4h = eqh[eqh.architecture == "X4"]; _x6h = eqh[eqh.architecture == "X6"]
+m += mac("VeqvMuMed", f"{eqm.mu_ratio_median.min():.2f}--{eqm.mu_ratio_median.max():.2f}"); m += mac("VeqvSigMin", f"{eqm.smallest_sigma.min():.1f}")
+for _e, _n in [("X4", "Xfour"), ("X5", "Xfive")]:
+    _r = eq_last[eq_last.experiment == _e]; m += mac(f"VeqvSig{_n}", f"{_r.sigma_ratio_p5.iloc[0]:.2f} to {_r.sigma_ratio_p95.iloc[0]:.2f}")
+assert (_x4h.first_1e6_vs_B == _x4h.first_1e6_vs_Beps).all()
+m += mac("VeqvTie", f"{int(_x4h.first_1e6_vs_B.min())}--{int(_x4h.first_1e6_vs_B.max())}")
+m += mac("VeqvSixB", f"{int(_x6h.first_1e6_vs_B.min())}"); m += mac("VeqvSixE", f"{int(_x6h.first_1e6_vs_Beps.min())}--{int(_x6h.first_1e6_vs_Beps.max())}")
+m += mac("VeqvLateCloser", f"{int((_x4h.late_median_reldiff_vs_B < _x4h.late_median_reldiff_vs_Beps).sum())}")
+m += mac("VeqvLastDiv", f"{int(eqh[['first_1e3_vs_B', 'first_1e3_vs_Beps']].max().max())}")
 m += mac("VpctSensN", f"{len(sens)}")
 (OUT / "v4_numbers.tex").write_text(m)
 print("wrote", sorted(p.name for p in OUT.iterdir()))

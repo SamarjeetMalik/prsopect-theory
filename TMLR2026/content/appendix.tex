@@ -331,6 +331,36 @@ reduce it (X1).
 \Description{Six panels: critic gradient rising roughly in proportion to the reward multiplier; attenuation following the clip curves for five thresholds; paired S over B applied-gradient ratios near one over the critic ratio under the default clip; parameter-update ratios near 0.4 under the shared clip and near one otherwise; S minus B falling as the applied ratio rises; S minus B under nine interventions, positive with the shared clip and near zero with reward or target normalization.}
 \end{figure}
 
+\subsection{The Critic Controls Are Near-Identities}
+\label{app:equiv}
+Consider the separate no-clip learner with symmetric scale $c$ and a critic $V=c\,h$. Rewards, returns, values and raw
+advantages of S are $c$ times those of B at the same parameters, so the normalized advantages agree up to the $10^{-8}$ in
+their denominator and the actor's gradient is B's. The critic's loss is $c^2$ times B's, and so is its gradient. Adam's
+direction $m/(\sqrt{v}+\epsilon)$ with $m\to c^2m$ and $\sqrt{v}\to c^2\sqrt{v}$ becomes $m/(\sqrt{v}+\epsilon/c^2)$. In exact
+arithmetic, S under the fixed-scale head is therefore B with the critic's $\epsilon$ divided by $c^2$. The normalized-loss
+head of X7 scales the gradient by $1/c^2$ and removes even that difference. PopArt, $V=\sigma h+\mu$, has the same
+structure only when $\sigma$, $\mu$ and the head's output all correspond. The first rollout is collected with $\sigma=1$,
+$\mu=0$, and the first rescale preserves that unscaled output, so S starts off this correspondence even when its
+statistics are $c$ times B's, and approaches it only through training. In the stored X4 and X5 runs, at ten inspected
+rollouts the median S/B ratio is \VeqvSigMed{} for $\sigma$ and \VeqvMuMed{} for $\mu$. By the last rollout the 5th and 95th
+percentiles of the $\sigma$ ratio over pairs are \VeqvSigXfour{} (X4) and \VeqvSigXfive{} (X5). The smallest $\sigma$ in any
+run is \VeqvSigMin{}, so the absolute floor of 0.01 never binds. Reward normalization divides by the running SD of the
+discounted return, so S's normalized reward is B's apart from the normalizer's prior and a small constant, and every
+downstream quantity then matches under either clip mode.
+
+A diagnostic that was not pre-registered compares actor-gradient norms, an indirect check of the head's identity
+(Table~\ref{tab:equiv}). On seeds 42--45, outside every X confirmation cohort (they were used in E1--E11 and in the X4 and X8
+calibrations), at $w=0.6$, it trains S under the head, plain B, and plain B with the critic's $\epsilon$ divided by 49, in the
+X4 and X6 architectures. Because $\epsilon$ acts on the critic, B and B($\epsilon/49$) have the same actor inputs until the
+second rollout, so the first 30 minibatches cannot separate them. At a $10^{-3}$ threshold S departs later from the
+$\epsilon/49$ learner than from plain B. At $10^{-6}$ the two comparisons tie in all four X4 seeds (first departure at
+minibatch \VeqvTie{}), and in X6 the first departure is at minibatch \VeqvSixB{} from B and \VeqvSixE{} from B($\epsilon/49$).
+Every pair diverges within \VeqvLastDiv{} of 14,070 minibatches; by the end of training S is closer to plain B than to
+B($\epsilon/49$) in \VeqvLateCloser{} of the four X4 seeds. The diagnostic is consistent with the identity early in training and
+does not verify it over a full run. It covers one cell and four seeds.
+
+\input{generated/v4/equivariance_table}
+
 \paragraph{Tables for Section~\ref{sec:optimizer}.}
 Tables~\ref{tab:x4q}, \ref{tab:x5q}, \ref{tab:x6q}, \ref{tab:x7q} and~\ref{tab:x8q} give the critic-fit and advantage measures of X4--X8; the factorial's crossings,
 contrasts and changes, E6's diagnostics, E7's contrasts and E11's results follow.

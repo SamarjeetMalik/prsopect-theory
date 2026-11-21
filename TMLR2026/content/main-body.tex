@@ -46,12 +46,13 @@ The contributions, each tied to the evidence that supports it, are:
 and~\ref{sec:optimizer}; Table~\ref{tab:hierarchy}). Under default SB3 PPO, symmetric $\times7$ scaling moves the
 crossing by \VjtPStd{}, and a CleanRL-style implementation reproduces the shift (\VjtPElevenRaw{}, E11); intervals in
 this list are calibrated jackknife-$t$ intervals. With normalized rewards the shift is not detectable in either
-implementation (E1, E11), and normalizing only the critic's targets reduces it when three cohorts are pooled (forty
+implementation (E1, E11), as expected because reward normalization makes S's learner nearly B's by construction, and normalizing only the critic's targets reduces it when three cohorts are pooled (forty
 seeds, 42--81; change \VjtChPool{}), although none of those cohorts establishes this alone. On forty fresh seeds
 without clipping (X4) the plain critic fits the scaled returns worse and its advantages are measurably worse, and two
 critics that remove the target scale also remove the shift: a head whose output is fixed-scaled by the reward
 multiplier, so that it regresses targets of the baseline's size (\VxfHead{}), and PopArt (\VxfPop{}); both are
-equivalent to zero within $\pm0.10$. On forty more fresh seeds (X5) each node has its own actor network, acting on its
+equivalent to zero within $\pm0.10$. Both make S's update nearly B's by construction (Section~\ref{sec:mechanism}), so
+they find no other route larger than the $\pm0.10$ margin and do not show how the critic's scale acts. On forty more fresh seeds (X5) each node has its own actor network, acting on its
 local observation, with a centralized critic, and the result repeats: the shift is \VxvPlain{} with the plain critic,
 \VxvHead{} with the fixed-scale head and \VxvPop{} with PopArt. The confound therefore does not require a
 parameter-shared, fully observed actor. Nor does the shift require a critic that sees the global state: with per-node
@@ -295,7 +296,7 @@ or targets should remove it. Predictions (a) and (b), and the optimizer half of 
 behavioural half of (c) is not: restoring the actor's update reduced the crossing shift in one cohort (E6) but not
 on fresh seeds (X1), and when actor and critic are clipped independently neither clip has a detectable effect on the
 shift (X3). For (d), no symmetric shift is detectable under reward normalization with or without the shared clip (E1),
-and critic-only target normalization reduces the shift on the pooled cohorts and, on forty fresh seeds, removes it (X4), also under decentralized execution (X5). As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
+and critic-only target normalization reduces the shift on the pooled cohorts and, on forty fresh seeds, removes it (X4), also under decentralized execution (X5). These nulls are largely expected, because these normalizations make S's learner nearly B's by construction (see below), so they do not by themselves locate the route. As a quantitative check of (b), we evaluated Equation~\ref{eq:clip} on every logged minibatch of the default
 cell. The critic accounts for more than 99.99\% of the squared joint norm in both arms, every minibatch is clipped,
 and the predicted S/B ratio of applied actor gradients, \VeqPred{}, equals the measured \VeqMeas{} (largest
 per-minibatch relative error $\VeqMaxErr{}$); under per-group clipping both are \VeqGroupMeas{}. Because
@@ -317,7 +318,21 @@ detectable shift or, on the pooled cohorts, reduces it (E1, E7, E8, E10, E11). W
 leaves the critic's regression targets as the only route by which a symmetric reward scale reaches training, apart from
 Adam's $\epsilon$: there is no entropy term, the value loss is unclipped, advantages are normalized per minibatch, the
 networks share no parameter, and Adam's update is otherwise invariant to a constant rescaling of a parameter's gradient. A pre-registered test on fresh seeds (X4, Section~\ref{sec:optimizer}) therefore
-removes the target scale while keeping everything else, and separately equalizes the critic's fit.
+removes the target scale while keeping everything else.
+
+This argument limits what such a test can show. Take a critic $V=c\,h$ on returns scaled by $c$. Its gradient is exactly
+$c^2$ times B's and the normalized advantages are B's, so S's update equals B's with the critic's Adam $\epsilon$ replaced by
+$\epsilon/c^2$ (and the $10^{-8}$ in the advantage normalization by $10^{-8}/c$). PopArt has the same structure only when $\sigma$, $\mu$ and the head's output all correspond. Its first rescale
+preserves the unscaled initial output, so S starts off that correspondence and approaches it through training.
+Reward normalization is a control of the same kind: dividing by the running return SD makes S's normalized reward B's,
+apart from the normalizer's prior and a small constant, under either clip mode, so its null S$-$B cannot discriminate
+between the target route and the clip route. These interventions are therefore \emph{equivariance controls}. That they
+leave no detectable shift is largely expected from the algebra. What they check is that no other route for the reward
+scale is larger than the stated margin; they do not show which property of the scaled critic produces the shift. A
+diagnostic in Appendix~\ref{app:equiv} compares actor-gradient norms, an indirect check of the head's identity: at a
+$10^{-3}$ threshold, S under the head departs later from B with $\epsilon/49$ than from B. Every pair separates within
+\VeqvLastDiv{} of 14,070 minibatches, so the identity does not hold along a trajectory, and the crossing contrasts test
+only whether the arms agree at the level of $w_{50}$.
 
 \begin{figure}[!htbp]
 \centering
@@ -371,8 +386,8 @@ E12 & Does it hold under local observation? & Local view plus agent identifier; 
 X1 & Does E6's per-group reduction replicate? & E6's three clipping modes, Adam-moment logging & B, S; 8 cells; 300k; seeds 82--101 & 960 & Actor step restored; S$-$B not reduced; no-clip S$-$B not detectable (P3 not met) & Critic still clipped \\
 X2 & Same, second implementation & E11's raw and per-group modes & B, S; 8 cells; 300k; seeds 82--101 & 640 & S$-$B not reduced (fresh); small reduction pooled & Pooled test secondary \\
 X3 & Which clipped group carries S$-$B? & Actor clipped or not $\times$ critic clipped or not, one Adam & B, S; 8 cells; 300k; seeds 102--121 & 1,280 & No detectable effect of either clip; S$-$B present without clipping & Critic route not isolated \\
-X4 & Does the critic's target scale carry S$-$B? & Separate no-clip optimizers; plain vs PopArt critic vs output fixed-scaled to the reward multiplier; advantage-quality logging & B, S; 8 cells; 300k; seeds 122--161 & 1,920 & PopArt and fixed-scale head each remove S$-$B; plain critic's advantages worse & Fit not separated from target scale \\
-X5 & Does S$-$B hold under decentralized execution? & Per-node actors on local view plus identifier, centralized critic; X4's three critics and logging & B, S; 8 cells; 300k; seeds 162--201 & 1,920 & S$-$B replicates; PopArt and fixed-scale head each remove it & Critic centralized; fit not separated \\
+X4 & Does the critic's target scale carry S$-$B? & Separate no-clip optimizers; plain vs PopArt critic vs output fixed-scaled to the reward multiplier; advantage-quality logging & B, S; 8 cells; 300k; seeds 122--161 & 1,920 & PopArt and fixed-scale head each remove S$-$B; plain critic's advantages worse & Both are equivariance controls; fit not separated \\
+X5 & Does S$-$B hold under decentralized execution? & Per-node actors on local view plus identifier, centralized critic; X4's three critics and logging & B, S; 8 cells; 300k; seeds 162--201 & 1,920 & S$-$B replicates; PopArt and fixed-scale head each remove it & Equivariance controls; critic centralized \\
 X6 & Does S$-$B need a critic that sees the global state? & Per-node actors and per-node local critics, no clip; plain vs fixed-scale head & B, S; 8 cells; 300k; seeds 202--241 & 1,280 & S$-$B present; head changes it, residual misses the margin (P4 not met) & Channel unresolved with local critics \\
 X7 & Does the clipped shift transfer, and through what? & X5's architecture, one Adam, shared clip; plain vs normalized-loss head vs normalized-loss PopArt vs per-group clip & B, S; 8 cells; 300k; seeds 242--281 & 2,560 & S$-$B present, smaller than E1's; both normalized critics remove it; per-group clip does not detectably change it & Does not explain E1's larger shift \\
 X8 & Is a worse critic fit sufficient? & Shared controller, no clip; B with critic learning rate $\times1/8$ (B$_{\mathrm{deg}}$) & B, S, B$_{\mathrm{deg}}$; 8 cells; 300k; seeds 282--321 & 960 & B$_{\mathrm{deg}}-$B reproduces S$-$B at S's fit & One degradation; sufficiency only \\
@@ -508,7 +523,7 @@ in Table~\ref{tab:factorial_interactions}; Figure~\ref{fig:factorial} summarizes
 Lowering $\epsilon$ to $10^{-8}$ leaves the symmetric effect in place (S$-$B \VfourSymEps{}; change
 relative to default \VfourSymEpsChange{}), contrary to our pre-declared alternative that the clipped
 actor gradients were being suppressed by Adam's $\epsilon$ floor. Normalizing rewards, which bounds the
-critic's targets, removes the detectable effect, whereas without the clip a shift remains. The
+critic's targets and makes S nearly B by construction (Section~\ref{sec:mechanism}), removes the detectable effect, whereas without the clip a shift remains. The
 critic's explained variance agrees: without clipping and with raw rewards it falls from
 \VfourEVSepRawB{} (B) to \VfourEVSepRawS{} (S), whereas under reward normalization it is \VfourEVNormB{}
 and \VfourEVNormS{}. Two qualifications limit this account. First, \texttt{VecNormalize} normalizes
@@ -539,7 +554,7 @@ for E10, gives \VjtChPool{}, which excludes zero also at 99\% (\VjtChPoolNine{})
 of prediction (d), the shift that remains without clipping, to critic target scale on the pooled evidence, not on any
 single cohort; X4, below, tests it on forty fresh seeds.
 
-\paragraph{The critic's target scale carries the shift (X4).}
+\paragraph{Equivariance controls for the critic's target scale (X4).}
 X4 (1,920 runs, forty fresh seeds 122--161) tests this account directly, with separate actor and critic Adam, no
 clipping and raw rewards; it was pre-registered with the jackknife-$t$ interval as primary and gated on bit-for-bit
 reproduction of an E1 and an E7 run (Appendix~\ref{app:prereg}). It compares three critics. The plain critic and the
@@ -559,11 +574,13 @@ the change from the plain critic, \VxfChPop{}, excludes zero in this one cohort 
 All six pre-declared predictions are met. By the readings declared before the runs, the scale of the critic's
 regression targets carries the symmetric shift at this budget, and the result is consistent with its acting through
 the critic's fit. It does not show that the fit is the mediator: both interventions that equalize the fit also remove
-the target scale, and PopArt changes the parametrization as well as the fit.
+the target scale, and PopArt changes the parametrization as well as the fit. Both are equivariance controls
+(Section~\ref{sec:mechanism}), so the declared reading is close to a consequence of the algebra. The empirical content is
+that the plain critic's shift is real and that making the learner equivariant leaves no detectable shift.
 
 \input{generated/v4/x4_table}
 
-\paragraph{The same channel under decentralized execution (X5).}
+\paragraph{The same controls under decentralized execution (X5).}
 X4, like every supply-chain experiment except E12, trains one actor that sees the full state. X5 (1,920 runs, forty
 fresh seeds 162--201) repeats X4's three critics with centralized training and decentralized execution. Each of the
 five trained nodes has its own actor network, action head and log-standard deviation. Each acts on its local view
@@ -586,8 +603,8 @@ within $\pm0.10$ (90\% intervals \VxvHeadNinety{} and \VxvPopNinety{}), and the 
 
 All six pre-declared predictions are met. By the declared readings, the critic's target scale carries the shift under
 decentralized execution at this budget; the PopArt result is consistent with the critic-target account, not proof
-of it. Two limits carry over from X4: the fit is not isolated as the mediator, and the
-result is for 300k transitions without clipping. A third is new. The critic here is centralized; X6 removes that. X5 also does not explain why E12, with a shared
+of it. Three limits carry over from X4: both critics are equivariance controls, the fit is not isolated as the mediator, and the
+result is for 300k transitions without clipping. A fourth is new. The critic here is centralized; X6 removes that. X5 also does not explain why E12, with a shared
 actor and critic both on local views and the shared clip, found no detectable shift.
 
 \input{generated/v4/x5_table}
@@ -607,6 +624,8 @@ It leaves \VxsixHead{}, whose 90\% interval \VxsixHeadNinety{} is not within $\p
 prediction P4 is not met. The shift therefore extends to per-node actors and local critics on the supply
 chain, but by the declared reading X6 is inconclusive on whether the critic's target scale carries it there. The
 negative point estimate under the head is not shown to differ from zero, and we do not read it as an overshoot.
+Because the head makes S's update B's apart from Adam's $\epsilon$, this residual reflects sampling noise, the smaller
+$\epsilon$, or both; the data do not say which, and X6 has no second critic intervention.
 
 \paragraph{A worse fit at a fixed target scale (X8).}
 In X4--X6 the interventions that remove the target scale also equalize the fit. X8 (960 runs, forty fresh seeds
@@ -660,7 +679,7 @@ and the same interventions were not run on the shared controller under its clip.
 update B's by construction: with advantages normalized per minibatch and the gradient at $V$ scaled by $1/c^2$, the two
 arms differ only through the $10^{-8}$ in the advantage normalization and floating-point arithmetic. Its result is
 therefore close to a check of the construction, and it closes every scale route at once, the clip's included. Normalized
-PopArt is not such an identity, but it changes the clip regime for both arms: the clip still fires on nearly every
+PopArt is also close to an identity once its statistics track the returns, and it changes the clip regime for both arms: the clip still fires on nearly every
 minibatch, while the actor's applied gradient is several hundred times larger than under the normalized head. Third,
 the evidence against the clip route is therefore the per-group contrast alone, and its 95\% interval
 (\VxsevChGroup{}) still allows a reduction of about half the plain shift.
@@ -958,7 +977,7 @@ exploratory pool of the two fresh cohorts suggests that clipping enlarges it (\V
 this, so the clip's contribution is unresolved. In the CleanRL-style implementation a small per-group reduction
 appears only when cohorts are pooled, a secondary analysis. Intervals that include zero do not
 exclude a small clip effect; only the actor-clipping effect in X3 was tested for equivalence, and it lies within $\pm0.10$. The account that
-remains, critic target scale, is tested directly in pre-registered cohorts of forty fresh seeds. Removing the target
+remains, critic target scale, rests on the learner's algebra and on equivariance controls in pre-registered cohorts of forty fresh seeds (Section~\ref{sec:mechanism}, Appendix~\ref{app:equiv}). These controls make S's update nearly B's by construction, so they find no other route larger than the $\pm0.10$ margin in X4 and X5, and do not show how the critic's scale acts. Removing the target
 scale removes the shift in X4 and, under decentralized execution, in X5. Under the shared clip with per-node actors,
 removing the target and gradient scale together removes it (X7), which does not separate the target scale from the clip.
 These results are consistent with the normalization results of E1, E7, E8, E10 and E11. With per-node local critics (X6) the same test is
@@ -985,7 +1004,7 @@ $\pm0.05$ margin. The 24-checkpoint E5 reading is exploratory and its intervals 
 controller without agent identity (Section~\ref{sec:method}). Under local observation with an identifier (E12) the
 asymmetric contrast holds, but the default learner's symmetric shift is no longer detectable, contrary to our
 prediction, and we have not explained why. With per-node actors on local views and a centralized critic the
-shift is present and, at this budget and without clipping, has the same channel (X5); under the shared clip a smaller
+shift is present and, at this budget and without clipping, near-equivariant critics leave no detectable shift (X5); under the shared clip a smaller
 shift is present and is removed when the critic's target and gradient scale are removed together (X7). With per-node local critics the shift is present and its channel is unresolved (X6). The supply-chain
 symmetric shift is therefore established for the shared controller, for per-node actors with a centralized critic and
 for per-node actors with local critics, each at 300k; with a parameter-shared critic on local
@@ -1002,7 +1021,7 @@ the sampled grid; non-bracketed estimates are reported, not clipped.
 \paragraph{Open tests.} Four gaps remain, and the paper's claims stop short of each.
 \begin{itemize}
 \item \emph{The channel with local critics.} X6 shows the shift with per-node local critics, but the fixed-scale head's
-residual misses the equivalence margin, so the critic's target scale is not shown to carry it there.
+residual misses the equivalence margin, through sampling noise, the smaller Adam $\epsilon$ or both, and X6 has no second critic intervention. The critic's target scale is not shown to carry the shift there.
 \item \emph{The default controller's larger shift.} X7 removes a clipped shift of \VxsevPlain{} under per-node actors by
 removing the critic's target and gradient scale together, which does not separate the target scale from the clip. It does not explain the \VjtPStd{} of the shared controller, where critics with
 baseline-sized targets and gradients have not been tested under the shared clip.
@@ -1034,7 +1053,7 @@ budget, does not stabilize by 3.6M transitions, and depends on the optimizer con
 SB3's default PPO a symmetric reward multiplier moves the crossing at least as far as a loss-only multiplier, and
 the same confound appears in a second, CleanRL-style implementation. With normalized rewards no symmetric shift is
 detectable in either implementation. Without clipping a smaller shift remains, and pre-registered tests on fresh
-seeds, at this budget, show that fixing the scale of the critic's regression targets or normalizing them removes it, both with a shared controller (X4) and with per-node actors on local observations and a
+seeds, at this budget, show that critics which make the learner nearly scale-equivariant, by fixing the scale of the regression targets or normalizing them, leave no detectable shift, as the algebra predicts, both with a shared controller (X4) and with per-node actors on local observations and a
 centralized critic (X5). With per-node local critics the shift remains (X6), but whether the target scale carries it
 there is unresolved. Under the shared clip with per-node actors a smaller shift appears, and critics with
 baseline-sized targets and gradients remove it (X7); this does not explain the default controller's larger shift. A
@@ -1064,8 +1083,9 @@ these, a change in reward scale can pass for a change in reward shape.
 \paragraph{Implications for actor--critic optimization.}
 The confound needs an unnormalized critic, which is SB3 PPO's default. Advantages are normalized per minibatch,
 so the actor's loss is nearly scale-free, yet the crossing still moves with the reward scale, and the critic fits
-the scaled returns worse in every clipping mode we tested; fixing the scale of its targets removes the shift (X4, and X5 with per-node actors). CleanRL's default PPO normalizes rewards, and in our
-port that default leaves no detectable symmetric shift (E11); without it, the same port reproduces the confound.
+the scaled returns worse in every clipping mode we tested; fixing the scale of its targets leaves no detectable shift (X4, and X5 with per-node actors), as the resulting learner's near-equivariance predicts. CleanRL's default PPO normalizes rewards, and in our
+port that default leaves no detectable symmetric shift (E11); without it, the same port reproduces the confound, although its raw arm also has a fixed-width value clip, so its shift
+is not attributed to target scale alone.
 Cooperative PPO implementations that normalize value targets by default~\citep{yu2022surprising} should be less
 exposed; we did not test them. A methodological lesson concerns the evidence for a mechanism: a large, directly
 measured optimizer distortion (the actor's Adam step at \VxoGlobStep{} of baseline) and an intervention in one
@@ -1092,9 +1112,10 @@ Reward centralization is usually treated as a direction: more team signal helps.
 finite-budget location, $\wcrit$, that moves with reward transforms, training budget and the optimizer.
 Measured with default SB3 PPO, a symmetric reward multiplier and a loss-only multiplier cannot be told apart, and a
 CleanRL-style PPO without reward normalization shows the same symmetric shift. With normalized rewards no symmetric shift is
-detectable. Without clipping, at 300k, a smaller shift remains, and it is carried by the scale of the critic's
-regression targets: fixing that scale, or normalizing the targets, removes it, with a shared controller and with
-decentralized actors, whether or not through the critic's fit. The shared gradient clip, the obvious route by which reward scale reaches the actor's
+detectable, as the near-equivariance of that learner predicts. Without clipping, at 300k, a smaller shift remains. The
+learner's algebra leaves only the critic's target scale and Adam's $\epsilon$ as routes, and critics that make S nearly
+equivariant leave no detectable shift, with a shared controller and with decentralized actors; how the target scale acts
+is not shown. The shared gradient clip, the obvious route by which reward scale reaches the actor's
 updates, is not shown to be needed, and restoring the actor's step does not reduce the shift. In SB3 on the supply chain, with
 clipping removed and rewards normalized, the loss-only multiplier moves the crossing and the symmetric one produces
 no detectable shift; the CleanRL-style port with normalized rewards and its shared clip also shows no detectable

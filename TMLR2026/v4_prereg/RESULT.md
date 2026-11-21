@@ -554,3 +554,9 @@ Fresh seeds 202–321, 4,800 runs, none failed. Gate job 16238 passed all 15 che
   - P2: fit-gap difference (Bdeg − B) − (S − B) −0.020, 90% [−0.023, −0.017], within ±0.05.
   - P3: Bdeg − B +0.164 [+0.110, +0.218]; (S − B) − (Bdeg − B) +0.006, 90% [−0.036, +0.048].
   - **Declared reading:** a critic degraded to S's fit at B's target scale reproduces the shift; a worse fit is sufficient, consistent with fit mediating the target-scale effect. It does not show that S's shift runs through the fit.
+
+## Equivariance of the critic controls (diagnostic, 2026-11-21; not pre-registered)
+With `V = c·h` on returns scaled by `c`, S's update equals B's with the critic's Adam ε divided by c² (and 1e-8/c in the advantage normalization). PopArt has the same structure only when σ, μ and the head's output all correspond; its first rescale preserves the unscaled initial output, so S starts off that correspondence. Reward normalization is the same kind of control under either clip mode.
+- **Job 21060** (seeds 42–45, w = 0.6, X4 and X6 architectures, 24 runs; `results/headcheck_equivariance.csv`): an indirect check on actor-gradient norms. At a 1e-3 threshold S departs later from B(ε/49) than from plain B; at 1e-6 the two tie in all four X4 seeds; every pair diverges within 192 of 14,070 minibatches.
+- **Jobs 21061 and 21062** (stored X4 and X5 PopArt runs; `results/popart_sigma_ratio.csv`, `popart_mu_ratio.csv`): median S/B ratio of σ is 6.97–7.02 and of μ 6.73–7.08 at the inspected rollouts; at the last rollout the 5th–95th percentiles of the σ ratio are 4.72–11.03 (X4) and 4.73–10.50 (X5); the smallest σ in any run is 16.7, so the 0.01 floor never binds.
+- **Consequence:** the fixed-scale head and PopArt are equivariance controls. They find no other route larger than the ±0.10 margin in X4 and X5 and do not show how the critic's scale acts. X6's −0.070 head residual reflects sampling noise, the smaller ε, or both.

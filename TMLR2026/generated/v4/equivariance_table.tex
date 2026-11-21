@@ -1,0 +1,13 @@
+\begin{table}[!htbp]
+\caption{S under the fixed-scale head compared with plain B and with B whose critic Adam uses $\epsilon/49$ (diagnostic, not pre-registered; seeds 42--45, $w=0.6$, 300k transitions, 14,070 minibatches per run, 24 runs). Early difference: range over seeds of the median relative difference in the actor's gradient norm over the first 100 minibatches. First divergence: range over seeds of the first minibatch at which that difference exceeds $10^{-3}$.}
+\label{tab:equiv}
+\centering\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Architecture & Early diff., vs B & Early diff., vs B($\epsilon/49$) & First div., vs B & First div., vs B($\epsilon/49$) \\
+\midrule
+X4 & $4.7\times10^{-4}$ to $1.3\times10^{-3}$ & $6.0\times10^{-6}$ to $5.3\times10^{-5}$ & 30--44 & 51--90 \\
+X6 & $4.7\times10^{-5}$ to $5.5\times10^{-5}$ & $7.5\times10^{-8}$ to $1.0\times10^{-7}$ & 72--90 & 122--192 \\
+\bottomrule
+\end{tabular}
+\end{table}
